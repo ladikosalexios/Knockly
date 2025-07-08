@@ -2,7 +2,6 @@ class Api::MatchingController < ApplicationController
   def show
     client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
-    # Simple Hello World prompt for now
     response = client.chat(
       parameters: {
         model: "gpt-3.5-turbo",

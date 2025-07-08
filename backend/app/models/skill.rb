@@ -1,4 +1,4 @@
 class Skill < ApplicationRecord
-  has_many :job_skills
-  has_many :jobs, through: :job_skills
+  has_many :resume_skills
+  has_many :candidate_resumes, through: :resume_skills
 end

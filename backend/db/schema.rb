@@ -10,9 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_23_044640) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_08_000428) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "candidate_resumes", force: :cascade do |t|
+    t.string "job_title"
+    t.text "description"
+    t.integer "years_experience_min"
+    t.integer "years_experience_max"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "companies", force: :cascade do |t|
     t.string "name"
@@ -66,6 +75,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_23_044640) do
     t.index ["posted_by_user_id"], name: "index_jobs_on_posted_by_user_id"
   end
 
+  create_table "resume_skills", force: :cascade do |t|
+    t.bigint "candidate_resume_id", null: false
+    t.bigint "skill_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["candidate_resume_id"], name: "index_resume_skills_on_candidate_resume_id"
+    t.index ["skill_id"], name: "index_resume_skills_on_skill_id"
+  end
+
   create_table "skills", force: :cascade do |t|
     t.string "name"
     t.string "category"
@@ -88,4 +106,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_23_044640) do
   add_foreign_key "job_skills", "skills"
   add_foreign_key "jobs", "companies"
   add_foreign_key "jobs", "users", column: "posted_by_user_id"
+  add_foreign_key "resume_skills", "candidate_resumes"
+  add_foreign_key "resume_skills", "skills"
 end
