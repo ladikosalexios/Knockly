@@ -9,8 +9,6 @@ function App() {
       params: { email }
     })
     .then(res => {
-      // Expect API to return a list of job_applications
-      // with a job_id for each application
       setAppliedJobs(res.data.map(app => app.job_id));
     })
     .catch(() => setAppliedJobs([]));
@@ -42,11 +40,10 @@ function App() {
     if (applicantEmail) {
       loadAppliedJobs(applicantEmail);
     } else {
-      setAppliedJobs([]); // clear when no email
+      setAppliedJobs([]);
     }
   }, [applicantEmail]);
 
-  // Fetch single job detail (when clicked)
   const fetchJobDetail = (id) => {
     setLoading(true)
     setError(null)
@@ -96,8 +93,27 @@ function App() {
           style={{margin: "20px 0", padding: 10, border: "1px solid #ccc", cursor: "pointer"}}
           onClick={() => fetchJobDetail(job.id)}
         >
-          <h3>{job.title}</h3>
-          <p><b>Company:</b> {job.company?.name}</p>
+        <h3 style={{ display: "flex", alignItems: "center" }}>
+          {job.title}
+          {appliedJobs.includes(job.id) && (
+            <span
+              style={{
+                background: "#087f23",
+                color: "#fff",
+                borderRadius: "8px",
+                fontSize: "14px",
+                fontWeight: 600,
+                padding: "2px 10px",
+                marginLeft: 12,
+                verticalAlign: "middle",
+                letterSpacing: "0.5px"
+              }}
+            >
+              Applied
+            </span>
+          )}
+        </h3>          
+                  <p><b>Company:</b> {job.company?.name}</p>
           <p><b>Location:</b> {job.location} {job.is_remote && "(Remote)"}</p>
           <p><b>Skills:</b> {job.skills?.map(s => s.name).join(', ')}</p>
         </div>
