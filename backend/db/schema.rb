@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_09_214146) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_11_034028) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,6 +21,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_214146) do
     t.integer "years_experience_max"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name"
+    t.string "email"
+    t.text "resume_text"
+    t.index ["email"], name: "index_candidate_resumes_on_email", unique: true
   end
 
   create_table "companies", force: :cascade do |t|

@@ -2,28 +2,26 @@ class Api::CandidateResumesController < ApplicationController
   # protect_from_forgery with: :null_session
 
   def create
-    ActiveRecord::Base.transaction do
-      resume = CandidateResume.create!(
-        job_title: params[:job_title],
-        description: params[:description],
-        years_experience_min: params[:years_experience_min],
-        years_experience_max: params[:years_experience_max]
-      )
-
-      (params[:skills] || []).each do |name|
-        skill = Skill.find_or_create_by!(name: name)
-        ResumeSkill.create!(candidate_resume: resume, skill: skill)
-      end
-
-      render json: resume.as_json(include: { skills: {} }), status: :created
+    resume = CandidateResume.find_or_initialize_by(email: params[:email])
+    resume.assign_attributes(
+      name: params[:name],
+      resume_text: params[:resume_text]
+    )
+    if resume.save
+      render json: { status: "ok", resume: resume }, status: :created
+    else
+      render json: { errors: resume.errors.full_messages }, status: :unprocessable_entity
     end
-  rescue ActiveRecord::RecordInvalid => e
-    render json: { error: e.message }, status: :unprocessable_entity
   end
 
+
   def show
-    resume = CandidateResume.includes(:skills).find(params[:id])
-    render json: resume.as_json(include: { skills: {} })
+    resume = CandidateResume.find_by(email: params[:email])
+    if resume
+      render json: resume
+    else
+      render json: { error: "Not found" }, status: :not_found
+    end
   end
 
   def index
