@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  devise_for :users, controllers: {
+  registrations: 'users/registrations'
+  }
   namespace :api do
     get "matching", to: "matching#show"
     resources :jobs
