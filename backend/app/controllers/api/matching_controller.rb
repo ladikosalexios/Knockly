@@ -1,5 +1,4 @@
 class Api::MatchingController < ApplicationController
-  # not yet but will construct
   def show
     client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 

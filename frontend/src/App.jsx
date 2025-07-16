@@ -107,14 +107,26 @@ function App() {
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && jobs.length === 0 && <p>No jobs found.</p>}
-      {jobs.map(job => (
+      {console.log("JOB CHECK", jobs.map(j => ({
+        id: j.id,
+        skills: j,
+        title: j.job_description?.title || j.title,
+        jd_title: j.job_description?.title,
+        jd:  j.job_description
+      })))}
+      {jobs
+        .filter(job =>
+          (job.job_description?.title && job.job_description.title.trim().length > 0) ||
+          (job.title && job.title.trim().length > 0)
+        )
+        .map(job => (
         <div
           key={job.id}
           style={{margin: "20px 0", padding: 10, border: "1px solid #ccc", cursor: "pointer"}}
           onClick={() => fetchJobDetail(job.id)}
         >
         <h3 style={{ display: "flex", alignItems: "center" }}>
-          {job.title}
+          {job.job_description?.title || job.title}
           {appliedJobs.includes(job.id) && (
             <span
               style={{
@@ -134,12 +146,17 @@ function App() {
           )}
         </h3>          
           <p><b>Company:</b> {job.company?.name}</p>
-          <p><b>Location:</b> {job.location} {job.is_remote && "(Remote)"}</p>
-          <p><b>Skills:</b> {job.skills?.map(s => s.name).join(', ')}</p>
+          <p><b>Location:</b> {job.job_description?.location || job.location} {(job.job_description?.is_remote || job.is_remote) && "(Remote)"}</p>
+          <p>
+            <b>Skills:</b>{" "}
+            {job.job_description?.skills?.length
+              ? job.job_description.skills.map(s => s.name).join(', ')
+              : job.skills?.map(s => s.name).join(', ')}
+          </p>
         </div>
       ))}
 
-     {selectedJob && selectedJob.title && (
+     {(selectedJob && (selectedJob.job_description?.title || selectedJob.title)) && (
       <div
         style={{
           position: "fixed",
@@ -264,13 +281,24 @@ function App() {
         )}
           <div style={{margin: "40px 0 0 0", textAlign: "center"}}>
             <p><b>Company:</b> {selectedJob.company?.name}</p>
-            <p><b>Location:</b> {selectedJob.location} {selectedJob.is_remote && "(Remote)"}</p>
-            <p><b>Skills:</b> {selectedJob.skills?.map(s => s.name).join(', ')}</p>
-            <p><b>Description:</b> {selectedJob.description}</p>
-            <p><b>Job Type:</b> {selectedJob.job_type}</p>
-            <p><b>Experience:</b> {selectedJob.experience_level}</p>
-            <p><b>Salary:</b> {selectedJob.is_salary_visible ? `${selectedJob.salary_min}–${selectedJob.salary_max} ${selectedJob.salary_currency}` : 'Hidden'}</p>
-          </div>
+            <p><b>Location:</b> {selectedJob.job_description?.location || selectedJob.location} {(selectedJob.job_description?.is_remote || selectedJob.is_remote) && "(Remote)"}</p>
+            <p>
+              <b>Skills:</b>{" "}
+              {selectedJob.job_description?.skills?.length
+                ? selectedJob.job_description.skills.map(s => s.name).join(', ')
+                : selectedJob.skills?.map(s => s.name).join(', ')}
+            </p>
+            <p><b>Description:</b> {selectedJob.job_description?.description || selectedJob.description}</p>
+            <p><b>Job Type:</b> {selectedJob.job_description?.job_type || selectedJob.job_type}</p>
+            <p><b>Experience:</b> {selectedJob.job_description?.experience_level || selectedJob.experience_level}</p>
+            <p>
+              <b>Salary:</b> 
+              {(selectedJob.job_description?.is_salary_visible !== undefined ? selectedJob.job_description.is_salary_visible : selectedJob.is_salary_visible)
+                ? `${selectedJob.job_description?.salary_min || selectedJob.salary_min}–${selectedJob.job_description?.salary_max || selectedJob.salary_max} ${selectedJob.job_description?.salary_currency || selectedJob.salary_currency}`
+                : 'Hidden'
+              }
+            </p>          
+            </div>
         </div>
       </div>
     )}

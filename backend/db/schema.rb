@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_11_034028) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_15_040013) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,37 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_11_034028) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "job_description_skills", force: :cascade do |t|
+    t.bigint "job_description_id", null: false
+    t.bigint "skill_id", null: false
+    t.string "importance"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_description_id"], name: "index_job_description_skills_on_job_description_id"
+    t.index ["skill_id"], name: "index_job_description_skills_on_skill_id"
+  end
+
+  create_table "job_descriptions", force: :cascade do |t|
+    t.string "title"
+    t.text "description"
+    t.text "requirements"
+    t.text "benefits"
+    t.string "company_name"
+    t.string "location"
+    t.boolean "is_remote"
+    t.string "job_type"
+    t.string "experience_level"
+    t.integer "salary_min"
+    t.integer "salary_max"
+    t.string "salary_currency"
+    t.boolean "is_salary_visible"
+    t.string "external_id"
+    t.string "source"
+    t.datetime "parsed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "job_skills", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.bigint "skill_id", null: false
@@ -67,22 +98,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_11_034028) do
   end
 
   create_table "jobs", force: :cascade do |t|
-    t.string "title"
-    t.text "description"
-    t.string "location"
-    t.boolean "is_remote"
-    t.string "job_type"
-    t.string "experience_level"
-    t.integer "salary_min"
-    t.integer "salary_max"
-    t.string "salary_currency"
-    t.boolean "is_salary_visible"
     t.string "status"
     t.datetime "expires_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "company_id", null: false
     t.bigint "posted_by_user_id", null: false
+    t.integer "job_description_id"
     t.index ["company_id"], name: "index_jobs_on_company_id"
     t.index ["posted_by_user_id"], name: "index_jobs_on_posted_by_user_id"
   end
@@ -115,6 +137,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_11_034028) do
 
   add_foreign_key "company_users", "companies"
   add_foreign_key "company_users", "users"
+  add_foreign_key "job_description_skills", "job_descriptions"
+  add_foreign_key "job_description_skills", "skills"
   add_foreign_key "job_skills", "jobs"
   add_foreign_key "job_skills", "skills"
   add_foreign_key "jobs", "companies"

@@ -1,0 +1,37 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  description: MyText
+  requirements: MyText
+  benefits: MyText
+  company_name: MyString
+  location: MyString
+  is_remote: false
+  job_type: MyString
+  experience_level: MyString
+  salary_min: 1
+  salary_max: 1
+  salary_currency: MyString
+  is_salary_visible: false
+  external_id: MyString
+  source: MyString
+  parsed_at: 2025-07-14 22:07:36
+
+two:
+  title: MyString
+  description: MyText
+  requirements: MyText
+  benefits: MyText
+  company_name: MyString
+  location: MyString
+  is_remote: false
+  job_type: MyString
+  experience_level: MyString
+  salary_min: 1
+  salary_max: 1
+  salary_currency: MyString
+  is_salary_visible: false
+  external_id: MyString
+  source: MyString
+  parsed_at: 2025-07-14 22:07:36
