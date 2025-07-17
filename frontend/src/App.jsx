@@ -26,24 +26,13 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [appliedJobs, setAppliedJobs] = useState([]);
-  const [isApplying, setIsApplying] = useState(false);
-  const [applicantName, setApplicantName] = useState('');
+
   const [applicantEmail, setApplicantEmail] = useState('');
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [resumeName, setResumeName] = useState('');
   const [resumeEmail, setResumeEmail] = useState('');
   const [resumeText, setResumeText] = useState('');
   const [resumeMsg, setResumeMsg] = useState('');
-  const [jdForm, setJdForm] = useState({
-    jd_title: '',
-    jd_description: '',
-    jd_location: '',
-    jd_company_name: '',
-    jd_skills: '',
-    job_status: 'active',
-    job_expires_at: '',
-  });
-  const [jdJobMsg, setJdJobMsg] = useState('');
   // --- AUTH STATE ---
   const [user, setUser] = useState(null);
   const [loginEmail, setLoginEmail] = useState('');
@@ -107,10 +96,8 @@ const fetchJobDetail = (id) => {
     <BrowserRouter>
       <div style={{marginTop: 40, padding: 32}}>
         <Routes>
-          {/* For now, put everything in "/" as a placeholder */}
           <Route path="/*" element={
             <>
-              {/* --- LOGIN FORM --- */}
               {!user && (
                 <LoginPage
                   loginEmail={loginEmail}
@@ -121,7 +108,6 @@ const fetchJobDetail = (id) => {
                   handleLogin={handleLogin}
                 />
               )}
-              {/* --- LOGOUT BUTTON --- */}
               {user && (
                 <button
                   onClick={async () => {
@@ -133,8 +119,6 @@ const fetchJobDetail = (id) => {
                       console.log("[DEBUG] Backend logout failed, proceeding with frontend logout anyway.");
                     }
                     setUser(null);
-                    // Optionally, reload to fully reset state (uncomment if needed)
-                    // window.location.reload();
                   }}
                   style={{
                     position: "absolute", top: 10, right: 10,
@@ -144,7 +128,6 @@ const fetchJobDetail = (id) => {
                   Logout
                 </button>
               )}
-              {/* --- MAIN JOB BOARD OR ADMIN UI --- */}
               {user && user.role === 'admin' ? (
                 <AdminJobForm />
               ) : (

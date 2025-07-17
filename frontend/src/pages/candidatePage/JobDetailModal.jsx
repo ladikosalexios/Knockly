@@ -39,7 +39,7 @@ function JobDetailModal({ job, onClose }) {
           background: "#fff",
           padding: 32,
           borderRadius: 12,
-        color: "#222",        // <-- add this line
+          color: "#222",
           minWidth: 420,
           maxWidth: 540,
           boxShadow: "0 2px 20px #0004",
@@ -75,7 +75,6 @@ function JobDetailModal({ job, onClose }) {
             : job.skills?.map(s => s.name).join(', ')
           }
         </p>
-        {/* Add more fields (requirements, benefits, etc.) as needed */}
       </div>
     </div>
   );
