@@ -1,4 +1,3 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminJobForm from './pages/AdminJobForm';
 import { useState, useEffect } from 'react'
 import './App.css'
@@ -92,98 +91,96 @@ const fetchJobDetail = (id) => {
       .finally(() => setLoading(false))
   }
 
-  return (
-    <BrowserRouter>
-      <div style={{marginTop: 40, padding: 32}}>
-        <Routes>
-          <Route path="/*" element={
-            <>
-              {!user && (
-                <LoginPage
-                  loginEmail={loginEmail}
-                  setLoginEmail={setLoginEmail}
-                  loginPassword={loginPassword}
-                  setLoginPassword={setLoginPassword}
-                  loginMsg={loginMsg}
-                  handleLogin={handleLogin}
-                />
-              )}
-              {user && (
-                <button
-                  onClick={async () => {
-                    console.log("[DEBUG] Logging out user:", user);
-                    try {
-                      await axios.delete('http://localhost:3000/users/sign_out', { withCredentials: true });
-                      console.log("[DEBUG] Backend logout successful.");
-                    } catch (e) {
-                      console.log("[DEBUG] Backend logout failed, proceeding with frontend logout anyway.");
-                    }
-                    setUser(null);
-                  }}
-                  style={{
-                    position: "absolute", top: 10, right: 10,
-                    background: "#aaa", color: "#222", borderRadius: 8, padding: "6px 16px"
-                  }}
-                >
-                  Logout
-                </button>
-              )}
-              {user && user.role === 'admin' ? (
-                <AdminJobForm />
-              ) : (
-                <>
-                  <button
-                    onClick={() => setShowResumeModal(true)}
-                    style={{
-                      marginBottom: 18,
-                      background: "#007bff",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 8,
-                      padding: "10px 22px",
-                      fontWeight: 700,
-                      cursor: "pointer"
-                    }}
-                  >
-                    Add Resume/Profile
-                  </button>
-                  <JobList
-                    jobs={jobs}
-                    appliedJobs={appliedJobs}
-                    fetchJobDetail={fetchJobDetail}
-                    loading={loading}
-                    error={error}
-                    query={query}
-                    setQuery={setQuery}
-                    applicantEmail={applicantEmail}
-                    setApplicantEmail={setApplicantEmail}
-                  />
-                  {selectedJob && (selectedJob.job_description?.title || selectedJob.title) && (
-                    <JobDetailModal
-                      job={selectedJob}
-                      onClose={() => setSelectedJob(null)}
-                    />
-                  )}
-                </>
-              )}
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-              <ResumeModal
-                open={showResumeModal}
-                onClose={() => setShowResumeModal(false)}
-                resumeName={resumeName}
-                setResumeName={setResumeName}
-                resumeEmail={resumeEmail}
-                setResumeEmail={setResumeEmail}
-                resumeText={resumeText}
-                setResumeText={setResumeText}
-                resumeMsg={resumeMsg}
-                setResumeMsg={setResumeMsg}
-              />
-            </>
-          } />
-        </Routes>
+  if (!user) {
+    return (
+      <div style={{marginTop: 40, padding: 32}}>
+        <LoginPage
+          loginEmail={loginEmail}
+          setLoginEmail={setLoginEmail}
+          loginPassword={loginPassword}
+          setLoginPassword={setLoginPassword}
+          loginMsg={loginMsg}
+          handleLogin={handleLogin}
+        />
       </div>
-    </BrowserRouter>
+    );
+  }
+
+  return (
+    <div style={{marginTop: 40, padding: 32}}>
+      <button
+        onClick={async () => {
+          console.log("[DEBUG] Logging out user:", user);
+          try {
+            await axios.delete('http://localhost:3000/users/sign_out', { withCredentials: true });
+            console.log("[DEBUG] Backend logout successful.");
+          } catch (e) {
+            console.log("[DEBUG] Backend logout failed, proceeding with frontend logout anyway.");
+          }
+          setUser(null);
+        }}
+        style={{
+          position: "absolute", top: 10, right: 10,
+          background: "#aaa", color: "#222", borderRadius: 8, padding: "6px 16px"
+        }}
+      >
+        Logout
+      </button>
+      {user.role === 'admin' ? (
+        <AdminJobForm user={user} />
+      ) : (
+        <>
+          <button
+            onClick={() => setShowResumeModal(true)}
+            style={{
+              marginBottom: 18,
+              background: "#007bff",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 22px",
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            Add Resume/Profile
+          </button>
+          <JobList
+            jobs={jobs}
+            appliedJobs={appliedJobs}
+            fetchJobDetail={fetchJobDetail}
+            loading={loading}
+            error={error}
+            query={query}
+            setQuery={setQuery}
+            applicantEmail={applicantEmail}
+            setApplicantEmail={setApplicantEmail}
+          />
+          {selectedJob && (selectedJob.job_description?.title || selectedJob.title) && (
+            <JobDetailModal
+              job={selectedJob}
+              onClose={() => setSelectedJob(null)}
+            />
+          )}
+          <ResumeModal
+            open={showResumeModal}
+            onClose={() => setShowResumeModal(false)}
+            resumeName={resumeName}
+            setResumeName={setResumeName}
+            resumeEmail={resumeEmail}
+            setResumeEmail={setResumeEmail}
+            resumeText={resumeText}
+            setResumeText={setResumeText}
+            resumeMsg={resumeMsg}
+            setResumeMsg={setResumeMsg}
+          />
+        </>
+      )}
+    </div>
   )
 }
 
