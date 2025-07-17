@@ -38,6 +38,18 @@ function App() {
     job_expires_at: '',
   });
   const [jdJobMsg, setJdJobMsg] = useState('');
+  // --- AUTH STATE ---
+  const [user, setUser] = useState(null);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginMsg, setLoginMsg] = useState('');
+
+  useEffect(() => {
+    console.log("[DEBUG] Current user object:", user);
+    if (user) {
+      console.log("[DEBUG] User role:", user.role);
+    }
+  }, [user]);
 
   useEffect(() => {
     setLoading(true)
@@ -59,6 +71,23 @@ function App() {
     }
   }, [applicantEmail]);
 
+  // --- LOGIN HANDLER ---
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginMsg('');
+    try {
+      const res = await axios.post('http://localhost:3000/users/sign_in', {
+        user: { email: loginEmail, password: loginPassword }
+      }, { withCredentials: true });
+      setUser(res.data.user || res.data);
+      setLoginEmail('');
+      setLoginPassword('');
+      setLoginMsg('Logged in!');
+    } catch (err) {
+      setLoginMsg('Invalid credentials');
+    }
+  };
+
   const fetchJobDetail = (id) => {
     setLoading(true)
     setError(null)
@@ -70,101 +99,246 @@ function App() {
 
   return (
     <div style={{marginTop: 40, padding: 32}}>
-      <h1>Job Listings</h1>
-      <button
-        onClick={() => setShowResumeModal(true)}
-        style={{
-          marginBottom: 18,
-          background: "#007bff",
-          color: "#fff",
-          border: "none",
-          borderRadius: 8,
-          padding: "10px 22px",
-          fontWeight: 700,
-          cursor: "pointer"
-        }}
-      >
-        Add Resume/Profile
-      </button>
-      <input
-        type="email"
-        value={applicantEmail}
-        onChange={e => setApplicantEmail(e.target.value)}
-        placeholder="Enter your email to track job applications"
-        style={{
-          padding: 10,
-          width: "100%",
-          maxWidth: 400,
-          marginBottom: 20,
-          borderRadius: 5,
-          border: "1px solid #888"
-        }}
-      />
-      <input
-        type="text"
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-        placeholder="Search by title, location, or skill"
-        style={{
-          padding: 10,
-          width: "100%",
-          maxWidth: 400,
-          marginBottom: 30,
-          borderRadius: 5,
-          border: "1px solid #888"
-        }}
-      />
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!loading && jobs.length === 0 && <p>No jobs found.</p>}
-      {console.log("JOB CHECK", jobs.map(j => ({
-        id: j.id,
-        skills: j,
-        title: j.job_description?.title || j.title,
-        jd_title: j.job_description?.title,
-        jd:  j.job_description
-      })))}
-      {jobs
-        .filter(job =>
-          (job.job_description?.title && job.job_description.title.trim().length > 0) ||
-          (job.title && job.title.trim().length > 0)
-        )
-        .map(job => (
-        <div
-          key={job.id}
-          style={{margin: "20px 0", padding: 10, border: "1px solid #ccc", cursor: "pointer"}}
-          onClick={() => fetchJobDetail(job.id)}
+      {/* --- LOGIN FORM --- */}
+      {!user && (
+        <form
+          onSubmit={handleLogin}
+          style={{
+            margin: "24px 0", padding: 20, background: "#fff", borderRadius: 8, boxShadow: "0 1px 4px #0001",
+            maxWidth: 380
+          }}
         >
-        <h3 style={{ display: "flex", alignItems: "center" }}>
-          {job.job_description?.title || job.title}
-          {appliedJobs.includes(job.id) && (
-            <span
-              style={{
-                background: "#087f23",
-                color: "#fff",
-                borderRadius: "8px",
-                fontSize: "14px",
-                fontWeight: 600,
-                padding: "2px 10px",
-                marginLeft: 12,
-                verticalAlign: "middle",
-                letterSpacing: "0.5px"
-              }}
-            >
-              Applied
-            </span>
-          )}
-        </h3>          
-          <p><b>Company:</b> {job.company?.name}</p>
-          <p><b>Location:</b> {job.job_description?.location || job.location} {(job.job_description?.is_remote || job.is_remote) && "(Remote)"}</p>
-          <p>
-            <b>Skills:</b>{" "}
-            {job.job_description?.skills?.length
-              ? job.job_description.skills.map(s => s.name).join(', ')
-              : job.skills?.map(s => s.name).join(', ')}
-          </p>
+          <h2>Login</h2>
+          <input
+            type="email"
+            value={loginEmail}
+            onChange={e => setLoginEmail(e.target.value)}
+            placeholder="Email"
+            required
+            style={{ padding: 10, width: "100%", marginBottom: 10, borderRadius: 5, border: "1px solid #888" }}
+          />
+          <input
+            type="password"
+            value={loginPassword}
+            onChange={e => setLoginPassword(e.target.value)}
+            placeholder="Password"
+            required
+            style={{ padding: 10, width: "100%", marginBottom: 10, borderRadius: 5, border: "1px solid #888" }}
+          />
+          <button
+            type="submit"
+            style={{
+              background: "#222", color: "#fff", border: "none", borderRadius: 8,
+              padding: "10px 22px", fontWeight: 700, cursor: "pointer"
+            }}
+          >
+            Login
+          </button>
+          {loginMsg && <div style={{ color: loginMsg.includes('Invalid') ? 'red' : 'green', marginTop: 8 }}>{loginMsg}</div>}
+        </form>
+      )}
+      {/* --- LOGOUT BUTTON --- */}
+      {user && (
+        <button
+          onClick={async () => {
+            console.log("[DEBUG] Logging out user:", user);
+            try {
+              await axios.delete('http://localhost:3000/users/sign_out', { withCredentials: true });
+              console.log("[DEBUG] Backend logout successful.");
+            } catch (e) {
+              console.log("[DEBUG] Backend logout failed, proceeding with frontend logout anyway.");
+            }
+            setUser(null);
+            // Optionally, reload to fully reset state (uncomment if needed)
+            // window.location.reload();
+          }}
+          style={{
+            position: "absolute", top: 10, right: 10,
+            background: "#aaa", color: "#222", borderRadius: 8, padding: "6px 16px"
+          }}
+        >
+          Logout
+        </button>
+      )}
+      {/* --- MAIN JOB BOARD --- */}
+      {user && user.role === 'admin' ? (
+        // Admins see only admin form
+        <div style={{ marginTop: 64, padding: 32, background: "#191919", borderRadius: 12 }}>
+          <h2 style={{ color: "#fff" }}>Create New Job & Job Description (Admin)</h2>
+          <form
+            onSubmit={async e => {
+              e.preventDefault();
+              setJdJobMsg('');
+              try {
+                // 1. Create Job Description
+                const jdRes = await axios.post('http://localhost:3000/api/job_descriptions', {
+                  title: jdForm.jd_title,
+                  description: jdForm.jd_description,
+                  location: jdForm.jd_location,
+                  company_name: jdForm.jd_company_name,
+                  skills: jdForm.jd_skills.split(",").map(s => s.trim()).filter(Boolean)
+                });
+                const jdId = jdRes.data.id;
+                // 2. Create Job (company_id and posted_by_user_id are hardcoded 1 for now)
+                await axios.post('http://localhost:3000/api/jobs', {
+                  job: {
+                    job_description_id: jdId,
+                    status: jdForm.job_status,
+                    expires_at: jdForm.job_expires_at || null,
+                    company_id: 1,
+                    posted_by_user_id: 1
+                  }
+                });
+                setJdJobMsg('Job + JD created!');
+                setJdForm({
+                  jd_title: '', jd_description: '', jd_location: '', jd_company_name: '', jd_skills:'',
+                  job_status: 'active', job_expires_at: ''
+                });
+              } catch (err) {
+                setJdJobMsg('Error creating job/JD');
+              }
+            }}
+            style={{ display: "flex", flexDirection: "column", gap: 12, color: "#fff" }}
+          >
+            <input
+              value={jdForm.jd_title}
+              onChange={e => setJdForm(f => ({ ...f, jd_title: e.target.value }))}
+              placeholder="Job Title" required style={{ padding: 8 }}
+            />
+            <input
+              value={jdForm.jd_company_name}
+              onChange={e => setJdForm(f => ({ ...f, jd_company_name: e.target.value }))}
+              placeholder="Company Name" required style={{ padding: 8 }}
+            />
+            <input
+              value={jdForm.jd_location}
+              onChange={e => setJdForm(f => ({ ...f, jd_location: e.target.value }))}
+              placeholder="Location" required style={{ padding: 8 }}
+            />
+            <textarea
+              value={jdForm.jd_description}
+              onChange={e => setJdForm(f => ({ ...f, jd_description: e.target.value }))}
+              placeholder="Job Description" required style={{ padding: 8, minHeight: 60 }}
+            />
+            <input
+              value={jdForm.jd_skills}
+              onChange={e => setJdForm(f => ({ ...f, jd_skills: e.target.value }))}
+              placeholder="Skills (comma separated)"
+              style={{ padding: 8 }}
+            />
+            <input
+              value={jdForm.job_expires_at}
+              onChange={e => setJdForm(f => ({ ...f, job_expires_at: e.target.value }))}
+              placeholder="Expiration Date (YYYY-MM-DD)" style={{ padding: 8 }}
+            />
+            <button style={{
+              background: "#222",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 22px",
+              fontWeight: 700,
+              marginTop: 8,
+              cursor: "pointer"
+            }}>
+              Create Job + JD
+            </button>
+            {jdJobMsg && <div style={{ color: jdJobMsg.includes('created') ? "lightgreen" : "red", marginTop: 8 }}>{jdJobMsg}</div>}
+          </form>
         </div>
-      ))}
+      ) : (
+        // Non-admins (or not logged in) see the job board, search, and resume/profile features
+        <>
+          <h1>Job Listings</h1>
+          <button
+            onClick={() => setShowResumeModal(true)}
+            style={{
+              marginBottom: 18,
+              background: "#007bff",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 22px",
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            Add Resume/Profile
+          </button>
+          <input
+            type="email"
+            value={applicantEmail}
+            onChange={e => setApplicantEmail(e.target.value)}
+            placeholder="Enter your email to track job applications"
+            style={{
+              padding: 10,
+              width: "100%",
+              maxWidth: 400,
+              marginBottom: 20,
+              borderRadius: 5,
+              border: "1px solid #888"
+            }}
+          />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search by title, location, or skill"
+            style={{
+              padding: 10,
+              width: "100%",
+              maxWidth: 400,
+              marginBottom: 30,
+              borderRadius: 5,
+              border: "1px solid #888"
+            }}
+          />
+          {loading && <p>Loading...</p>}
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+          {!loading && jobs.length === 0 && <p>No jobs found.</p>}
+          {jobs
+            .filter(job =>
+              (job.job_description?.title && job.job_description.title.trim().length > 0) ||
+              (job.title && job.title.trim().length > 0)
+            )
+            .map(job => (
+            <div
+              key={job.id}
+              style={{margin: "20px 0", padding: 10, border: "1px solid #ccc", cursor: "pointer"}}
+              onClick={() => fetchJobDetail(job.id)}
+            >
+            <h3 style={{ display: "flex", alignItems: "center" }}>
+              {job.job_description?.title || job.title}
+              {appliedJobs.includes(job.id) && (
+                <span
+                  style={{
+                    background: "#087f23",
+                    color: "#fff",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    padding: "2px 10px",
+                    marginLeft: 12,
+                    verticalAlign: "middle",
+                    letterSpacing: "0.5px"
+                  }}
+                >
+                  Applied
+                </span>
+              )}
+            </h3>          
+              <p><b>Company:</b> {job.company?.name}</p>
+              <p><b>Location:</b> {job.job_description?.location || job.location} {(job.job_description?.is_remote || job.is_remote) && "(Remote)"}</p>
+              <p>
+                <b>Skills:</b>{" "}
+                {job.job_description?.skills?.length
+                  ? job.job_description.skills.map(s => s.name).join(', ')
+                  : job.skills?.map(s => s.name).join(', ')}
+              </p>
+            </div>
+          ))}
+        </>
+      )}
 
      {(selectedJob && (selectedJob.job_description?.title || selectedJob.title)) && (
       <div
@@ -416,90 +590,6 @@ function App() {
       </form>
     </div>
   )}
-  <div style={{ marginTop: 64, padding: 32, background: "#191919", borderRadius: 12 }}>
-    <h2 style={{ color: "#fff" }}>Create New Job & Job Description (Admin)</h2>
-    <form
-      onSubmit={async e => {
-        e.preventDefault();
-        setJdJobMsg('');
-        try {
-          // 1. Create Job Description
-          const jdRes = await axios.post('http://localhost:3000/api/job_descriptions', {
-            title: jdForm.jd_title,
-            description: jdForm.jd_description,
-            location: jdForm.jd_location,
-            company_name: jdForm.jd_company_name,
-            skills: jdForm.jd_skills.split(",").map(s => s.trim()).filter(Boolean)   // <--- THIS LINE
-
-          });
-          const jdId = jdRes.data.id;
-          // 2. Create Job (company_id and posted_by_user_id are hardcoded 1 for now)
-          await axios.post('http://localhost:3000/api/jobs', {
-            job: {
-              job_description_id: jdId,
-              status: jdForm.job_status,
-              expires_at: jdForm.job_expires_at || null,
-              company_id: 1,
-              posted_by_user_id: 1
-            }
-          });
-          setJdJobMsg('Job + JD created!');
-          setJdForm({
-            jd_title: '', jd_description: '', jd_location: '', jd_company_name: '', jd_skills:'',
-            job_status: 'active', job_expires_at: ''
-          });
-        } catch (err) {
-          setJdJobMsg('Error creating job/JD');
-        }
-      }}
-      style={{ display: "flex", flexDirection: "column", gap: 12, color: "#fff" }}
-    >
-      <input
-        value={jdForm.jd_title}
-        onChange={e => setJdForm(f => ({ ...f, jd_title: e.target.value }))}
-        placeholder="Job Title" required style={{ padding: 8 }}
-      />
-      <input
-        value={jdForm.jd_company_name}
-        onChange={e => setJdForm(f => ({ ...f, jd_company_name: e.target.value }))}
-        placeholder="Company Name" required style={{ padding: 8 }}
-      />
-      <input
-        value={jdForm.jd_location}
-        onChange={e => setJdForm(f => ({ ...f, jd_location: e.target.value }))}
-        placeholder="Location" required style={{ padding: 8 }}
-      />
-      <textarea
-        value={jdForm.jd_description}
-        onChange={e => setJdForm(f => ({ ...f, jd_description: e.target.value }))}
-        placeholder="Job Description" required style={{ padding: 8, minHeight: 60 }}
-      />
-      <input
-        value={jdForm.jd_skills}
-        onChange={e => setJdForm(f => ({ ...f, jd_skills: e.target.value }))}
-        placeholder="Skills (comma separated)"
-        style={{ padding: 8 }}
-      />
-      <input
-        value={jdForm.job_expires_at}
-        onChange={e => setJdForm(f => ({ ...f, job_expires_at: e.target.value }))}
-        placeholder="Expiration Date (YYYY-MM-DD)" style={{ padding: 8 }}
-      />
-      <button style={{
-        background: "#222",
-        color: "#fff",
-        border: "none",
-        borderRadius: 8,
-        padding: "10px 22px",
-        fontWeight: 700,
-        marginTop: 8,
-        cursor: "pointer"
-      }}>
-        Create Job + JD
-      </button>
-      {jdJobMsg && <div style={{ color: jdJobMsg.includes('created') ? "lightgreen" : "red", marginTop: 8 }}>{jdJobMsg}</div>}
-    </form>
-  </div>
     </div>
   )
 }
