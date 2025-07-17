@@ -7,7 +7,6 @@ class Users::SessionsController < Devise::SessionsController
     render json: {
       id: resource.id,
       email: resource.email,
-      role: resource.role # <-- Add this line!
     }, status: :ok
   end
 

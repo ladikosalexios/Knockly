@@ -11,6 +11,5 @@ devise_for :users, controllers: {
     resources :companies
     resources :skills
     resources :users
-    resources :candidate_resumes, only: [ :create, :show, :index ]
   end
 end

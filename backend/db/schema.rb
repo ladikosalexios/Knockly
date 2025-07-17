@@ -10,23 +10,52 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_16_225750) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_17_220856) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
-  create_table "candidate_resumes", force: :cascade do |t|
-    t.string "job_title"
+  create_table "applicant_educations", force: :cascade do |t|
+    t.bigint "applicant_profile_id", null: false
+    t.string "degree"
+    t.string "school"
+    t.string "field_of_study"
+    t.integer "start_year"
+    t.integer "end_year"
     t.text "description"
-    t.integer "years_experience_min"
-    t.integer "years_experience_max"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["applicant_profile_id"], name: "index_applicant_educations_on_applicant_profile_id"
+  end
+
+  create_table "applicant_experiences", force: :cascade do |t|
+    t.bigint "applicant_profile_id", null: false
+    t.string "job_title"
+    t.string "company_name"
+    t.date "start_date"
+    t.date "end_date"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["applicant_profile_id"], name: "index_applicant_experiences_on_applicant_profile_id"
+  end
+
+  create_table "applicant_profile_skills", force: :cascade do |t|
+    t.bigint "applicant_profile_id", null: false
+    t.bigint "skill_id", null: false
+    t.string "proficiency"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["applicant_profile_id"], name: "index_applicant_profile_skills_on_applicant_profile_id"
+    t.index ["skill_id"], name: "index_applicant_profile_skills_on_skill_id"
+  end
+
+  create_table "applicant_profiles", force: :cascade do |t|
     t.string "name"
-    t.string "email"
-    t.text "resume_text"
-    t.integer "user_id"
-    t.index ["email"], name: "index_candidate_resumes_on_email", unique: true
-    t.index ["user_id"], name: "index_candidate_resumes_on_user_id"
+    t.string "email", null: false
+    t.integer "total_years_experience"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_applicant_profiles_on_email", unique: true
   end
 
   create_table "companies", force: :cascade do |t|
@@ -40,22 +69,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_16_225750) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "company_users", force: :cascade do |t|
-    t.bigint "company_id", null: false
-    t.bigint "user_id", null: false
-    t.string "role"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["company_id"], name: "index_company_users_on_company_id"
-    t.index ["user_id"], name: "index_company_users_on_user_id"
-  end
-
   create_table "job_applications", force: :cascade do |t|
     t.integer "job_id"
     t.string "name"
     t.string "email"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "applicant_profile_id"
+    t.index ["applicant_profile_id"], name: "index_job_applications_on_applicant_profile_id"
   end
 
   create_table "job_description_skills", force: :cascade do |t|
@@ -89,16 +110,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_16_225750) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "job_skills", force: :cascade do |t|
-    t.bigint "job_id", null: false
-    t.bigint "skill_id", null: false
-    t.string "importance"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["job_id"], name: "index_job_skills_on_job_id"
-    t.index ["skill_id"], name: "index_job_skills_on_skill_id"
-  end
-
   create_table "jobs", force: :cascade do |t|
     t.string "status"
     t.datetime "expires_at"
@@ -111,15 +122,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_16_225750) do
     t.index ["posted_by_user_id"], name: "index_jobs_on_posted_by_user_id"
   end
 
-  create_table "resume_skills", force: :cascade do |t|
-    t.bigint "candidate_resume_id", null: false
-    t.bigint "skill_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["candidate_resume_id"], name: "index_resume_skills_on_candidate_resume_id"
-    t.index ["skill_id"], name: "index_resume_skills_on_skill_id"
-  end
-
   create_table "skills", force: :cascade do |t|
     t.string "name"
     t.string "category"
@@ -130,28 +132,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_16_225750) do
 
   create_table "users", force: :cascade do |t|
     t.string "email"
-    t.string "user_type"
     t.datetime "last_login_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "role", default: "candidate", null: false
-    t.integer "company_id"
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
     t.string "encrypted_password", default: "", null: false
+    t.bigint "company_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  add_foreign_key "company_users", "companies"
-  add_foreign_key "company_users", "users"
+  add_foreign_key "applicant_educations", "applicant_profiles"
+  add_foreign_key "applicant_experiences", "applicant_profiles"
+  add_foreign_key "applicant_profile_skills", "applicant_profiles"
+  add_foreign_key "applicant_profile_skills", "skills"
+  add_foreign_key "job_applications", "applicant_profiles"
   add_foreign_key "job_description_skills", "job_descriptions"
   add_foreign_key "job_description_skills", "skills"
-  add_foreign_key "job_skills", "jobs"
-  add_foreign_key "job_skills", "skills"
   add_foreign_key "jobs", "companies"
   add_foreign_key "jobs", "users", column: "posted_by_user_id"
-  add_foreign_key "resume_skills", "candidate_resumes"
-  add_foreign_key "resume_skills", "skills"
+  add_foreign_key "users", "companies"
 end
