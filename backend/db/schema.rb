@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_17_220856) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_18_034501) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,6 +76,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_17_220856) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "applicant_profile_id"
+    t.text "resume_text"
     t.index ["applicant_profile_id"], name: "index_job_applications_on_applicant_profile_id"
   end
 
@@ -108,6 +109,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_17_220856) do
     t.datetime "parsed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "job_id", null: false
+    t.index ["job_id"], name: "index_job_descriptions_on_job_id"
   end
 
   create_table "jobs", force: :cascade do |t|
@@ -151,6 +154,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_17_220856) do
   add_foreign_key "job_applications", "applicant_profiles"
   add_foreign_key "job_description_skills", "job_descriptions"
   add_foreign_key "job_description_skills", "skills"
+  add_foreign_key "job_descriptions", "jobs"
   add_foreign_key "jobs", "companies"
   add_foreign_key "jobs", "users", column: "posted_by_user_id"
   add_foreign_key "users", "companies"

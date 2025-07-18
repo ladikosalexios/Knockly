@@ -1,6 +1,16 @@
 class Api::JobsController < ApplicationController
+  # GET /api/jobs
+  # Lists all active jobs. Can filter by company_id and search by query string.
   def index
+    # Get all active jobs, including their company and job description associations.
     jobs = Job.includes(:company, :job_description).where(status: "active")
+
+    # Optional: Filter jobs by company_id if provided as a query param.
+    if params[:company_id].present?
+      jobs = jobs.where(company_id: params[:company_id])
+    end
+
+    # Optional: Full-text search on job title or location (from job_description).
     if params[:q].present?
       q = "%#{params[:q].downcase}%"
       jobs = jobs.joins(:job_description).where(
@@ -8,12 +18,16 @@ class Api::JobsController < ApplicationController
         q, q
       ).distinct
     end
+
+    # Render jobs as JSON, including nested company and job description (with skills).
     render json: jobs.as_json(include: {
       company: {},
       job_description: { include: :skills }
     })
   end
 
+  # GET /api/jobs/:id
+  # Shows a single job with its company and job description (with skills).
   def show
     job = Job.includes(:company, :job_description).find(params[:id])
     render json: job.as_json(include: {
@@ -22,6 +36,8 @@ class Api::JobsController < ApplicationController
     })
   end
 
+  # POST /api/jobs
+  # Creates a new job. Expects params to include job and its associations.
   def create
     job = Job.new(job_params)
     if job.save
@@ -33,6 +49,7 @@ class Api::JobsController < ApplicationController
 
   private
 
+  # Strong parameters for job creation.
   def job_params
     params.require(:job).permit(
       :company_id, :posted_by_user_id, :job_description_id, :title, :description, :location,
