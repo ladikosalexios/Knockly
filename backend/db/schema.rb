@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_18_042110) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_18_075123) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,12 +100,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_18_042110) do
     t.string "title"
     t.text "description"
     t.text "requirements"
-    t.text "benefits"
     t.string "company_name"
     t.string "location"
     t.boolean "is_remote"
     t.string "job_type"
-    t.string "experience_level"
     t.integer "salary_min"
     t.integer "salary_max"
     t.string "salary_currency"
@@ -116,6 +114,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_18_042110) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "job_id", null: false
+    t.integer "years_experience_min"
+    t.integer "years_experience_max"
     t.index ["job_id"], name: "index_job_descriptions_on_job_id"
   end
 

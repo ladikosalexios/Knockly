@@ -10,12 +10,12 @@ export default function AdminJobForm({ onCreated }) {
     job_status: 'active',
     job_expires_at: '',
     job_type: 'full-time',
-    experience_level: 'mid',
+    years_experience_min: '',
+    years_experience_max: '',
     salary_min: '',
     salary_max: '',
     salary_currency: 'USD',
     is_remote: false,
-    benefits: '',
     requirements: '',
   });
   const [jdJobMsg, setJdJobMsg] = useState('');
@@ -41,6 +41,10 @@ export default function AdminJobForm({ onCreated }) {
       setJdJobMsg('Minimum salary cannot be greater than maximum salary.');
       return;
     }
+    if (jdForm.years_experience_min && jdForm.years_experience_max && Number(jdForm.years_experience_min) > Number(jdForm.years_experience_max)) {
+      setJdJobMsg('Minimum years of experience cannot be greater than maximum years of experience.');
+      return;
+    }
 
     try {
       // 1. Create Job Description
@@ -50,11 +54,11 @@ export default function AdminJobForm({ onCreated }) {
         location: jdForm.is_remote ? 'Remote' : jdForm.jd_location,
         skills: jdForm.jd_skills.split(",").map(s => s.trim()).filter(Boolean),
         job_type: jdForm.job_type,
-        experience_level: jdForm.experience_level,
+        years_experience_min: jdForm.years_experience_min ? Number(jdForm.years_experience_min) : null,
+        years_experience_max: jdForm.years_experience_max ? Number(jdForm.years_experience_max) : null,
         salary_min: jdForm.salary_min ? Number(jdForm.salary_min) : null,
         salary_max: jdForm.salary_max ? Number(jdForm.salary_max) : null,
         salary_currency: jdForm.salary_currency,
-        benefits: jdForm.benefits.split(",").map(b => b.trim()).filter(Boolean),
         requirements: jdForm.requirements.split("\n").map(r => r.trim()).filter(Boolean)
       });
       const jdId = jdRes.data.id;
@@ -78,12 +82,12 @@ export default function AdminJobForm({ onCreated }) {
         job_status: 'active',
         job_expires_at: '',
         job_type: 'full-time',
-        experience_level: 'mid',
+        years_experience_min: '',
+        years_experience_max: '',
         salary_min: '',
         salary_max: '',
         salary_currency: 'USD',
         is_remote: false,
-        benefits: '',
         requirements: '',
       });
       if (onCreated) onCreated();
@@ -127,11 +131,6 @@ export default function AdminJobForm({ onCreated }) {
           onChange={e => setJdForm(f => ({ ...f, requirements: e.target.value }))}
           placeholder="Requirements (one per line)" style={{ padding: 8, minHeight: 60 }}
         />
-        <textarea
-          value={jdForm.benefits}
-          onChange={e => setJdForm(f => ({ ...f, benefits: e.target.value }))}
-          placeholder="Benefits (comma separated)" style={{ padding: 8, minHeight: 40 }}
-        />
         <input
           value={jdForm.jd_skills}
           onChange={e => setJdForm(f => ({ ...f, jd_skills: e.target.value }))}
@@ -149,17 +148,20 @@ export default function AdminJobForm({ onCreated }) {
             <option value="internship">Internship</option>
             <option value="temporary">Temporary</option>
           </select>
-          <select
-            value={jdForm.experience_level}
-            onChange={e => setJdForm(f => ({ ...f, experience_level: e.target.value }))}
-            style={{ padding: 8, flex: "1 1 150px" }}
-          >
-            <option value="entry">Entry Level</option>
-            <option value="mid">Mid Level</option>
-            <option value="senior">Senior Level</option>
-            <option value="director">Director</option>
-            <option value="executive">Executive</option>
-          </select>
+          <input
+            type="number"
+            min="0"
+            value={jdForm.years_experience_min}
+            onChange={e => setJdForm(f => ({ ...f, years_experience_min: e.target.value }))}
+            placeholder="Min Years Experience" style={{ padding: 8, flex: "1 1 100px" }}
+          />
+          <input
+            type="number"
+            min="0"
+            value={jdForm.years_experience_max}
+            onChange={e => setJdForm(f => ({ ...f, years_experience_max: e.target.value }))}
+            placeholder="Max Years Experience" style={{ padding: 8, flex: "1 1 100px" }}
+          />
           <input
             type="number"
             min="0"

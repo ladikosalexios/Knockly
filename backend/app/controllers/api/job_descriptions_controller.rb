@@ -17,9 +17,10 @@ class Api::JobDescriptionsController < ApplicationController
 
   def job_description_params
     params.permit(
-      :title, :description, :requirements, :benefits, :company_name, :location,
-      :is_remote, :job_type, :experience_level, :salary_min, :salary_max,
-      :salary_currency, :is_salary_visible, :external_id, :source, :parsed_at
+      :title, :description, :requirements, :company_name, :location,
+      :is_remote, :job_type, :years_experience_min, :years_experience_max,
+      :salary_min, :salary_max, :salary_currency, :is_salary_visible,
+      :external_id, :source, :parsed_at
     )
   end
 end
