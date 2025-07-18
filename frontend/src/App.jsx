@@ -8,7 +8,7 @@ import AdminJobForm from './pages/AdminJobForm';
 function App() {
   const [loginEmail, setLoginEmail] = useState('');
 const [loginPassword, setLoginPassword] = useState('');
-const [loginMsg, setLoginMsg] = useState('');
+const [loginMsg] = useState('');
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -190,37 +190,122 @@ const [loginMsg, setLoginMsg] = useState('');
                 </li>
               ))}
             </ul>
+
             {modalOpen && selectedJob && (
               <div style={{
                 position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-                background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center"
+                background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000
               }}>
                 <div style={{
-                  background: "#fff", borderRadius: 10, padding: 30, minWidth: 340, maxWidth: 460, boxShadow: "0 4px 16px #0003"
+                  background: "#191919", borderRadius: 12, padding: 36, minWidth: 370, maxWidth: 470, width: "90%",
+                  boxShadow: "0 6px 22px #0008", color: "#fff", position: "relative",    maxHeight: "92vh",
+                  overflowY: "auto",
                 }}>
                   <button onClick={() => setModalOpen(false)} style={{
-                    position: "absolute", right: 24, top: 18, background: "none", border: "none", fontSize: 22, cursor: "pointer"
+                    position: "absolute", right: 18, top: 18, background: "none", border: "none", fontSize: 26, color: "#bbb", cursor: "pointer"
                   }}>&times;</button>
-                  <h3>Apply for {selectedJob.job_description?.title || selectedJob.title}</h3>
-                  <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-                    <input name="name" placeholder="Full Name" value={appForm.name} onChange={handleFormChange} required />
-                    <input name="email" placeholder="Email" value={appForm.email} onChange={handleFormChange} type="email" required />
-                    <textarea name="resume_text" placeholder="Paste your resume here" value={appForm.resume_text} onChange={handleFormChange} required rows={5} />
-                    <input name="phone" placeholder="Phone (optional)" value={appForm.phone} onChange={handleFormChange} />
-                    <input name="work_authorization" placeholder="Work authorization status" value={appForm.work_authorization} onChange={handleFormChange} />
-                    <input name="gender" placeholder="Gender (optional)" value={appForm.gender} onChange={handleFormChange} />
-                    <input name="ethnicity" placeholder="Ethnicity (optional)" value={appForm.ethnicity} onChange={handleFormChange} />
-                    <input name="disability_status" placeholder="Disability status (optional)" value={appForm.disability_status} onChange={handleFormChange} />
-                    <input name="veteran_status" placeholder="Veteran status (optional)" value={appForm.veteran_status} onChange={handleFormChange} />
-                    <input name="total_years_experience" placeholder="Total years experience" value={appForm.total_years_experience} onChange={handleFormChange} />
-                    <input name="skills" placeholder="Skills (comma separated)" value={appForm.skills} onChange={handleFormChange} />
-                    <textarea name="experiences" placeholder="Work experience summary (optional)" value={appForm.experiences} onChange={handleFormChange} rows={3} />
-                    <textarea name="educations" placeholder="Education summary (optional)" value={appForm.educations} onChange={handleFormChange} rows={2} />
+                  <h3 style={{ fontSize: 28, fontWeight: 700, marginBottom: 20 }}>
+                    Apply for {selectedJob.job_description?.title || selectedJob.title}
+                  </h3>
+                  <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+                    <input
+                      name="name" placeholder="Full Name *" value={appForm.name} onChange={handleFormChange} required
+                      style={{ background: "#23232b", border: "1px solid #333", color: "#fff", padding: 12, borderRadius: 7, fontSize: 16 }}
+                    />
+                    <input
+                      name="email" placeholder="Email *" value={appForm.email} onChange={handleFormChange} type="email" required
+                      style={{ background: "#23232b", border: "1px solid #333", color: "#fff", padding: 12, borderRadius: 7, fontSize: 16 }}
+                    />
+                    <input
+                      name="phone" placeholder="Phone (optional)" value={appForm.phone} onChange={handleFormChange}
+                      style={{ background: "#23232b", border: "1px solid #333", color: "#fff", padding: 12, borderRadius: 7, fontSize: 16 }}
+                    />
+                    <textarea
+                      name="resume_text" placeholder="Paste your resume here *" value={appForm.resume_text} onChange={handleFormChange} required rows={5}
+                      style={{ background: "#23232b", border: "1px solid #333", color: "#fff", padding: 12, borderRadius: 7, fontSize: 15, minHeight: 65 }}
+                    />
+                    <input
+                      name="total_years_experience" placeholder="Total Years of Experience" value={appForm.total_years_experience} onChange={handleFormChange}
+                      type="number"
+                      style={{ background: "#23232b", border: "1px solid #333", color: "#fff", padding: 12, borderRadius: 7, fontSize: 16 }}
+                    />
+                    <input
+                      name="skills" placeholder="Skills (comma separated)" value={appForm.skills} onChange={handleFormChange}
+                      style={{ background: "#23232b", border: "1px solid #333", color: "#fff", padding: 12, borderRadius: 7, fontSize: 16 }}
+                    />
+
+                    <textarea
+                      name="experiences" placeholder="Work Experience (optional)" value={appForm.experiences} onChange={handleFormChange} rows={3}
+                      style={{ background: "#23232b", border: "1px solid #333", color: "#fff", padding: 12, borderRadius: 7, fontSize: 15 }}
+                    />
+                    <textarea
+                      name="educations" placeholder="Education (optional)" value={appForm.educations} onChange={handleFormChange} rows={2}
+                      style={{ background: "#23232b", border: "1px solid #333", color: "#fff", padding: 12, borderRadius: 7, fontSize: 15 }}
+                    />
+
+                    <input
+                      name="work_authorization" placeholder="Work authorization status (e.g. US Citizen, Visa, etc)" value={appForm.work_authorization} onChange={handleFormChange}
+                      style={{ background: "#23232b", border: "1px solid #333", color: "#fff", padding: 12, borderRadius: 7, fontSize: 16 }}
+                    />
+
+                    {/* Diversity/EEO fields */}
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <select
+                        name="gender" value={appForm.gender} onChange={handleFormChange}
+                        style={{ flex: 1, background: "#23232b", border: "1px solid #333", color: "#aaa", padding: 12, borderRadius: 7, fontSize: 15 }}
+                      >
+                        <option value="">Gender (optional)</option>
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Non-binary">Non-binary</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <select
+                        name="ethnicity" value={appForm.ethnicity} onChange={handleFormChange}
+                        style={{ flex: 1, background: "#23232b", border: "1px solid #333", color: "#aaa", padding: 12, borderRadius: 7, fontSize: 15 }}
+                      >
+                        <option value="">Ethnicity (optional)</option>
+                        <option value="White">White</option>
+                        <option value="Black or African American">Black or African American</option>
+                        <option value="Hispanic or Latino">Hispanic or Latino</option>
+                        <option value="Asian">Asian</option>
+                        <option value="Native American">Native American</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <select
+                        name="disability_status" value={appForm.disability_status} onChange={handleFormChange}
+                        style={{ flex: 1, background: "#23232b", border: "1px solid #333", color: "#aaa", padding: 12, borderRadius: 7, fontSize: 15 }}
+                      >
+                        <option value="">Disability Status (optional)</option>
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                      </select>
+                      <select
+                        name="veteran_status" value={appForm.veteran_status} onChange={handleFormChange}
+                        style={{ flex: 1, background: "#23232b", border: "1px solid #333", color: "#aaa", padding: 12, borderRadius: 7, fontSize: 15 }}
+                      >
+                        <option value="">Veteran Status (optional)</option>
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                      </select>
+                    </div>
+
                     <button type="submit" style={{
-                      background: "#222", color: "#fff", border: "none", borderRadius: 7, fontWeight: 600, padding: "10px 0"
-                    }}>Submit Application</button>
+                      background: "#16ba63", color: "#fff", border: "none", borderRadius: 8, fontWeight: 800,
+                      padding: "16px 0", fontSize: 19, marginTop: 5, boxShadow: "0 1px 6px #0004", letterSpacing: 0.5, cursor: "pointer"
+                    }}>
+                      Submit Application
+                    </button>
                   </form>
-                  {submitMsg && <div style={{ marginTop: 15, color: submitMsg.includes('Error') ? 'red' : 'green' }}>{submitMsg}</div>}
+                  {submitMsg && <div style={{ marginTop: 16, color: submitMsg.includes('Error') ? '#ff4d4d' : '#25d18a', fontWeight: 600 }}>
+                    {submitMsg}
+                  </div>}
                 </div>
               </div>
             )}
