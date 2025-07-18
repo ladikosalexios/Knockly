@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import axios from "axios";
+import { Routes, Route, Link } from "react-router-dom";
+import LoginPage from './pages/LoginPage'
+import AdminJobForm from './pages/AdminJobForm';
 
 function App() {
+  const [loginEmail, setLoginEmail] = useState('');
+const [loginPassword, setLoginPassword] = useState('');
+const [loginMsg, setLoginMsg] = useState('');
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -93,94 +99,134 @@ function App() {
   };
 
   return (
-    <div style={{ marginTop: 40, padding: 32, maxWidth: 700 }}>
-      <h2>Open Jobs</h2>
-      {jobs.length === 0 && <p>No jobs available.</p>}
-      <ul style={{ padding: 0, listStyle: "none" }}>
-        {jobs.map(job => (
-          <li
-            key={job.id}
-            style={{
-              margin: "28px 0",
-              borderRadius: 14,
-              padding: 30,
-              background: "#222",
-              color: "#fff",
-              boxShadow: "0 2px 10px #0003",
-              border: "1px solid #303040",
-              textAlign: "center"
-            }}
-          >
-            <div style={{
-              fontSize: 26,
-              fontWeight: 700,
-              marginBottom: 10,
-              letterSpacing: 0.5
-            }}>
-              {job.job_description?.title || job.title}
-            </div>
-            <div style={{
-              fontSize: 19,
-              marginBottom: 16,
-              opacity: 0.88,
-              fontWeight: 400
-            }}>
-              {job.company?.name} | {job.job_description?.location || job.location}
-            </div>
-            <button
-              style={{
-                marginTop: 8,
-                background: "#fff",
-                color: "#222",
-                fontWeight: 700,
-                border: "none",
-                borderRadius: 10,
-                padding: "13px 38px",
-                fontSize: 21,
-                cursor: "pointer",
-                boxShadow: "0 1px 8px #0002"
-              }}
-              onClick={() => openModal(job)}
-            >
-              Apply
-            </button>
-          </li>
-        ))}
-      </ul>
-      {modalOpen && selectedJob && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-          background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center"
-        }}>
-          <div style={{
-            background: "#fff", borderRadius: 10, padding: 30, minWidth: 340, maxWidth: 460, boxShadow: "0 4px 16px #0003"
-          }}>
-            <button onClick={() => setModalOpen(false)} style={{
-              position: "absolute", right: 24, top: 18, background: "none", border: "none", fontSize: 22, cursor: "pointer"
-            }}>&times;</button>
-            <h3>Apply for {selectedJob.job_description?.title || selectedJob.title}</h3>
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-              <input name="name" placeholder="Full Name" value={appForm.name} onChange={handleFormChange} required />
-              <input name="email" placeholder="Email" value={appForm.email} onChange={handleFormChange} type="email" required />
-              <textarea name="resume_text" placeholder="Paste your resume here" value={appForm.resume_text} onChange={handleFormChange} required rows={5} />
-              <input name="phone" placeholder="Phone (optional)" value={appForm.phone} onChange={handleFormChange} />
-              <input name="work_authorization" placeholder="Work authorization status" value={appForm.work_authorization} onChange={handleFormChange} />
-              <input name="gender" placeholder="Gender (optional)" value={appForm.gender} onChange={handleFormChange} />
-              <input name="ethnicity" placeholder="Ethnicity (optional)" value={appForm.ethnicity} onChange={handleFormChange} />
-              <input name="disability_status" placeholder="Disability status (optional)" value={appForm.disability_status} onChange={handleFormChange} />
-              <input name="veteran_status" placeholder="Veteran status (optional)" value={appForm.veteran_status} onChange={handleFormChange} />
-              <input name="total_years_experience" placeholder="Total years experience" value={appForm.total_years_experience} onChange={handleFormChange} />
-              <input name="skills" placeholder="Skills (comma separated)" value={appForm.skills} onChange={handleFormChange} />
-              <textarea name="experiences" placeholder="Work experience summary (optional)" value={appForm.experiences} onChange={handleFormChange} rows={3} />
-              <textarea name="educations" placeholder="Education summary (optional)" value={appForm.educations} onChange={handleFormChange} rows={2} />
-              <button type="submit" style={{
-                background: "#222", color: "#fff", border: "none", borderRadius: 7, fontWeight: 600, padding: "10px 0"
-              }}>Submit Application</button>
-            </form>
-            {submitMsg && <div style={{ marginTop: 15, color: submitMsg.includes('Error') ? 'red' : 'green' }}>{submitMsg}</div>}
-          </div>
-        </div>
-      )}
+    <div style={{ marginTop: 40, padding: 32, maxWidth: 700, position: "relative" }}>
+      {/* Admin Login link */}
+      <Link
+        to="/login"
+        style={{
+          position: "fixed",
+          top: 24,
+          right: 36,
+          color: "#fff",
+          background: "#333",
+          padding: "8px 22px",
+          borderRadius: 9,
+          fontWeight: 600,
+          fontSize: 17,
+          textDecoration: "none",
+          boxShadow: "0 2px 6px #0005",
+          opacity: 0.82,
+          zIndex: 100
+        }}
+      >
+        Admin Login
+      </Link>
+      <Routes>
+        <Route path="/admin-job-form" element={<AdminJobForm />} />
+        <Route
+  path="/login"
+  element={
+    <LoginPage
+      loginEmail={loginEmail}
+      setLoginEmail={setLoginEmail}
+      loginPassword={loginPassword}
+      setLoginPassword={setLoginPassword}
+      loginMsg={loginMsg}
+    />
+  }
+/>
+        <Route path="/" element={
+          <>
+            <h2>Open Jobs</h2>
+            {jobs.length === 0 && <p>No jobs available.</p>}
+            <ul style={{ padding: 0, listStyle: "none" }}>
+              {jobs.map(job => (
+                <li
+                  key={job.id}
+                  style={{
+                    margin: "28px 0",
+                    borderRadius: 14,
+                    padding: 30,
+                    background: "#222",
+                    color: "#fff",
+                    boxShadow: "0 2px 10px #0003",
+                    border: "1px solid #303040",
+                    textAlign: "center"
+                  }}
+                >
+                  <div style={{
+                    fontSize: 26,
+                    fontWeight: 700,
+                    marginBottom: 10,
+                    letterSpacing: 0.5
+                  }}>
+                    {job.job_description?.title || job.title}
+                  </div>
+                  <div style={{
+                    fontSize: 19,
+                    marginBottom: 16,
+                    opacity: 0.88,
+                    fontWeight: 400
+                  }}>
+                    {job.company?.name} | {job.job_description?.location || job.location}
+                  </div>
+                  <button
+                    style={{
+                      marginTop: 8,
+                      background: "#fff",
+                      color: "#222",
+                      fontWeight: 700,
+                      border: "none",
+                      borderRadius: 10,
+                      padding: "13px 38px",
+                      fontSize: 21,
+                      cursor: "pointer",
+                      boxShadow: "0 1px 8px #0002"
+                    }}
+                    onClick={() => openModal(job)}
+                  >
+                    Apply
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {modalOpen && selectedJob && (
+              <div style={{
+                position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+                background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center"
+              }}>
+                <div style={{
+                  background: "#fff", borderRadius: 10, padding: 30, minWidth: 340, maxWidth: 460, boxShadow: "0 4px 16px #0003"
+                }}>
+                  <button onClick={() => setModalOpen(false)} style={{
+                    position: "absolute", right: 24, top: 18, background: "none", border: "none", fontSize: 22, cursor: "pointer"
+                  }}>&times;</button>
+                  <h3>Apply for {selectedJob.job_description?.title || selectedJob.title}</h3>
+                  <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                    <input name="name" placeholder="Full Name" value={appForm.name} onChange={handleFormChange} required />
+                    <input name="email" placeholder="Email" value={appForm.email} onChange={handleFormChange} type="email" required />
+                    <textarea name="resume_text" placeholder="Paste your resume here" value={appForm.resume_text} onChange={handleFormChange} required rows={5} />
+                    <input name="phone" placeholder="Phone (optional)" value={appForm.phone} onChange={handleFormChange} />
+                    <input name="work_authorization" placeholder="Work authorization status" value={appForm.work_authorization} onChange={handleFormChange} />
+                    <input name="gender" placeholder="Gender (optional)" value={appForm.gender} onChange={handleFormChange} />
+                    <input name="ethnicity" placeholder="Ethnicity (optional)" value={appForm.ethnicity} onChange={handleFormChange} />
+                    <input name="disability_status" placeholder="Disability status (optional)" value={appForm.disability_status} onChange={handleFormChange} />
+                    <input name="veteran_status" placeholder="Veteran status (optional)" value={appForm.veteran_status} onChange={handleFormChange} />
+                    <input name="total_years_experience" placeholder="Total years experience" value={appForm.total_years_experience} onChange={handleFormChange} />
+                    <input name="skills" placeholder="Skills (comma separated)" value={appForm.skills} onChange={handleFormChange} />
+                    <textarea name="experiences" placeholder="Work experience summary (optional)" value={appForm.experiences} onChange={handleFormChange} rows={3} />
+                    <textarea name="educations" placeholder="Education summary (optional)" value={appForm.educations} onChange={handleFormChange} rows={2} />
+                    <button type="submit" style={{
+                      background: "#222", color: "#fff", border: "none", borderRadius: 7, fontWeight: 600, padding: "10px 0"
+                    }}>Submit Application</button>
+                  </form>
+                  {submitMsg && <div style={{ marginTop: 15, color: submitMsg.includes('Error') ? 'red' : 'green' }}>{submitMsg}</div>}
+                </div>
+              </div>
+            )}
+          </>
+        } />
+      </Routes>
     </div>
   )
 }
