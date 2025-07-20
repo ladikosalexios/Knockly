@@ -47,8 +47,19 @@ export default function AdminJobForm({ onCreated }) {
     }
 
     try {
-      // 1. Create Job Description
-      const jdRes = await axios.post('http://localhost:3000/api/job_descriptions', {
+      // 1. Create Job (company_id and posted_by_user_id are hardcoded 1 for now)
+      const jobRes = await axios.post('http://localhost:3000/api/jobs', {
+        job: {
+          status: jdForm.job_status,
+          expires_at: jdForm.job_expires_at || null,
+          company_id: 1,
+          posted_by_user_id: 1        }
+      });
+      const jobId = jobRes.data.id;
+
+      // 2. Create Job Description
+      await axios.post('http://localhost:3000/api/job_descriptions', {
+        job_id: jobId,
         title: jdForm.jd_title,
         description: jdForm.jd_description,
         location: jdForm.is_remote ? 'Remote' : jdForm.jd_location,
@@ -61,18 +72,7 @@ export default function AdminJobForm({ onCreated }) {
         salary_currency: jdForm.salary_currency,
         requirements: jdForm.requirements.split("\n").map(r => r.trim()).filter(Boolean)
       });
-      const jdId = jdRes.data.id;
-      // 2. Create Job (company_id and posted_by_user_id are hardcoded 1 for now)
-      await axios.post('http://localhost:3000/api/jobs', {
-        job: {
-          job_description_id: jdId,
-          status: jdForm.job_status,
-          expires_at: jdForm.job_expires_at || null,
-          company_id: 1,
-          posted_by_user_id: 1,
-          is_remote: jdForm.is_remote
-        }
-      });
+
       setJdJobMsg('Job + JD created!');
       setJdForm({
         jd_title: '',

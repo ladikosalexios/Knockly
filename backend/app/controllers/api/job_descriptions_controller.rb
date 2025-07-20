@@ -1,11 +1,18 @@
 class Api::JobDescriptionsController < ApplicationController
   def create
     ActiveRecord::Base.transaction do
-      jd = JobDescription.create!(job_description_params)
-      # Attach skills if any provided
+      jd_params = job_description_params.to_h
+
+      # Convert requirements array to string if needed
+      if params[:requirements].is_a?(Array)
+        jd_params["requirements"] = params[:requirements].join("\n")
+      end
+
+      jd = JobDescription.create!(jd_params)
       (params[:skills] || []).each do |name|
-        skill = Skill.find_or_create_by!(name: name)
-        JobDescriptionSkill.create!(job_description: jd, skill: skill)
+        canonical = name.to_s.downcase.strip
+        skill = Skill.find_or_create_by!(name: canonical)
+        JobDescriptionSkill.find_or_create_by!(job_description: jd, skill: skill)
       end
       render json: jd.as_json(include: { skills: {} }), status: :created
     end
@@ -17,10 +24,32 @@ class Api::JobDescriptionsController < ApplicationController
 
   def job_description_params
     params.permit(
-      :title, :description, :requirements, :company_name, :location,
-      :is_remote, :job_type, :years_experience_min, :years_experience_max,
-      :salary_min, :salary_max, :salary_currency, :is_salary_visible,
-      :external_id, :source, :parsed_at
+      :job_id,  # <--- add this
+      :title,
+      :description,
+      :company_name,
+      :location,
+      :is_remote,
+      :job_type,
+      :years_experience_min,
+      :years_experience_max,
+      :salary_min,
+      :salary_max,
+      :salary_currency,
+      :is_salary_visible,
+      :external_id,
+      :source,
+      :parsed_at,
+      :requirements
     )
   end
+
+  # def job_description_params
+  #   params.permit(
+  #     :title, :description, :requirements, :company_name, :location,
+  #     :is_remote, :job_type, :years_experience_min, :years_experience_max,
+  #     :salary_min, :salary_max, :salary_currency, :is_salary_visible,
+  #     :external_id, :source, :parsed_at
+  #   )
+  # end
 end
