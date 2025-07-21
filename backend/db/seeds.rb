@@ -11,6 +11,13 @@ admin = User.find_or_create_by!(email: "admin3@acme.com") do |u|
   u.company_id = company.id
 end
 
+admin = User.find_or_create_by!(email: "admin3@example.com") do |u|
+  u.password = "password123"
+  u.password_confirmation = "password123"
+  u.company_id = company.id
+end
+
+
 # --- Create a recruiter user associated with the company ---
 recruiter = User.find_or_create_by!(email: "recruiter@acme.com") do |u|
   u.password = "password123"

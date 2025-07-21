@@ -11,5 +11,8 @@ devise_for :users, controllers: {
     resources :companies
     resources :skills
     resources :users
+    namespace :admin do
+      get 'dashboard', to: 'dashboard#index'
+    end
   end
 end
