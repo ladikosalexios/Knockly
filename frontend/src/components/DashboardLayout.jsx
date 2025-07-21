@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   AppBar, Toolbar, Typography, CssBaseline, Drawer, List, ListItem, ListItemText,
@@ -12,12 +12,16 @@ const DashboardLayout = () => {
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
-    if (selectedView === 'dashboard') {
-      axios.get('/api/company_jobs', { withCredentials: true })
-        .then(res => setJobs(Array.isArray(res.data) ? res.data : []))
-        .catch(err => console.error(err));
-    }
-  }, [selectedView]);
+    axios.get("http://localhost:3000/api/admin/dashboard", {
+      withCredentials: true
+    })
+    .then(res => {
+      setJobs(res.data);
+    })
+    .catch(err => {
+      console.error("Error fetching dashboard jobs", err);
+    });
+  }, []);
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -56,16 +60,16 @@ const DashboardLayout = () => {
           <>
             <Typography variant="h6" gutterBottom>My Job Posts</Typography>
             {jobs.map((job) => {
-              const jobDesc = job.job_description || {};
+              console.log(job)
               return (
                 <Box key={job.id} sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
-                  <Typography variant="subtitle1">Title: {jobDesc.title || 'Untitled'}</Typography>
+                  <Typography variant="subtitle1">Title: {job.title || 'Untitled'}</Typography>
                   <Typography>Status: {job.status}</Typography>
                   <Typography>Expires: {job.expires_at || 'N/A'}</Typography>
-                  <Typography>Location: {jobDesc.location || 'Unspecified'}</Typography>
+                  <Typography>Location: {job.location || 'Unspecified'}</Typography>
                   <Typography>Salary: {
-                    jobDesc.salary_min && jobDesc.salary_max
-                      ? `$${jobDesc.salary_min.toLocaleString()} - $${jobDesc.salary_max.toLocaleString()}`
+                    job.salary_min && job.salary_max
+                      ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
                       : 'Not specified'
                   }</Typography>
                 </Box>
