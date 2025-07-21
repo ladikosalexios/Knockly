@@ -28,8 +28,6 @@ module Api
       private
 
       def require_company!
-        puts(" HERE")
-        puts(current_user)
         unless current_user&.company_id.present?
           render json: { error: "Unauthorized" }, status: :unauthorized
         end

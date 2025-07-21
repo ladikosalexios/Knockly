@@ -1,4 +1,5 @@
 class Api::JobApplicationsController < ApplicationController
+  skip_before_action :authenticate_user!
   def create
     Rails.logger.info "PARAMS: #{params.inspect}"
     job = Job.find(job_application_params[:job_id])
