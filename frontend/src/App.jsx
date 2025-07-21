@@ -4,6 +4,8 @@ import axios from "axios";
 import { Routes, Route, Link } from "react-router-dom";
 import LoginPage from './pages/LoginPage'
 import AdminJobForm from './pages/AdminJobForm';
+import DashboardLayout from './components/DashboardLayout';
+
 
 function App() {
   const [loginEmail, setLoginEmail] = useState('');
@@ -122,7 +124,9 @@ const [loginMsg] = useState('');
         Admin Login
       </Link>
       <Routes>
-        <Route path="/admin-job-form" element={<AdminJobForm />} />
+          <Route path="/admin" element={<DashboardLayout />}>
+            <Route path="/admin-job-form" element={<AdminJobForm />} />
+          </Route>
         <Route
   path="/login"
   element={

@@ -1,15 +1,10 @@
 class Api::JobsController < ApplicationController
+  before_action :authenticate_user!, only: [:show, :create]
   # GET /api/jobs
   # Lists all active jobs. Can filter by company_id and search by query string.
   def index
     # Get all active jobs, including their company and job description associations.
     jobs = Job.includes(:company, :job_description).where(status: "active")
-
-    # Optional: Filter jobs by company_id if provided as a query param.
-    if params[:company_id].present?
-      jobs = jobs.where(company_id: params[:company_id])
-    end
-
     # Optional: Full-text search on job title or location (from job_description).
     if params[:q].present?
       q = "%#{params[:q].downcase}%"
@@ -18,7 +13,6 @@ class Api::JobsController < ApplicationController
         q, q
       ).distinct
     end
-
     # Render jobs as JSON, including nested company and job description (with skills).
     render json: jobs.as_json(include: {
       company: {},
@@ -34,6 +28,24 @@ class Api::JobsController < ApplicationController
       company: {},
       job_description: { include: :skills }
     })
+  end
+
+  # GET /api/jobs/company_jobs
+  # Lists all active jobs for the current user's company.
+  def company_jobs
+    Rails.logger.info "[DEBUG] Hit company_jobs endpoint"
+    debugger
+    if current_user&.company_id.present?
+      jobs = Job.includes(:company, :job_description)
+                .where(status: "active", company_id: current_user.company_id)
+
+      render json: jobs.as_json(include: {
+        company: {},
+        job_description: { include: :skills }
+      })
+    else
+      render json: { error: "User must belong to a company" }, status: :unauthorized
+    end
   end
 
   # POST /api/jobs

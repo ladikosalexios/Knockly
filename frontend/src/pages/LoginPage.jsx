@@ -26,7 +26,7 @@ function LoginPage({
       }, { withCredentials: true });
 
       setLocalMsg("Login successful! Redirecting...");
-      setTimeout(() => navigate("/admin-job-form"), 700);
+      setTimeout(() => navigate("/admin"), 700);
     } catch (err) {
       setLocalMsg("Login failed: " +
         (err.response?.data?.error || err.message));
