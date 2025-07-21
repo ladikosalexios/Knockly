@@ -5,6 +5,7 @@ import {
   Box
 } from '@mui/material';
 import AdminJobForm from '../pages/AdminJobForm';
+import { Link } from 'react-router-dom';
 
 const drawerWidth = 240;
 
@@ -65,42 +66,46 @@ const DashboardLayout = () => {
         {selectedView === 'dashboard' && (
           <>
             <Typography variant="h6" gutterBottom>My Job Posts</Typography>
-            {jobs.map((job) => {
-              return (
-                <Box
-                  key={job.id}
-                  sx={{
-                    mb: 2,
-                    p: 3,
-                    maxWidth: 1400,
-                    mx: "auto",
-                    border: '1px solid #444',
-                    borderRadius: 2,
-                    backgroundColor: "#262626",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      backgroundColor: "#333",
-                      boxShadow: 3,
-                      cursor: "default",
-                    }
-                  }}
-                >
-                  <Typography variant="h6">{job.title || 'Untitled'}</Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8 }}>Status: {job.status}</Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8 }}>Expires: {job.expires_at || 'N/A'}</Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8 }}>Location: {job.location || 'Unspecified'}</Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8 }}>Salary: {
-                    job.salary_min && job.salary_max
-                      ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
-                      : 'Not specified'
-                  }</Typography>
-                  <Box mt={2}>
-                    <Typography variant="body2">Skills: {job.skills?.join(', ') || 'None listed'}</Typography>
-                    <Typography variant="body2">Applicants: {job.applicants_count}</Typography>
-                  </Box>
-                </Box>
-              );
-            })}
+            {jobs.map(job => (
+              <div
+                key={job.id}
+                style={{
+                  background: "#222",
+                  padding: 24,
+                  borderRadius: 12,
+                  border: "1px solid #444",
+                  marginBottom: 24,
+                  color: "#fff",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+                }}
+              >
+                <h3 style={{ marginBottom: 8 }}>{job.title}</h3>
+                <p style={{ margin: "4px 0" }}><strong>Status:</strong> {job.status}</p>
+                <p style={{ margin: "4px 0" }}><strong>Location:</strong> {job.location || "N/A"}</p>
+                <p style={{ margin: "4px 0" }}><strong>Skills:</strong> {job.skills?.join(", ") || "None"}</p>
+                <p style={{ margin: "4px 0" }}><strong>Applicants:</strong> {job.applicants_count}</p>
+                <p style={{ margin: "4px 0" }}><strong>Posted:</strong> {new Date(job.created_at).toLocaleDateString()}</p>
+                <p style={{ margin: "4px 0" }}><strong>Expires:</strong> {job.expires_at ? new Date(job.expires_at).toLocaleDateString() : "N/A"}</p>
+                
+                {job.applicants_count > 0 && (
+                  <Link
+                    to={`/admin/jobs/${job.id}/applicants`}
+                    style={{
+                      marginTop: 12,
+                      display: "inline-block",
+                      background: "#00d0ff",
+                      color: "#000",
+                      padding: "8px 16px",
+                      borderRadius: 6,
+                      fontWeight: "bold",
+                      textDecoration: "none"
+                    }}
+                  >
+                    View Applicants →
+                  </Link>
+                )}
+              </div>
+            ))}
           </>
         )}
         {selectedView === 'jobForm' && (

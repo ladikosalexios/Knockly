@@ -5,7 +5,7 @@ import { Routes, Route, Link } from "react-router-dom";
 import LoginPage from './pages/LoginPage'
 import AdminJobForm from './pages/AdminJobForm';
 import DashboardLayout from './components/DashboardLayout';
-
+import JobApplicantsPage from './components/JobApplicantsPage';
 
 function App() {
   const [loginEmail, setLoginEmail] = useState('');
@@ -127,6 +127,7 @@ const [loginMsg] = useState('');
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="/admin-job-form" element={<AdminJobForm />} />
           </Route>
+          <Route path="/admin/jobs/:id/applicants" element={<JobApplicantsPage />} />
         <Route
   path="/login"
   element={

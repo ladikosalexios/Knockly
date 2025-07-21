@@ -1,0 +1,58 @@
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+
+export default function JobApplicantsPage() {
+  const { id: jobId } = useParams();
+  const [applicants, setApplicants] = useState([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchApplicants = async () => {
+      try {
+        const res = await axios.get(`http://localhost:3000/api/job_applications?job_id=${jobId}`, {
+          withCredentials: true
+        });
+        setApplicants(res.data);
+      } catch (err) {
+        setError('Failed to fetch applicants');
+      }
+    };
+    fetchApplicants();
+  }, [jobId]);
+
+  return (
+    <div style={{ padding: 32, color: '#fff' }}>
+      <h2 style={{ marginBottom: 24 }}>Applicants for Job #{jobId}</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {applicants.length === 0 ? (
+        <p>No applicants yet.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {applicants.map(app => (
+            <div key={app.id} style={{
+              background: '#222',
+              padding: 24,
+              borderRadius: 12,
+              border: '1px solid #444',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+            }}>
+              <h3 style={{ marginBottom: 4 }}>{app.name}</h3>
+              <p>Email: <a href={`mailto:${app.email}`} style={{ color: '#00d0ff' }}>{app.email}</a></p>
+              <p>Phone: {app.phone || 'N/A'}</p>
+              <p>Work Auth: {app.work_authorization || 'N/A'}</p>
+              <p>Gender: {app.gender || 'N/A'}</p>
+              <p>Ethnicity: {app.ethnicity || 'N/A'}</p>
+              <p>Disability: {app.disability_status || 'N/A'}</p>
+              <p>Veteran: {app.veteran_status || 'N/A'}</p>
+              <details style={{ marginTop: 8 }}>
+                <summary style={{ cursor: 'pointer', color: '#ccc' }}>Resume Text</summary>
+                <pre style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>{app.resume_text}</pre>
+              </details>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
