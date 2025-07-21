@@ -5,7 +5,6 @@ devise_for :users, controllers: {
 }
   namespace :api do
     get "matching", to: "matching#show"
-    get "jobs/company_jobs", to: "jobs#company_jobs"
     resources :jobs
     resources :job_descriptions, only: [ :create ]
     resources :job_applications, only: [ :create, :index ]

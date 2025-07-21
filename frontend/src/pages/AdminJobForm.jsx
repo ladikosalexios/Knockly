@@ -53,8 +53,11 @@ export default function AdminJobForm({ onCreated }) {
           status: jdForm.job_status,
           expires_at: jdForm.job_expires_at || null,
           company_id: 1,
-          posted_by_user_id: 1        }
-      });
+          posted_by_user_id: 1        
+        },
+      },
+        { withCredentials: true }
+      );
       const jobId = jobRes.data.id;
 
       // 2. Create Job Description
@@ -71,7 +74,9 @@ export default function AdminJobForm({ onCreated }) {
         salary_max: jdForm.salary_max ? Number(jdForm.salary_max) : null,
         salary_currency: jdForm.salary_currency,
         requirements: jdForm.requirements.split("\n").map(r => r.trim()).filter(Boolean)
-      });
+      },  {
+         withCredentials: true }
+    );
 
       setJdJobMsg('Job + JD created!');
       setJdForm({

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   AppBar, Toolbar, Typography, CssBaseline, Drawer, List, ListItem, ListItemText,
   Box
 } from '@mui/material';
+import AdminJobForm from '../pages/AdminJobForm';
 
 const drawerWidth = 240;
 
@@ -24,10 +25,10 @@ const DashboardLayout = () => {
   }, []);
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', backgroundColor: '#1e1e1e', minHeight: '100vh', color: '#fff' }}>
       <CssBaseline />
 
-      <AppBar position="fixed" sx={{ zIndex: 1300 }}>
+      <AppBar position="fixed" sx={{ zIndex: 1300, backgroundColor: '#1e1e1e', color: '#fff' }}>
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
             Admin Dashboard
@@ -40,7 +41,12 @@ const DashboardLayout = () => {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+          [`& .MuiDrawer-paper`]: {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            backgroundColor: '#121212',
+            color: '#fff'
+          },
         }}
       >
         <Toolbar />
@@ -60,27 +66,50 @@ const DashboardLayout = () => {
           <>
             <Typography variant="h6" gutterBottom>My Job Posts</Typography>
             {jobs.map((job) => {
-              console.log(job)
               return (
-                <Box key={job.id} sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
-                  <Typography variant="subtitle1">Title: {job.title || 'Untitled'}</Typography>
-                  <Typography>Status: {job.status}</Typography>
-                  <Typography>Expires: {job.expires_at || 'N/A'}</Typography>
-                  <Typography>Location: {job.location || 'Unspecified'}</Typography>
-                  <Typography>Salary: {
+                <Box
+                  key={job.id}
+                  sx={{
+                    mb: 2,
+                    p: 3,
+                    maxWidth: 1400,
+                    mx: "auto",
+                    border: '1px solid #444',
+                    borderRadius: 2,
+                    backgroundColor: "#262626",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      backgroundColor: "#333",
+                      boxShadow: 3,
+                      cursor: "default",
+                    }
+                  }}
+                >
+                  <Typography variant="h6">{job.title || 'Untitled'}</Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8 }}>Status: {job.status}</Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8 }}>Expires: {job.expires_at || 'N/A'}</Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8 }}>Location: {job.location || 'Unspecified'}</Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8 }}>Salary: {
                     job.salary_min && job.salary_max
                       ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
                       : 'Not specified'
                   }</Typography>
+                  <Box mt={2}>
+                    <Typography variant="body2">Skills: {job.skills?.join(', ') || 'None listed'}</Typography>
+                    <Typography variant="body2">Applicants: {job.applicants_count}</Typography>
+                  </Box>
                 </Box>
               );
             })}
           </>
         )}
         {selectedView === 'jobForm' && (
-          <Typography variant="body2" color="text.secondary" mt={2}>
-            (Job form placeholder — will show job posting form)
-          </Typography>
+            <div style={{ marginTop: 40, backgroundColor: "#1e1e1e" }}>
+              <AdminJobForm onCreated={() => {
+                // Optionally trigger refresh or message
+                console.log("Job created!");
+              }} />
+            </div>
         )}
       </Box>
     </Box>

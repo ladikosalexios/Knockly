@@ -1,4 +1,6 @@
 class Api::JobDescriptionsController < ApplicationController
+  before_action :authenticate_user!
+
   def create
     ActiveRecord::Base.transaction do
       jd_params = job_description_params.to_h

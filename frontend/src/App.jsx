@@ -151,7 +151,7 @@ const [loginMsg] = useState('');
                     margin: "28px 0",
                     borderRadius: 14,
                     padding: 30,
-                    background: "#222",
+                    background: "#fff",
                     color: "#fff",
                     boxShadow: "0 2px 10px #0003",
                     border: "1px solid #303040",

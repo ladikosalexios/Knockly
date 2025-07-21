@@ -30,23 +30,6 @@ class Api::JobsController < ApplicationController
     })
   end
 
-  # GET /api/jobs/company_jobs
-  # Lists all active jobs for the current user's company.
-  def company_jobs
-    Rails.logger.info "[DEBUG] Hit company_jobs endpoint"
-    debugger
-    if current_user&.company_id.present?
-      jobs = Job.includes(:company, :job_description)
-                .where(status: "active", company_id: current_user.company_id)
-
-      render json: jobs.as_json(include: {
-        company: {},
-        job_description: { include: :skills }
-      })
-    else
-      render json: { error: "User must belong to a company" }, status: :unauthorized
-    end
-  end
 
   # POST /api/jobs
   # Creates a new job. Expects params to include job and its associations.
