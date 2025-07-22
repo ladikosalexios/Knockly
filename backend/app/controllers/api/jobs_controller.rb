@@ -5,6 +5,11 @@ class Api::JobsController < ApplicationController
   def index
     # Get all active jobs, including their company and job description associations.
     jobs = Job.includes(:company, :job_description).where(status: "active")
+    
+    if params[:company_id].present?
+      jobs = jobs.where(company_id: params[:company_id])
+    end
+
     # Optional: Full-text search on job title or location (from job_description).
     if params[:q].present?
       q = "%#{params[:q].downcase}%"

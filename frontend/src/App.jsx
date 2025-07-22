@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import axios from "axios";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useSearchParams } from "react-router-dom";
 import LoginPage from './pages/LoginPage'
 import AdminJobForm from './pages/AdminJobForm';
 import DashboardLayout from './components/DashboardLayout';
@@ -31,11 +31,18 @@ const [loginMsg] = useState('');
   });
   const [submitMsg, setSubmitMsg] = useState('');
 
+  const [searchParams] = useSearchParams();
+  const companyId = searchParams.get('company_id');
+
   useEffect(() => {
-    axios.get("http://localhost:3000/api/jobs")
+    const url = companyId
+      ? `http://localhost:3000/api/jobs?company_id=${companyId}`
+      : `http://localhost:3000/api/jobs`;
+
+    axios.get(url)
       .then(res => setJobs(res.data))
       .catch(console.error);
-  }, []);
+  }, [companyId]);
 
   const openModal = (job) => {
     setSelectedJob(job);

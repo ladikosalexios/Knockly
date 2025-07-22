@@ -53,8 +53,13 @@ class Api::JobApplicationsController < ApplicationController
     render json: { errors: e.message }, status: :unprocessable_entity
   end
 
+  # api/job_applications
   def index
-    apps = JobApplication.all
+    if params[:job_id].present?
+      apps = JobApplication.where(job_id: params[:job_id])
+    else
+      apps = JobApplication.all
+    end
     render json: apps
   end
 
