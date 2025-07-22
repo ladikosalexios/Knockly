@@ -39,8 +39,8 @@ class Api::JobApplicationsController < ApplicationController
         profile.applicant_experiences.create!(
           job_title: exp["job_title"],
           company_name: exp["company_name"],
-          start_date: exp["start_date"],
-          end_date: exp["end_date"],
+          start_date: parse_date_string(exp["start_date"]),
+          end_date: parse_date_string(exp["end_date"]),
           description: exp["description"]
         )
       end
@@ -218,5 +218,10 @@ class Api::JobApplicationsController < ApplicationController
   rescue => e
     Rails.logger.warn "GPT resume parse failed: #{e.message}"
     {}
+  end
+
+  def parse_date_string(raw_date)
+    return nil unless raw_date.present?
+    Date.parse(raw_date) rescue nil
   end
 end

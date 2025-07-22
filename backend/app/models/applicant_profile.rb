@@ -5,6 +5,6 @@ class ApplicantProfile < ApplicationRecord
   has_many :skills, through: :applicant_profile_skills
   has_many :job_applications
 
-  validates :email, presence: true, uniqueness: true
+  validates :email, presence: true
   validates :name, presence: true
 end
