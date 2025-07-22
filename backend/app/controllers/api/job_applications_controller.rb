@@ -143,7 +143,18 @@ class Api::JobApplicationsController < ApplicationController
     else
       apps = JobApplication.all
     end
-    render json: apps
+
+    render json: apps.includes(applicant_profile: [:applicant_experiences, :applicant_educations, :skills]).map { |app|
+      app.as_json(include: {
+        applicant_profile: {
+          include: {
+            applicant_experiences: {},
+            applicant_educations: {},
+            skills: { only: [:name] }
+          }
+        }
+      })
+    }
   end
 
   private
