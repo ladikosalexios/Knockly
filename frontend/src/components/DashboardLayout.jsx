@@ -61,7 +61,7 @@ const DashboardLayout = () => {
         </List>
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 5, px: 8 }}>
         <Toolbar />
         {selectedView === 'dashboard' && (
           <>
@@ -71,12 +71,14 @@ const DashboardLayout = () => {
                 key={job.id}
                 style={{
                   background: "#222",
-                  padding: 24,
+                  padding: "24px 32px",
                   borderRadius: 12,
                   border: "1px solid #444",
                   marginBottom: 24,
                   color: "#fff",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                  width: "900px",
+                  margin: "0 auto"
                 }}
               >
                 <h3 style={{ marginBottom: 8 }}>{job.title}</h3>
@@ -86,7 +88,43 @@ const DashboardLayout = () => {
                 <p style={{ margin: "4px 0" }}><strong>Applicants:</strong> {job.applicants_count}</p>
                 <p style={{ margin: "4px 0" }}><strong>Posted:</strong> {new Date(job.created_at).toLocaleDateString()}</p>
                 <p style={{ margin: "4px 0" }}><strong>Expires:</strong> {job.expires_at ? new Date(job.expires_at).toLocaleDateString() : "N/A"}</p>
-                
+                <p style={{ margin: "4px 0" }}><strong>Start Date:</strong> {job.start_date ? new Date(job.start_date).toLocaleDateString() : "N/A"}</p>
+                <p style={{ margin: "4px 0" }}><strong>End Date:</strong> {job.end_date ? new Date(job.end_date).toLocaleDateString() : "N/A"}</p>
+                <div style={{
+                  maxHeight: "300px",
+                  overflowY: "auto",
+                  background: "#1a1a1a",
+                  padding: "8px",
+                  borderRadius: "6px",
+                  border: "1px solid #333",
+                  marginTop: "8px",
+                  whiteSpace: "pre-line",
+                  lineHeight: 1.6
+                }}>
+                  <p style={{ margin: 0 }}>
+                    <strong>Description:</strong>
+                    <br />
+                    {job.description}
+                  </p>
+                </div>
+                <div style={{
+                  maxHeight: "300px",
+                  overflowY: "auto",
+                  background: "#1a1a1a",
+                  padding: "8px",
+                  borderRadius: "6px",
+                  border: "1px solid #333",
+                  marginTop: "8px",
+                  whiteSpace: "pre-line",
+                  lineHeight: 1.6
+                }}>
+                  <p style={{ margin: 0 }}>
+                    <strong>Requirements:</strong>
+                    <br />
+                    {job.requirements}
+                  </p>
+                </div>
+
                 {job.applicants_count > 0 && (
                   <Link
                     to={`/admin/jobs/${job.id}/applicants`}

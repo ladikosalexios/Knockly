@@ -20,7 +20,10 @@ module Api
             title: jd&.title || "(Untitled)",
             location: jd&.location,
             applicants_count: job.job_applications.size,
-            skills: jd&.skills&.pluck(:name) || []
+            skills: jd&.skills&.pluck(:name) || [],
+            description: jd&.description || [],
+            requirements: jd&.requirements || []
+
           }
         }
       end
