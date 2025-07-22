@@ -45,6 +45,15 @@ export default function JobApplicantsPage() {
               <p>Ethnicity: {app.ethnicity || 'N/A'}</p>
               <p>Disability: {app.disability_status || 'N/A'}</p>
               <p>Veteran: {app.veteran_status || 'N/A'}</p>
+
+              {/* Match Score */}
+              {app.match_score !== undefined && (
+                <div style={{ marginTop: 16 }}>
+                  <p><strong>Match Score:</strong> {app.match_score}</p>
+                  {app.match_reason && <p style={{ fontStyle: 'italic', color: '#ccc' }}>{app.match_reason}</p>}
+                </div>
+              )}
+
               {/* Experiences */}
               {app.applicant_profile?.applicant_experiences?.length > 0 && (
                 <>

@@ -1,3 +1,4 @@
+require 'openai'
 class Api::JobApplicationsController < ApplicationController
   wrap_parameters format: [:json]
   skip_before_action :authenticate_user!
@@ -139,12 +140,24 @@ class Api::JobApplicationsController < ApplicationController
   # api/job_applications
   def index
     if params[:job_id].present?
-      apps = JobApplication.where(job_id: params[:job_id])
+      job = Job.find(params[:job_id])
+      apps = JobApplication.where(job_id: params[:job_id]).includes(applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
     else
-      apps = JobApplication.all
+      apps = JobApplication.includes(:job).includes(applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
     end
 
-    render json: apps.includes(applicant_profile: [:applicant_experiences, :applicant_educations, :skills]).map { |app|
+    results = apps.map do |app|
+      profile = app.applicant_profile
+      job_description = app.job.job_description.description
+      job_requirements = app.job.job_description.requirements
+
+      score_data = MatchingService.score(
+        applicant_profile: profile,
+        job_description: job_description,
+        job_requirements: job_requirements
+      )
+
+
       app.as_json(include: {
         applicant_profile: {
           include: {
@@ -153,8 +166,13 @@ class Api::JobApplicationsController < ApplicationController
             skills: { only: [:name] }
           }
         }
-      })
-    }
+      }).merge(
+        match_score: score_data[:score],
+        match_reason: score_data[:reason]
+      )
+    end
+
+    render json: results
   end
 
   private
