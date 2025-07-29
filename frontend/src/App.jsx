@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import axios from "axios";
-import { Routes, Route, Link, useSearchParams } from "react-router-dom";
+import { Routes, Route, useSearchParams } from "react-router-dom";
 import LoginPage from './pages/LoginPage'
 import AdminJobForm from './pages/AdminJobForm';
 import DashboardLayout from './components/DashboardLayout';
@@ -108,28 +108,7 @@ const [loginMsg] = useState('');
   };
 
   return (
-    <div style={{ marginTop: 40, padding: 32, maxWidth: 700, position: "relative" }}>
-      {/* Admin Login link */}
-      <Link
-        to="/login"
-        style={{
-          position: "fixed",
-          top: 24,
-          right: 36,
-          color: "#fff",
-          background: "#333",
-          padding: "8px 22px",
-          borderRadius: 9,
-          fontWeight: 600,
-          fontSize: 17,
-          textDecoration: "none",
-          boxShadow: "0 2px 6px #0005",
-          opacity: 0.82,
-          zIndex: 100
-        }}
-      >
-        Admin Login
-      </Link>
+    <div style={{ padding: 32, width: "100%", height: "100vh", boxSizing: "border-box", position: "relative", overflowX: "hidden" }}>
       <Routes>
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="/admin-job-form" element={<AdminJobForm />} />
@@ -149,59 +128,78 @@ const [loginMsg] = useState('');
 />
         <Route path="/" element={
           <>
-            <h2>Open Jobs</h2>
-            {jobs.length === 0 && <p>No jobs available.</p>}
-            <ul style={{ padding: 0, listStyle: "none" }}>
-              {jobs.map(job => (
-                <li
-                  key={job.id}
-                  style={{
-                    margin: "28px 0",
-                    borderRadius: 14,
-                    padding: 30,
-                    background: "#1e1e1e",
-                    color: "#fff",
-                    boxShadow: "0 2px 10px #0003",
-                    border: "1px solid #303040",
-                    textAlign: "center"
-                  }}
-                >
-                  <div style={{
-                    fontSize: 26,
-                    fontWeight: 700,
-                    marginBottom: 10,
-                    letterSpacing: 0.5
-                  }}>
-                    {job.job_description?.title || job.title}
-                  </div>
-                  <div style={{
-                    fontSize: 19,
-                    marginBottom: 16,
-                    opacity: 0.88,
-                    fontWeight: 400
-                  }}>
-                    {job.company?.name} | {job.job_description?.location || job.location}
-                  </div>
-                  <button
-                    style={{
-                      marginTop: 8,
-                      background: "#fff",
-                      color: "#222",
-                      fontWeight: 700,
-                      border: "none",
-                      borderRadius: 10,
-                      padding: "13px 38px",
-                      fontSize: 21,
-                      cursor: "pointer",
-                      boxShadow: "0 1px 8px #0002"
-                    }}
-                    onClick={() => openModal(job)}
-                  >
-                    Apply
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div style={{
+              display: "flex",
+              maxWidth: "100%",
+              height: "100vh",
+              boxSizing: "border-box",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 64,
+              overflowX: "auto",
+              overflowY: "hidden",
+              paddingInline: 24
+            }}>
+              <div style={{
+                minWidth: 420,
+                maxWidth: 460,
+                width: "100%",
+                maxHeight: "80vh",
+                overflowY: "auto", // allow only vertical scrolling
+                background: "#1e1e1e",
+                borderRadius: 14,
+                padding: 30,
+                color: "#fff",
+                boxShadow: "0 2px 10px #0003"
+              }}>
+                <h2 style={{ marginBottom: 20 }}>Open Jobs</h2>
+                {jobs.length === 0 && <p>No jobs available.</p>}
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {jobs.map(job => (
+                    <div key={job.id} style={{ cursor: "pointer" }}>
+                      <a
+                        onClick={() => openModal(job)}
+                        style={{ 
+                          color: "#a8d0ff",
+                          fontWeight: 600,
+                          fontSize: 18,
+                          textDecoration: "none",
+                          display: "inline-block",
+                          marginBottom: 4
+                        }}
+                      >
+                        {job.job_description?.title || job.title}
+                      </a>
+                      <div style={{ color: "#888", fontSize: 14 }}>
+                        {job.job_description?.location || job.location}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{
+                minWidth: 420,
+                maxWidth: 460,
+                width: "100%",
+                background: "#1e1e1e",
+                borderRadius: 14,
+                padding: 30,
+                color: "#fff",
+                fontSize: 16,
+                lineHeight: 1.5,
+                boxShadow: "0 2px 10px #0003"
+              }}>
+                <h2 style={{ marginBottom: 16, color: "#a8d0ff", textAlign: "center" }}>
+                  Welcome to the {jobs[0]?.company?.name || "Company"} Job Openings Page!
+                </h2>
+                <p style={{ marginBottom: 16 }}>
+                  From here you can view and apply for any of our open roles. Should our hiring team see a match between your background and our role, we will be in touch to learn more about you.
+                </p>
+                <p>
+                  If you'd like to learn a little more about our team and culture, you can visit our careers overview page.
+                </p>
+              </div>
+            </div>
 
             {modalOpen && selectedJob && (
               <div style={{
