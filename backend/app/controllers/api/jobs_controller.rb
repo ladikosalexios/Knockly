@@ -1,5 +1,5 @@
 class Api::JobsController < ApplicationController
-  before_action :authenticate_user!, only: [:show, :create]
+  before_action :authenticate_user!, only: [:create]
   # GET /api/jobs
   # Lists all active jobs. Can filter by company_id and search by query string.
   def index
