@@ -64,17 +64,17 @@ const JobApplicationPage = () => {
   }
 
   return (
-    <div style={{ padding: 0, color: "#fff", background: "#1e1e1e", minHeight: "100%", display: "flex", justifyContent: "center", paddingBottom: "100px" }}>
+    <div style={{ padding: 0, color: "#fff", background: "#1e1e1e", minHeight: "100%", display: "flex", justifyContent: "center", paddingBottom: "100px", paddingTop: 80 }}>
       <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", justifyContent: "center", gap: 80, width: "100%", maxWidth: "1280px", margin: "0 auto" }}>
         {/* Left: Job Details */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 700, color: "#fff", fontSize: 17, marginBottom: 2 }}>
+          <div style={{ fontWeight: 700, color: "#a8d0ff", fontSize: 17, marginBottom: 2 }}>
             {job.job_description?.company_name}
           </div>
-          <h1 style={{ fontSize: 36, fontWeight: 800, margin: "0 0 8px 0", color: "#fff" }}>
+          <h1 style={{ fontSize: 36, fontWeight: 800, margin: "0 0 8px 0", color: "#a8d0ff" }}>
             {job.job_description?.title}
           </h1>
-          <div style={{ color: "#aaa", fontSize: 16, marginBottom: 18, fontWeight: 500 }}>
+          <div style={{ color: "#a8d0ff", fontSize: 16, marginBottom: 18, fontWeight: 500 }}>
             <span>{job.job_description?.location}</span>
             {job.job_description?.is_remote && <span> • Remote</span>}
             {job.job_description?.job_type && <span> • {job.job_description.job_type}</span>}
@@ -99,8 +99,8 @@ const JobApplicationPage = () => {
           </div>
         </div>
         {/* Right: Application Form */}
-        <form onSubmit={handleSubmit} style={{ flex: 1, maxWidth: 600, minWidth: 360, display: "flex", flexDirection: "column", gap: 13, background: "#22232c", padding: 40, borderRadius: 12 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 18, color: "#fff" }}>
+        <form onSubmit={handleSubmit} style={{ flex: 1, maxWidth: 600, minWidth: 360, display: "flex", flexDirection: "column", gap: 13, background: "#1e1e1e", padding: 40, borderRadius: 12 }}>
+          <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 18, color: "#a8d0ff" }}>
             Apply for {job.job_description?.title || job.title}
           </h2>
           <input name="name" placeholder="Full Name *" value={form.name} onChange={handleFormChange} required style={inputStyle} />
@@ -147,12 +147,12 @@ const JobApplicationPage = () => {
             </select>
           </div>
           <button type="submit" style={{
-            background: "#16ba63", color: "#fff", border: "none", borderRadius: 8,
+            background: "#53a6f3", color: "#fff", border: "none", borderRadius: 8,
             padding: "16px 0", fontSize: 19, marginTop: 5, fontWeight: 800, letterSpacing: 0.5, cursor: "pointer"
           }}>
             Submit Application
           </button>
-          {submitMsg && <div style={{ marginTop: 16, color: submitMsg.includes('Error') ? '#ff4d4d' : '#25d18a', fontWeight: 600 }}>
+          {submitMsg && <div style={{ marginTop: 16, color: submitMsg.includes('Error') ? '#ff4d4d' : '#a8d0ff', fontWeight: 600 }}>
             {submitMsg}
           </div>}
         </form>
@@ -162,7 +162,7 @@ const JobApplicationPage = () => {
 };
 
 const inputStyle = {
-  background: "#23232b",
+  background: "#1e1e1e",
   border: "1px solid #333",
   color: "#fff",
   padding: 12,
@@ -177,7 +177,7 @@ const textAreaStyle = {
 };
 
 const selectStyle = {
-  background: "#23232b",
+  background: "#1e1e1e",
   border: "1px solid #333",
   color: "#aaa",
   padding: 12,
