@@ -30,7 +30,7 @@ function SignupPage({ onSignupSuccess }) {
       onSubmit={handleSubmit}
       style={{
         margin: "40px auto", maxWidth: 380, padding: 32,
-        background: "#fff", borderRadius: 8, boxShadow: "0 1px 8px #0002"
+        background: "#fff", borderRadius: 8
       }}
     >
       <h2>Admin Sign Up</h2>

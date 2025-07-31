@@ -35,7 +35,6 @@ export default function JobApplicantsPage() {
               padding: 24,
               borderRadius: 12,
               border: '1px solid #444',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
             }}>
               <h3 style={{ marginBottom: 4 }}>{app.name}</h3>
               <p>Email: <a href={`mailto:${app.email}`} style={{ color: '#00d0ff' }}>{app.applicant_profile?.email}</a></p>

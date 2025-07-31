@@ -76,7 +76,6 @@ const DashboardLayout = () => {
                   border: "1px solid #444",
                   marginBottom: 24,
                   color: "#fff",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
                   width: "900px",
                   margin: "0 auto"
                 }}

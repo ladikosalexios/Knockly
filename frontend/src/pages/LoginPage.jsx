@@ -41,7 +41,6 @@ function LoginPage({
         padding: 32,
         background: "#181818",
         borderRadius: 12,
-        boxShadow: "0 1px 16px #0002",
         maxWidth: 400,
         display: "flex",
         flexDirection: "column",

@@ -30,7 +30,6 @@ function App() {
   }, [companyId]);
 
   return (
-    <div style={{ padding: 32, width: "100%", height: "100vh", boxSizing: "border-box", position: "relative", overflowX: "hidden" }}>
       <Routes>
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="/admin-job-form" element={<AdminJobForm />} />
@@ -50,7 +49,6 @@ function App() {
   }
 />
         <Route path="/" element={
-          <>
             <div style={{
               display: "flex",
               maxWidth: "100%",
@@ -75,7 +73,6 @@ function App() {
                 borderRadius: 14,
                 padding: 30,
                 color: "#fff",
-                boxShadow: "none"
               }}>
                 <h2 style={{ marginBottom: 20 }}>Open Jobs</h2>
                 {jobs.length === 0 && <p>No jobs available.</p>}
@@ -112,7 +109,6 @@ function App() {
                 color: "#fff",
                 fontSize: 16,
                 lineHeight: 1.5,
-                boxShadow: "none"
               }}>
                 <h2 style={{ marginBottom: 16, color: "#a8d0ff", textAlign: "center" }}>
                   Welcome to the {jobs[0]?.company?.name || "Company"} Job Openings Page!
@@ -125,10 +121,8 @@ function App() {
                 </p>
               </div>
             </div>
-          </>
         } />
       </Routes>
-    </div>
   )
 }
 
