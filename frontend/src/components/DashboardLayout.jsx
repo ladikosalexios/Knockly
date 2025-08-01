@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import {
-  AppBar, Toolbar, Typography, CssBaseline, Drawer, List, ListItem, ListItemText,
-  Box
-} from '@mui/material';
+import { Typography, CssBaseline, Drawer, List, ListItem, ListItemText, Box } from '@mui/material';
 import AdminJobForm from '../pages/AdminJobForm';
 import { Link } from 'react-router-dom';
 
@@ -25,18 +22,17 @@ const DashboardLayout = () => {
     });
   }, []);
 
+  const renderStatusDot = (status, expiresAt) => {
+    const isExpired = expiresAt && new Date(expiresAt) < new Date();
+    if (isExpired || status !== 'active') {
+      return <span style={{ color: 'red', fontWeight: 'bold' }}>● Inactive</span>;
+    }
+    return <span style={{ color: 'lime', fontWeight: 'bold' }}>● Active</span>;
+  };
+
   return (
     <Box sx={{ display: 'flex', backgroundColor: '#1e1e1e', minHeight: '100vh', color: '#fff' }}>
       <CssBaseline />
-
-      <AppBar position="fixed" sx={{ zIndex: 1300, backgroundColor: '#1e1e1e', color: '#fff' }}>
-        <Toolbar>
-          <Typography variant="h6" noWrap component="div">
-            Admin Dashboard
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
       <Drawer
         variant="permanent"
         sx={{
@@ -50,7 +46,6 @@ const DashboardLayout = () => {
           },
         }}
       >
-        <Toolbar />
         <List>
           <ListItem button onClick={() => setSelectedView('dashboard')}>
             <ListItemText primary="My Job Posts" />
@@ -61,97 +56,77 @@ const DashboardLayout = () => {
         </List>
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 5, px: 8 }}>
-        <Toolbar />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          padding: '32px',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+        }}
+      >
         {selectedView === 'dashboard' && (
-          <>
-            <Typography variant="h6" gutterBottom>My Job Posts</Typography>
-            {jobs.map(job => (
-              <div
-                key={job.id}
-                style={{
-                  background: "#222",
-                  padding: "24px 32px",
-                  borderRadius: 12,
-                  border: "1px solid #444",
-                  marginBottom: 24,
-                  color: "#fff",
-                  width: "900px",
-                  margin: "0 auto"
-                }}
-              >
-                <h3 style={{ marginBottom: 8 }}>{job.title}</h3>
-                <p style={{ margin: "4px 0" }}><strong>Status:</strong> {job.status}</p>
-                <p style={{ margin: "4px 0" }}><strong>Location:</strong> {job.location || "N/A"}</p>
-                <p style={{ margin: "4px 0" }}><strong>Skills:</strong> {job.skills?.join(", ") || "None"}</p>
-                <p style={{ margin: "4px 0" }}><strong>Applicants:</strong> {job.applicants_count}</p>
-                <p style={{ margin: "4px 0" }}><strong>Posted:</strong> {new Date(job.created_at).toLocaleDateString()}</p>
-                <p style={{ margin: "4px 0" }}><strong>Expires:</strong> {job.expires_at ? new Date(job.expires_at).toLocaleDateString() : "N/A"}</p>
-                <p style={{ margin: "4px 0" }}><strong>Start Date:</strong> {job.start_date ? new Date(job.start_date).toLocaleDateString() : "N/A"}</p>
-                <p style={{ margin: "4px 0" }}><strong>End Date:</strong> {job.end_date ? new Date(job.end_date).toLocaleDateString() : "N/A"}</p>
-                <div style={{
-                  maxHeight: "300px",
-                  overflowY: "auto",
-                  background: "#1a1a1a",
-                  padding: "8px",
-                  borderRadius: "6px",
-                  border: "1px solid #333",
-                  marginTop: "8px",
-                  whiteSpace: "pre-line",
-                  lineHeight: 1.6
-                }}>
-                  <p style={{ margin: 0 }}>
-                    <strong>Description:</strong>
-                    <br />
-                    {job.description}
-                  </p>
-                </div>
-                <div style={{
-                  maxHeight: "300px",
-                  overflowY: "auto",
-                  background: "#1a1a1a",
-                  padding: "8px",
-                  borderRadius: "6px",
-                  border: "1px solid #333",
-                  marginTop: "8px",
-                  whiteSpace: "pre-line",
-                  lineHeight: 1.6
-                }}>
-                  <p style={{ margin: 0 }}>
-                    <strong>Requirements:</strong>
-                    <br />
-                    {job.requirements}
-                  </p>
-                </div>
-
-                {job.applicants_count > 0 && (
-                  <Link
-                    to={`/admin/jobs/${job.id}/applicants`}
-                    style={{
-                      marginTop: 12,
-                      display: "inline-block",
-                      background: "#00d0ff",
-                      color: "#000",
-                      padding: "8px 16px",
-                      borderRadius: 6,
-                      fontWeight: "bold",
-                      textDecoration: "none"
-                    }}
-                  >
-                    View Applicants →
-                  </Link>
-                )}
-              </div>
-            ))}
-          </>
+          <Box sx={{ width: '100%', maxWidth: '1000px' }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ textAlign: 'left', fontWeight: 'bold', fontSize: '1.5rem' }}
+            >
+              My Job Posts
+            </Typography>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 20 }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #444', color: '#a8d0ff' }}>
+                  <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Job Title</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Location</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Type</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Status</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Applicants</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {jobs.map(job => {
+                  return (
+                    <tr
+                      key={job.id}
+                      style={{
+                        borderBottom: '1px solid #333',
+                        transition: 'background-color 0.2s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle', color: '#a8d0ff' }}>{job.title}</td>
+                      <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>{job.location || 'N/A'}</td>
+                      <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>{job.job_type || 'N/A'}</td>
+                      <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>{renderStatusDot(job.status, job.expires_at)}</td>
+                      <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>{job.applicants_count}</td>
+                      <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>
+                        <Link to={`/admin/jobs/${job.id}/edit`} style={{ marginRight: 10 }}>
+                          <span style={{ fontSize: '1rem', color: '#a8d0ff' }}>✏️</span>
+                        </Link>
+                        <Link to={`/admin/jobs/${job.id}/applicants`}>
+                          <span style={{ fontSize: '1rem', color: '#a8d0ff' }}>📄</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Box>
         )}
         {selectedView === 'jobForm' && (
-            <div style={{ marginTop: 40, backgroundColor: "#1e1e1e" }}>
-              <AdminJobForm onCreated={() => {
-                // Optionally trigger refresh or message
-                console.log("Job created!");
-              }} />
-            </div>
+          <div style={{ backgroundColor: "#1e1e1e" }}>
+            <AdminJobForm onCreated={() => {
+              // Optionally trigger refresh or message
+              console.log("Job created!");
+            }} />
+          </div>
         )}
       </Box>
     </Box>
