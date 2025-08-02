@@ -4,6 +4,14 @@
 # --- Create a company ---
 company = Company.find_or_create_by!(name: "Acme Inc")
 
+# --- Create a Looply Admin user ---
+looply_admin = User.find_or_create_by!(email: "admin@looply.ai") do |u|
+  u.password = "securepassword123"
+  u.password_confirmation = "securepassword123"
+  u.is_looply_admin = true
+  u.company = company
+end
+
 # --- Create an admin user associated with the company ---
 admin = User.find_or_create_by!(email: "admin3@acme.com") do |u|
   u.password = "password123"

@@ -37,23 +37,30 @@ function LoginPage({
     <form
       onSubmit={handleLocalLogin}
       style={{
-        margin: "24px 0",
+        margin: "0 auto",
         padding: 32,
-        background: "#181818",
+        background: "#121212",
         borderRadius: 12,
-        maxWidth: 400,
+        width: 320,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 0 20px rgba(0,0,0,0.2)",
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)"
       }}
     >
       <h2 style={{
-        color: "#fff",
+        color: "#a8d0ff",
         background: "transparent",
         fontSize: 32,
         marginBottom: 24,
         fontWeight: 800,
-        letterSpacing: "0.02em",
+        textAlign: "center",
+        letterSpacing: "0.5px",
       }}>
         Login
       </h2>
@@ -68,10 +75,11 @@ function LoginPage({
           width: "100%",
           marginBottom: 16,
           borderRadius: 6,
-          border: "1.5px solid #2c2c2c",
-          background: "#232323",
+          border: "1.5px solid #a8d0ff",
+          background: "#1e1e1e",
           color: "#fff",
-          fontSize: 18,
+          fontSize: 16,
+          outline: "none"
         }}
       />
       <input
@@ -83,36 +91,29 @@ function LoginPage({
         style={{
           padding: 14,
           width: "100%",
-          marginBottom: 18,
+          marginBottom: 16,
           borderRadius: 6,
-          border: "1.5px solid #2c2c2c",
-          background: "#232323",
+          border: "1.5px solid #a8d0ff",
+          background: "#1e1e1e",
           color: "#fff",
-          fontSize: 18,
+          fontSize: 16,
+          outline: "none"
         }}
       />
       <button
         type="submit"
         style={{
-          background: "#fff",
-          color: "#232323",
+          background: "#a8d0ff",
+          color: "#000",
           border: "none",
           borderRadius: 8,
           padding: "12px 34px",
           fontWeight: 700,
           cursor: "pointer",
-          fontSize: 20,
+          fontSize: 18,
           marginBottom: 8,
           marginTop: 10,
-          transition: "background 0.15s, color 0.15s",
-        }}
-        onMouseOver={e => {
-          e.target.style.background = "#444";
-          e.target.style.color = "#fff";
-        }}
-        onMouseOut={e => {
-          e.target.style.background = "#fff";
-          e.target.style.color = "#232323";
+          boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
         }}
       >
         Login

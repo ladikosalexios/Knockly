@@ -3,6 +3,7 @@ import './App.css';
 import axios from "axios";
 import { Routes, Route, useSearchParams, useNavigate } from "react-router-dom";
 import LoginPage from './pages/LoginPage'
+import AcceptInvitePage from './pages/AcceptInvitePage';
 import AdminJobForm from './pages/AdminJobForm';
 import DashboardLayout from './components/DashboardLayout';
 import JobApplicantsPage from './components/JobApplicantsPage';
@@ -36,6 +37,7 @@ function App() {
           </Route>
           <Route path="/admin/jobs/:id/applicants" element={<JobApplicantsPage />} />
           <Route path="/jobs/:id/apply" element={<JobApplicationPage />} />
+          <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
         <Route
   path="/login"
   element={

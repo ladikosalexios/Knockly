@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_many :jobs, foreign_key: :posted_by_user_id
 
   validates :email, presence: true, uniqueness: true
+  validates :invite_token, uniqueness: true, allow_nil: true
 
   before_create :generate_api_key
 

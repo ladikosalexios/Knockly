@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Typography, CssBaseline, Drawer, List, ListItem, ListItemText, Box } from '@mui/material';
 import AdminJobForm from '../pages/AdminJobForm';
+import InviteUserForm from '../components/InviteUserForm';
 import { Link } from 'react-router-dom';
 
 const drawerWidth = 240;
@@ -9,6 +10,7 @@ const drawerWidth = 240;
 const DashboardLayout = () => {
   const [selectedView, setSelectedView] = useState('dashboard');
   const [jobs, setJobs] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     axios.get("http://localhost:3000/api/admin/dashboard", {
@@ -19,6 +21,18 @@ const DashboardLayout = () => {
     })
     .catch(err => {
       console.error("Error fetching dashboard jobs", err);
+    });
+  }, []);
+
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/users/me", {
+      withCredentials: true
+    })
+    .then(res => {
+      setCurrentUser(res.data);
+    })
+    .catch(err => {
+      console.error("Error fetching current user", err);
     });
   }, []);
 
@@ -53,6 +67,11 @@ const DashboardLayout = () => {
           <ListItem button onClick={() => setSelectedView('jobForm')}>
             <ListItemText primary="Post a Job" />
           </ListItem>
+          {currentUser?.is_looply_admin && (
+            <ListItem button onClick={() => setSelectedView('inviteUser')}>
+              <ListItemText primary="Invite User" />
+            </ListItem>
+          )}
         </List>
       </Drawer>
 
@@ -126,6 +145,18 @@ const DashboardLayout = () => {
               // Optionally trigger refresh or message
               console.log("Job created!");
             }} />
+          </div>
+        )}
+        {selectedView === 'inviteUser' && currentUser?.is_looply_admin && (
+          <div style={{ backgroundColor: "#1e1e1e", width: '100%', maxWidth: '600px' }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ textAlign: 'left', fontWeight: 'bold', fontSize: '1.5rem', color: '#a8d0ff' }}
+            >
+              Invite a Team Member
+            </Typography>
+            <InviteUserForm />
           </div>
         )}
       </Box>
