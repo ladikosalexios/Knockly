@@ -44,30 +44,56 @@ class Api::UsersController < ApplicationController
         end
     end
 
+#   def generate_invite
+#     email = params.dig(:user, :email) || params[:email]
+
+#     # Validate presence of required email
+#     if email.blank?
+#       render json: { error: 'Email is required.' }, status: :bad_request
+#       return
+#     end
+
+#     domain = email.split('@').last
+#     existing_user = User.where("email LIKE ?", "%@#{domain}").exists?
+
+#     mode = existing_user ? "join_company" : "new_company"
+
+#     user = User.new(email: email, password: SecureRandom.hex(10))
+#     user.invite_token = SecureRandom.hex(20)
+
+#     if user.save
+#       invite_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:5173')}/accept-invite/#{user.invite_token}?mode=#{mode}"
+#       render json: { message: 'Invite created successfully.', invite_url: invite_url }, status: :created
+#     else
+#       render json: { error: user.errors.full_messages }, status: :unprocessable_entity
+#     end
+#   end
+
   def generate_invite
     email = params.dig(:user, :email) || params[:email]
 
-    # Validate presence of required email
     if email.blank?
-      render json: { error: 'Email is required.' }, status: :bad_request
-      return
+        render json: { error: 'Email is required.' }, status: :bad_request
+        return
     end
 
     domain = email.split('@').last
-    existing_user = User.where("email LIKE ?", "%@#{domain}").exists?
+    existing_user = User.where("email LIKE ?", "%@#{domain}").where.not(company_id: nil).first
 
     mode = existing_user ? "join_company" : "new_company"
+    company_id = existing_user&.company_id
 
     user = User.new(email: email, password: SecureRandom.hex(10))
     user.invite_token = SecureRandom.hex(20)
+    user.company_id = company_id if mode == "join_company"
 
     if user.save
-      invite_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:5173')}/accept-invite/#{user.invite_token}?mode=#{mode}"
-      render json: { message: 'Invite created successfully.', invite_url: invite_url }, status: :created
+        invite_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:5173')}/accept-invite/#{user.invite_token}?mode=#{mode}"
+        render json: { message: 'Invite created successfully.', invite_url: invite_url }, status: :created
     else
-      render json: { error: user.errors.full_messages }, status: :unprocessable_entity
+        render json: { error: user.errors.full_messages }, status: :unprocessable_entity
     end
-  end
+end
 
   # POST /api/finalize_invite
   def finalize_invite
