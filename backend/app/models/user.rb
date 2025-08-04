@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  belongs_to :company
+  belongs_to :company, optional: true
 
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable

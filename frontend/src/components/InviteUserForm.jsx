@@ -1,22 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 function InviteUserForm() {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
+  const [isLooplyAdmin, setIsLooplyAdmin] = useState(false);
+
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/users/me", { withCredentials: true })
+      .then(res => {
+        setIsLooplyAdmin(res.data.is_looply_admin);
+      })
+      .catch(() => {
+        setIsLooplyAdmin(false);
+      });
+  }, []);
 
   const handleInvite = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:3000/api/invite_user", {
-        email,
-      }, {
-        withCredentials: true
-    });
+      const endpoint = isLooplyAdmin
+        ? "http://localhost:3000/api/generate_invite"
+        : "http://localhost:3000/api/invite_user";
+      const payload = { email }; // Only email is required
+      const res = await axios.post(endpoint, payload, { withCredentials: true });
       setMsg(`Invite created! Share this link: ${res.data.invite_url}`);
       setEmail("");
     } catch (err) {
-      setMsg("Error: " + err.response.data.errors?.join(", "));
+      setMsg("Error: " + (err.response?.data?.errors?.join(", ") || "Unknown error"));
     }
   };
 

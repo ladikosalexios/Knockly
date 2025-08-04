@@ -19,7 +19,7 @@ class Api::UsersController < ApplicationController
     )
 
     if user.save
-      invite_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:5173')}/accept-invite/#{token}"
+      invite_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:5173')}/accept-invite/#{token}?mode=join_company"
       render json: { message: "User invited successfully.", invite_url: invite_url }, status: :created
     else
       render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
@@ -30,59 +30,61 @@ class Api::UsersController < ApplicationController
 
   # GET /api/accept_invite/:token
   # Retrieves user info when the invite link is opened
-  def accept_invite
-    user = User.find_by(invite_token: params[:token])
+    def accept_invite
+        user = User.find_by(invite_token: params[:token])
 
-    if user && user.company
-      render json: {
-        email: user.email,
-        company_name: user.company.name,
-        company_id: user.company.id
-      }, status: :ok
-    else
-      render json: { error: "Invalid invite token" }, status: :not_found
+        if user
+            render json: {
+            email: user.email,
+            company_name: user.company&.name,
+            company_id: user.company_id
+            }, status: :ok
+        else
+            render json: { error: "Invalid invite token" }, status: :not_found
+        end
     end
-  rescue => e
-    render json: { error: "Unexpected error: #{e.message}" }, status: :internal_server_error
+
+  def generate_invite
+    email = params.dig(:user, :email) || params[:email]
+
+    # Validate presence of required email
+    if email.blank?
+      render json: { error: 'Email is required.' }, status: :bad_request
+      return
+    end
+
+    domain = email.split('@').last
+    existing_user = User.where("email LIKE ?", "%@#{domain}").exists?
+
+    mode = existing_user ? "join_company" : "new_company"
+
+    user = User.new(email: email, password: SecureRandom.hex(10))
+    user.invite_token = SecureRandom.hex(20)
+
+    if user.save
+      invite_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:5173')}/accept-invite/#{user.invite_token}?mode=#{mode}"
+      render json: { message: 'Invite created successfully.', invite_url: invite_url }, status: :created
+    else
+      render json: { error: user.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
-    def generate_invite
-        email = params[:email]
-        company_id = params[:company_id]
+  # POST /api/finalize_invite
+  def finalize_invite
+  user = User.find_by(invite_token: params[:token])
 
-        # Validate presence of required parameters
-        if email.blank? || company_id.blank?
-            render json: { error: 'Email and company_id are required.' }, status: :bad_request
-            return
-        end
+  if user && params[:password].present?
+    user.password = params[:password]
+    user.invite_token = nil
+    user.save!
 
-        # Create a new user with a random password (they'll set their own later)
-        user = User.new(email: email, password: SecureRandom.hex(10), company_id: company_id)
-        user.invite_token = SecureRandom.hex(20)
+    sign_in(user) # <- ✅ AUTHENTICATE the user right after accepting
 
-        if user.save
-            # Generate a frontend-friendly invite link using the invite token
-            invite_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:5173')}/accept-invite/#{user.invite_token}"
-            
-            # Return success response with the invite URL
-            render json: { message: 'Invite created successfully.', invite_url: invite_url }, status: :created
-        else
-            render json: { error: user.errors.full_messages }, status: :unprocessable_entity
-        end
-    end
-
-    # POST /api/finalize_invite
-    def finalize_invite
-    user = User.find_by(invite_token: params[:token])
-    if user && params[:password].present?
-        user.password = params[:password]
-        user.invite_token = nil
-        user.save!
-        render json: { message: "Invite accepted. You can now log in." }
-    else
-        render json: { error: "Invalid token or password missing." }, status: :bad_request
-    end
-    end
+    render json: { message: "Invite accepted. You are now logged in." }
+  else
+    render json: { error: "Invalid token or password missing." }, status: :bad_request
+  end
+end
 
   # GET /api/users/me
   def me

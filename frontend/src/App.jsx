@@ -8,6 +8,7 @@ import AdminJobForm from './pages/AdminJobForm';
 import DashboardLayout from './components/DashboardLayout';
 import JobApplicantsPage from './components/JobApplicantsPage';
 import JobApplicationPage from './components/JobApplicationPage';
+import CreateCompanyPage from './pages/CreateCompanyPage'
 
 function App() {
   const [loginEmail, setLoginEmail] = useState('');
@@ -38,6 +39,7 @@ function App() {
           <Route path="/admin/jobs/:id/applicants" element={<JobApplicantsPage />} />
           <Route path="/jobs/:id/apply" element={<JobApplicationPage />} />
           <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
+          <Route path="/create-company" element={<CreateCompanyPage />} />
         <Route
   path="/login"
   element={
@@ -56,7 +58,6 @@ function App() {
               maxWidth: "100%",
               height: "100vh",
               boxSizing: "border-box",
-              height: "100vh",
               maxHeight: "100vh",
               justifyContent: "center",
               alignItems: "center",

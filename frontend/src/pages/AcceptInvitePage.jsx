@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom"; // ✅ add useSearchParams
 import axios from "axios";
 
 function AcceptInvitePage() {
   const { token } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); // ✅ read mode param
+  const mode = searchParams.get("mode");
+
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [password, setPassword] = useState("");
@@ -26,15 +29,29 @@ function AcceptInvitePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (password.length < 8) {
+      setMessage("Password must be at least 8 characters long.");
+      return;
+    }
     try {
       await axios.post(`/api/finalize_invite`, {
         token,
         password
       });
-      setMessage("Account setup complete! You can now log in.");
-      setTimeout(() => navigate("/login"), 1500);
+
+      setMessage("Account setup complete!");
+      
+      // ✅ Redirect based on mode
+      setTimeout(() => {
+        if (mode === "new_company") {
+          navigate(`/create-company?token=${token}`);
+        } else {
+          navigate("/login");
+        }
+      }, 1000);
     } catch (err) {
-      setMessage("Error finalizing invite.");
+      const apiMsg = err.response?.data?.error || "Error finalizing invite.";
+      setMessage(apiMsg);
     }
   };
 
@@ -42,7 +59,7 @@ function AcceptInvitePage() {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>Welcome to {company}</h2>
+      <h2>Welcome to {company || "Looply"}</h2>
       <p>You're setting up an account for: <strong>{email}</strong></p>
       <form onSubmit={handleSubmit}>
         <input
@@ -52,7 +69,9 @@ function AcceptInvitePage() {
           onChange={e => setPassword(e.target.value)}
           required
         />
-        <button type="submit">Create Account</button>
+        <button type="submit" disabled={!password || loading}>
+          {loading ? "Submitting..." : "Create Account"}
+        </button>
       </form>
       {message && <div style={{ marginTop: 12 }}>{message}</div>}
     </div>
