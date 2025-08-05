@@ -9,6 +9,8 @@ import JobApplicantsPage from './components/JobApplicantsPage';
 import JobApplicationPage from './components/JobApplicationPage';
 import CreateCompanyPage from './pages/CreateCompanyPage';
 import PublicJobBoard from './pages/PublicJobBoard';
+import LoggedOutPage from './pages/LogoutPage';
+import PrivateRoute from './components/PrivateRoute';
 
 function HomePage() {
   return (
@@ -36,14 +38,27 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/admin" element={<DashboardLayout />}>
-        <Route path="/admin-job-form" element={<AdminJobForm />} />
+      <Route path="/admin" element={
+        <PrivateRoute>
+          <DashboardLayout />
+        </PrivateRoute>
+      }>
+        <Route path="/admin-job-form" element={
+          <PrivateRoute>
+            <AdminJobForm />
+          </PrivateRoute>
+        } />
       </Route>
-      <Route path="/admin/jobs/:id/applicants" element={<JobApplicantsPage />} />
+      <Route path="/admin/jobs/:id/applicants" element={
+        <PrivateRoute>
+          <JobApplicantsPage />
+        </PrivateRoute>
+      } />
       <Route path="/jobs/:id/apply" element={<JobApplicationPage />} />
       <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
       <Route path="/create-company" element={<CreateCompanyPage />} />
       <Route path="/:companySlug" element={<PublicJobBoard />} />
+      <Route path="/logged-out" element={<LoggedOutPage />} />
       <Route path="/login" element={
         <LoginPage
           loginEmail={loginEmail}

@@ -4,10 +4,12 @@ import { Typography, CssBaseline, Drawer, List, ListItem, ListItemText, Box } fr
 import AdminJobForm from '../pages/AdminJobForm';
 import InviteUserForm from '../components/InviteUserForm';
 import { Link } from 'react-router-dom';
+import useAutoLogout from '../hooks/useAutoLogout'; // or wherever you save it
 
 const drawerWidth = 240;
 
 const DashboardLayout = () => {
+  useAutoLogout();
   const [selectedView, setSelectedView] = useState('dashboard');
   const [jobs, setJobs] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -35,6 +37,17 @@ const DashboardLayout = () => {
       console.error("Error fetching current user", err);
     });
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.delete("http://localhost:3000/users/sign_out", {
+        withCredentials: true
+      });
+      window.location.href = "/login";
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
 
   const renderStatusDot = (status, expiresAt) => {
     const isExpired = expiresAt && new Date(expiresAt) < new Date();
@@ -72,6 +85,9 @@ const DashboardLayout = () => {
               <ListItemText primary="Invite User" />
             </ListItem>
           )}
+          <ListItem button onClick={handleLogout}>
+            <ListItemText primary="Logout" />
+          </ListItem>
         </List>
       </Drawer>
 
