@@ -2,8 +2,19 @@ class Api::JobsController < ApplicationController
   before_action :authenticate_user!, only: [:create]
   # GET /api/jobs
   # Lists all active jobs. Can filter by company_id and search by query string.
+  # 
+  #
+  # def index
+  #   jobs = Job.includes(:company, :job_description).all
+
+  #   render json: jobs.as_json(include: {
+  #     company: {},
+  #     job_description: { include: :skills }
+  #   })
+  # end
   def index
-    # Get all active jobs, including their company and job description associations.
+# DEPRECATED: use /api/companies/:slug/jobs instead for public-facing job boards
+# Get all active jobs, including their company and job description associations.
     jobs = Job.includes(:company, :job_description).where(status: "active")
     
     if params[:company_id].present?

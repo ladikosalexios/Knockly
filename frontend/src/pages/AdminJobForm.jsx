@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from "axios";
 
 export default function AdminJobForm({ onCreated }) {
@@ -19,10 +19,22 @@ export default function AdminJobForm({ onCreated }) {
     requirements: '',
   });
   const [jdJobMsg, setJdJobMsg] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/users/me", { withCredentials: true })
+      .then(res => setCurrentUser(res.data))
+      .catch(err => console.error("Error fetching current user", err));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setJdJobMsg('');
+
+    if (!currentUser) {
+      setJdJobMsg('Loading user info...');
+      return;
+    }
 
     // Basic validation
     if (!jdForm.jd_title.trim()) {
@@ -47,13 +59,13 @@ export default function AdminJobForm({ onCreated }) {
     }
 
     try {
-      // 1. Create Job (company_id and posted_by_user_id are hardcoded 1 for now)
+      // 1. Create Job (using currentUser data)
       const jobRes = await axios.post('http://localhost:3000/api/jobs', {
         job: {
           status: jdForm.job_status,
           expires_at: jdForm.job_expires_at || null,
-          company_id: 1,
-          posted_by_user_id: 1        
+          company_id: currentUser?.company_id,
+          posted_by_user_id: currentUser?.id        
         },
       },
         { withCredentials: true }

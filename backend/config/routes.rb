@@ -11,6 +11,8 @@ Rails.application.routes.draw do
     post "generate_invite", to: "users#generate_invite"
     get "accept_invite/:token", to: "users#accept_invite", as: "accept_invite"
     post "finalize_invite", to: "users#finalize_invite"
+    get "companies/slug/:slug", to: "companies#show_by_slug"
+    get "companies/:slug/jobs", to: "companies#jobs_by_slug"
     resources :jobs
     resources :job_descriptions, only: [:create]
     resources :job_applications, only: [:create, :index]
