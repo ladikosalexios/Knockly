@@ -1,5 +1,33 @@
 class MatchingService
   def self.score(applicant_profile:, job_description:, job_requirements:)
+    if applicant_profile.embedding.present? && job_description.embedding.present?
+      return score_with_embeddings(applicant_profile: applicant_profile, job_description: job_description)
+    else
+      return semantic_score_with_gpt(applicant_profile: applicant_profile, job_description: job_description, job_requirements: job_requirements)
+    end
+  end
+
+  def self.score_with_embeddings(applicant_profile:, job_description:)
+    a = applicant_profile.embedding
+    b = job_description.embedding
+    return { score: nil, reason: "Missing embeddings" } if a.nil? || b.nil?
+
+    dot = a.zip(b).map { |x, y| x * y }.sum
+    norm_a = Math.sqrt(a.map { |x| x**2 }.sum)
+    norm_b = Math.sqrt(b.map { |y| y**2 }.sum)
+    cosine_similarity = dot / (norm_a * norm_b)
+
+    reason = case cosine_similarity
+             when 0.9..1.0 then "Perfect match"
+             when 0.75..0.9 then "Strong match"
+             when 0.5..0.75 then "Average fit"
+             else "Weak match"
+             end
+
+    { score: (cosine_similarity * 100).round, reason: reason }
+  end
+
+  def self.semantic_score_with_gpt(applicant_profile:, job_description:, job_requirements:)
     client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
     prompt = <<~PROMPT

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_05_022748) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_07_032545) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -67,6 +67,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_05_022748) do
     t.integer "total_years_experience"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "embedding"
     t.index ["email"], name: "index_applicant_profiles_on_email", unique: true
   end
 
@@ -130,6 +131,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_05_022748) do
     t.bigint "job_id", null: false
     t.integer "years_experience_min"
     t.integer "years_experience_max"
+    t.jsonb "embedding"
     t.index ["job_id"], name: "index_job_descriptions_on_job_id"
   end
 

@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     post "finalize_invite", to: "users#finalize_invite"
     get "companies/slug/:slug", to: "companies#show_by_slug"
     get "companies/:slug/jobs", to: "companies#jobs_by_slug"
+    get "matching", to: "matching#show"
     resources :jobs
     resources :job_descriptions, only: [:create]
     resources :job_applications, only: [:create, :index]

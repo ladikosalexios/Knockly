@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const useAutoLogout = (timeout = 10 * 60 * 1000) => {
-    // const useAutoLogout = (timeout = 1 * 60 * 1000) => {
 
   const navigate = useNavigate();
 
