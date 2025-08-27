@@ -1,5 +1,5 @@
 class JobDescription < ApplicationRecord
-  serialize :embedding, JSON
+  serialize :embedding, coder: JSON
 
   belongs_to :job
   has_many :job_description_skills
