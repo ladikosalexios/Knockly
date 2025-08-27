@@ -1,4 +1,6 @@
 class ApplicantProfile < ApplicationRecord
+  attr_accessor :resume_text
+
   has_many :applicant_experiences, dependent: :destroy
   has_many :applicant_educations, dependent: :destroy
   has_many :applicant_profile_skills, dependent: :destroy
@@ -8,7 +10,7 @@ class ApplicantProfile < ApplicationRecord
   validates :email, presence: true
   validates :name, presence: true
 
-  after_save :generate_embedding, if: :saved_change_to_resume_text?
+  after_save :generate_embedding, if: -> { resume_text.present? }
 
   def generate_embedding
     return if resume_text.blank?
