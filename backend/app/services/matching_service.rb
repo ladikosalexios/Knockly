@@ -15,6 +15,7 @@ class MatchingService
     dot = a.zip(b).map { |x, y| x * y }.sum
     norm_a = Math.sqrt(a.map { |x| x**2 }.sum)
     norm_b = Math.sqrt(b.map { |y| y**2 }.sum)
+    return { score: nil, reason: "Missing embeddings" } if norm_a.zero? || norm_b.zero?
     cosine_similarity = dot / (norm_a * norm_b)
 
     reason = case cosine_similarity
