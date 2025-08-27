@@ -1,4 +1,6 @@
 class Api::UsersController < ApplicationController
+  skip_before_action :authenticate_user!, only: [:accept_invite, :finalize_invite]
+
   # Only authenticated users (i.e., admins) can send invites
   before_action :authenticate_user!, only: [:invite]
 
