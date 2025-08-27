@@ -31,7 +31,8 @@ class Api::JobApplicationsController < ApplicationController
       profile = ApplicantProfile.create!(
         name: parsed_data["name"] || params[:name],
         email: parsed_data["email"] || params[:email],
-        total_years_experience: parsed_data["total_years_experience"] || params[:total_years_experience]
+        total_years_experience: parsed_data["total_years_experience"] || params[:total_years_experience],
+        resume_text: job_application_params[:resume_text]
       )
       Rails.logger.info "ApplicantProfile created: #{profile.inspect}"
 
