@@ -1,6 +1,7 @@
 class Api::UsersController < ApplicationController
-  # Only authenticated users (i.e., admins) can send invites
+  # Only authenticated admin users can send invites
   before_action :authenticate_user!, only: [:invite]
+  before_action :authorize_admin!, only: [:invite]
 
   # POST /api/invite_user
   # Allows an authenticated user to invite another user to their company
@@ -125,6 +126,14 @@ end
     else
       render json: { error: "Not authenticated" }, status: :unauthorized
     end
+  end
+
+  private
+
+  def authorize_admin!
+    return if current_user&.is_looply_admin?
+
+    render json: { error: "Forbidden" }, status: :forbidden
   end
 
 end
