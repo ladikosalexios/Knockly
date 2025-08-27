@@ -1,7 +1,9 @@
 require "test_helper"
 
 class CompanyTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+  test "slug is generated from name" do
+    company = Company.create!(name: "Acme Inc")
+
+    assert_equal "acme-inc", company.slug
+  end
 end
