@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 
 const JobApplicationPage = () => {
   const { id: jobId } = useParams();
@@ -16,9 +16,12 @@ const JobApplicationPage = () => {
 
   useEffect(() => {
     if (!jobId) return;
-    axios.get(`http://localhost:3000/api/jobs/${encodeURIComponent(jobId)}`)
+    api.get(`/api/jobs/${encodeURIComponent(jobId)}`)
       .then(res => setJob(res.data))
-      .catch(err => setJob(null));
+      .catch(err => {
+        console.error(err);
+        setJob(null);
+      });
   }, [jobId]);
 
   const handleFormChange = (e) => {
@@ -36,7 +39,7 @@ const JobApplicationPage = () => {
     e.preventDefault();
     setSubmitMsg('');
     try {
-      await axios.post('http://localhost:3000/api/job_applications', {
+      await api.post('/api/job_applications', {
         ...parseFormPayload(form),
         job_id: job.id
       });

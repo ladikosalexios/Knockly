@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 
 const PrivateRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/users/me", {
-      withCredentials: true
-    })
+    api.get("/api/users/me")
     .then(() => setIsAuthenticated(true))
     .catch(() => setIsAuthenticated(false));
   }, []);

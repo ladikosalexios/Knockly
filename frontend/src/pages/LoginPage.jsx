@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import api from "../api";
 
 function LoginPage({
   loginEmail,
@@ -18,16 +18,17 @@ function LoginPage({
     setLocalMsg("");
     try {
       // Backend login endpoint (adjust as needed)
-      await axios.post("http://localhost:3000/users/sign_in", {
+      await api.post("/users/sign_in", {
         user: {
           email: loginEmail,
           password: loginPassword
         }
-      }, { withCredentials: true });
+      });
 
       setLocalMsg("Login successful! Redirecting...");
       setTimeout(() => navigate("/admin"), 700);
     } catch (err) {
+      console.error(err);
       setLocalMsg("Login failed: " +
         (err.response?.data?.error || err.message));
     }

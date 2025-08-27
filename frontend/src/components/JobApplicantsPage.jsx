@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 
 export default function JobApplicantsPage() {
   const { id: jobId } = useParams();
@@ -10,11 +10,10 @@ export default function JobApplicantsPage() {
   useEffect(() => {
     const fetchApplicants = async () => {
       try {
-        const res = await axios.get(`http://localhost:3000/api/job_applications?job_id=${jobId}`, {
-          withCredentials: true
-        });
+        const res = await api.get(`/api/job_applications?job_id=${jobId}`);
         setApplicants(res.data);
       } catch (err) {
+        console.error(err);
         setError('Failed to fetch applicants');
       }
     };

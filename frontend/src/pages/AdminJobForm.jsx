@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from "axios";
+import api from "../api";
 
 export default function AdminJobForm({ onCreated }) {
   const [jdForm, setJdForm] = useState({
@@ -22,7 +22,7 @@ export default function AdminJobForm({ onCreated }) {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/users/me", { withCredentials: true })
+    api.get("/api/users/me")
       .then(res => setCurrentUser(res.data))
       .catch(err => console.error("Error fetching current user", err));
   }, []);
@@ -60,20 +60,18 @@ export default function AdminJobForm({ onCreated }) {
 
     try {
       // 1. Create Job (using currentUser data)
-      const jobRes = await axios.post('http://localhost:3000/api/jobs', {
+      const jobRes = await api.post('/api/jobs', {
         job: {
           status: jdForm.job_status,
           expires_at: jdForm.job_expires_at || null,
           company_id: currentUser?.company_id,
-          posted_by_user_id: currentUser?.id        
+          posted_by_user_id: currentUser?.id
         },
-      },
-        { withCredentials: true }
-      );
+      });
       const jobId = jobRes.data.id;
 
       // 2. Create Job Description
-      await axios.post('http://localhost:3000/api/job_descriptions', {
+      await api.post('/api/job_descriptions', {
         job_id: jobId,
         title: jdForm.jd_title,
         description: jdForm.jd_description,
@@ -86,9 +84,7 @@ export default function AdminJobForm({ onCreated }) {
         salary_max: jdForm.salary_max ? Number(jdForm.salary_max) : null,
         salary_currency: jdForm.salary_currency,
         requirements: jdForm.requirements.split("\n").map(r => r.trim()).filter(Boolean)
-      },  {
-         withCredentials: true }
-    );
+      });
 
       setJdJobMsg('Job + JD created!');
       setJdForm({
@@ -109,6 +105,7 @@ export default function AdminJobForm({ onCreated }) {
       });
       if (onCreated) onCreated();
     } catch (err) {
+      console.error(err);
       setJdJobMsg('Error creating job/JD');
     }
   };

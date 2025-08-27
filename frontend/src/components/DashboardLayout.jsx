@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { Typography, CssBaseline, Drawer, List, ListItem, ListItemText, Box } from '@mui/material';
 import AdminJobForm from '../pages/AdminJobForm';
 import InviteUserForm from '../components/InviteUserForm';
@@ -15,9 +15,7 @@ const DashboardLayout = () => {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/admin/dashboard", {
-      withCredentials: true
-    })
+    api.get("/api/admin/dashboard")
     .then(res => {
       setJobs(res.data);
     })
@@ -27,9 +25,7 @@ const DashboardLayout = () => {
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/users/me", {
-      withCredentials: true
-    })
+    api.get("/api/users/me")
     .then(res => {
       setCurrentUser(res.data);
     })
@@ -40,9 +36,7 @@ const DashboardLayout = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.delete("http://localhost:3000/users/sign_out", {
-        withCredentials: true
-      });
+      await api.delete("/users/sign_out");
       window.location.href = "/login";
     } catch (err) {
       console.error("Logout failed", err);
