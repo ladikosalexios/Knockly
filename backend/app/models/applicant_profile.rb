@@ -1,4 +1,5 @@
 class ApplicantProfile < ApplicationRecord
+  # Embedding is stored in a jsonb column; no serialization needed.
   attr_accessor :resume_text
 
   has_many :applicant_experiences, dependent: :destroy
