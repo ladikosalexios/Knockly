@@ -1,6 +1,4 @@
 class ApplicantProfile < ApplicationRecord
-  serialize :embedding, JSON
-
   has_many :applicant_experiences, dependent: :destroy
   has_many :applicant_educations, dependent: :destroy
   has_many :applicant_profile_skills, dependent: :destroy
