@@ -3,7 +3,11 @@ class MatchingService
     if applicant_profile.embedding.present? && job_description.embedding.present?
       return score_with_embeddings(applicant_profile: applicant_profile, job_description: job_description)
     else
-      return semantic_score_with_gpt(applicant_profile: applicant_profile, job_description: job_description, job_requirements: job_requirements)
+      return semantic_score_with_gpt(
+        applicant_profile: applicant_profile,
+        job_description: job_description.description,
+        job_requirements: job_requirements
+      )
     end
   end
 

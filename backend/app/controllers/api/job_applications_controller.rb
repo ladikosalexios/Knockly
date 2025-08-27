@@ -149,13 +149,12 @@ class Api::JobApplicationsController < ApplicationController
 
     results = apps.map do |app|
       profile = app.applicant_profile
-      job_description = app.job.job_description.description
-      job_requirements = app.job.job_description.requirements
+      job_description = app.job.job_description
 
       score_data = MatchingService.score(
         applicant_profile: profile,
         job_description: job_description,
-        job_requirements: job_requirements
+        job_requirements: job_description.requirements
       )
 
 
