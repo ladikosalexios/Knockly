@@ -23,10 +23,14 @@ class MatchingService
     cosine_similarity = dot / (norm_a * norm_b)
 
     reason = case cosine_similarity
-             when 0.9..1.0 then "Perfect match"
-             when 0.75..0.9 then "Strong match"
-             when 0.5..0.75 then "Average fit"
-             else "Weak match"
+             when 0.9..1.0
+               "Perfect match — you'd be hard-pressed to find a better fit."
+             when 0.75..0.9
+               "Strong match — the candidate aligns well, though not flawlessly."
+             when 0.5..0.75
+               "Average fit — some promising overlaps but room for improvement."
+             else
+               "Weak match — the connection feels tenuous at best."
              end
 
     { score: (cosine_similarity * 100).round, reason: reason }
