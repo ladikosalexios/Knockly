@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 
 const useAutoLogout = (timeout = 10 * 60 * 1000) => {
 
@@ -12,7 +12,7 @@ const useAutoLogout = (timeout = 10 * 60 * 1000) => {
     const resetTimer = () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        axios.delete('http://localhost:3000/users/sign_out', { withCredentials: true })
+        api.delete('/users/sign_out')
           .then(() => {
             navigate('/logged-out');
           })
