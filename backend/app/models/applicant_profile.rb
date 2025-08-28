@@ -11,19 +11,11 @@ class ApplicantProfile < ApplicationRecord
   validates :email, presence: true
   validates :name, presence: true
 
-  after_save :generate_embedding, if: -> { resume_text.present? }
+  after_commit :enqueue_embedding_generation, if: -> { resume_text.present? }
 
-  def generate_embedding
-    return if resume_text.blank?
+  private
 
-    client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
-    response = client.embeddings(parameters: {
-      model: "text-embedding-ada-002",
-      input: resume_text
-    })
-
-    update_column(:embedding, response.dig("data", 0, "embedding"))
-  rescue => e
-    Rails.logger.error "Embedding error for ApplicantProfile #{id}: #{e.message}"
+  def enqueue_embedding_generation
+    ApplicantProfileEmbeddingJob.perform_later(id, resume_text)
   end
 end
