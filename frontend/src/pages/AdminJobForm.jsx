@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from "../api";
 
 export default function AdminJobForm({ onCreated }) {
   const { id } = useParams();
+  const navigate = useNavigate();
   const isEdit = Boolean(id);
   const [jdForm, setJdForm] = useState({
     jd_title: '',
@@ -116,6 +117,7 @@ export default function AdminJobForm({ onCreated }) {
           is_remote: jdForm.is_remote,
         });
         setJdJobMsg('Job + JD updated!');
+        navigate('/admin');
       } else {
         const jobRes = await api.post('/api/jobs', {
           job: {
