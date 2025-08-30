@@ -9,6 +9,8 @@ const JobApplicationPage = () => {
   const [job, setJob] = useState(null);
   const [submitMsg, setSubmitMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [resumeFile, setResumeFile] = useState(null);
+  const [processing, setProcessing] = useState(false);
   const [form, setForm] = useState({
     name: '', email: '', resume_text: '', phone: '', work_authorization: '', gender: '',
     ethnicity: '', disability_status: '', veteran_status: '', total_years_experience: '',
@@ -29,6 +31,23 @@ const JobApplicationPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    setResumeFile(file);
+    if (!file) return;
+    setProcessing(true);
+    const formData = new FormData();
+    formData.append('resume_file', file);
+    try {
+      const res = await api.post('/api/job_applications/extract_resume', formData);
+      setForm((f) => ({ ...f, resume_text: res.data.resume_text }));
+    } catch (err) {
+      setSubmitMsg('Error extracting resume');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const parseFormPayload = (form) => {
     let payload = { ...form };
     if (typeof payload.skills === 'string')
@@ -38,15 +57,31 @@ const JobApplicationPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setSubmitMsg('Thank you for applying!');
+    setProcessing(true);
+    setSubmitMsg('');
 
-    api.post('/api/job_applications', {
-      ...parseFormPayload(form),
-      job_id: job.id
-    }).catch(err => {
-      setSubmitMsg('Error submitting: ' + (err.response?.data?.errors || err.message));
+    const payload = parseFormPayload(form);
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach(v => formData.append(`job_application[${key}][]`, v));
+      } else if (value) {
+        formData.append(`job_application[${key}]`, value);
+      }
     });
+    formData.append('job_application[job_id]', job.id);
+    if (resumeFile) formData.append('job_application[resume_file]', resumeFile);
+    if (form.resume_text) formData.append('job_application[resume_text]', form.resume_text);
+
+    api.post('/api/job_applications', formData)
+      .then(() => {
+        setSubmitMsg('Thank you for applying!');
+        setSubmitted(true);
+      })
+      .catch(err => {
+        setSubmitMsg('Error submitting: ' + (err.response?.data?.errors || err.message));
+      })
+      .finally(() => setProcessing(false));
   };
 
   if (job === null) return <div style={{ color: "#fff", padding: 40 }}>Job not found or loading...</div>;
@@ -106,15 +141,16 @@ const JobApplicationPage = () => {
             <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 18, color: '#a8d0ff' }}>
               Apply for {job.job_description?.title || job.title}
             </h2>
-            <input name="name" placeholder="Full Name *" value={form.name} onChange={handleFormChange} required style={inputStyle} />
-            <input name="email" placeholder="Email *" value={form.email} onChange={handleFormChange} type="email" required style={inputStyle} />
-            <input name="phone" placeholder="Phone (optional)" value={form.phone} onChange={handleFormChange} style={inputStyle} />
-            <textarea name="resume_text" placeholder="Paste your resume here *" value={form.resume_text} onChange={handleFormChange} required rows={5} style={textAreaStyle} />
-            <input name="total_years_experience" placeholder="Total Years of Experience" value={form.total_years_experience} onChange={handleFormChange} type="number" style={inputStyle} />
-            <input name="skills" placeholder="Skills (comma separated)" value={form.skills} onChange={handleFormChange} style={inputStyle} />
-            <input name="work_authorization" placeholder="Work authorization status" value={form.work_authorization} onChange={handleFormChange} style={inputStyle} />
+            <input name="name" placeholder="Full Name *" value={form.name} onChange={handleFormChange} required disabled={processing} style={inputStyle} />
+            <input name="email" placeholder="Email *" value={form.email} onChange={handleFormChange} type="email" required disabled={processing} style={inputStyle} />
+            <input name="phone" placeholder="Phone (optional)" value={form.phone} onChange={handleFormChange} disabled={processing} style={inputStyle} />
+            <textarea name="resume_text" placeholder="Paste your resume here" value={form.resume_text} onChange={handleFormChange} rows={5} disabled={processing} style={textAreaStyle} />
+            <input type="file" name="resume_file" onChange={handleFileChange} disabled={processing} style={inputStyle} aria-label="Resume file" />
+            <input name="total_years_experience" placeholder="Total Years of Experience" value={form.total_years_experience} onChange={handleFormChange} type="number" disabled={processing} style={inputStyle} />
+            <input name="skills" placeholder="Skills (comma separated)" value={form.skills} onChange={handleFormChange} disabled={processing} style={inputStyle} />
+            <input name="work_authorization" placeholder="Work authorization status" value={form.work_authorization} onChange={handleFormChange} disabled={processing} style={inputStyle} />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, width: '100%' }}>
-              <select name="gender" value={form.gender} onChange={handleFormChange} style={{ ...selectStyle, flex: '1 1 48%' }}>
+              <select name="gender" value={form.gender} onChange={handleFormChange} disabled={processing} style={{ ...selectStyle, flex: '1 1 48%' }}>
                 <option value="">Gender (optional)</option>
                 <option value="Female">Female</option>
                 <option value="Male">Male</option>
@@ -122,7 +158,7 @@ const JobApplicationPage = () => {
                 <option value="Prefer not to say">Prefer not to say</option>
                 <option value="Other">Other</option>
               </select>
-              <select name="ethnicity" value={form.ethnicity} onChange={handleFormChange} style={{ ...selectStyle, flex: '1 1 48%' }}>
+              <select name="ethnicity" value={form.ethnicity} onChange={handleFormChange} disabled={processing} style={{ ...selectStyle, flex: '1 1 48%' }}>
                 <option value="">Ethnicity (optional)</option>
                 <option value="White">White</option>
                 <option value="Black or African American">Black or African American</option>
@@ -134,24 +170,24 @@ const JobApplicationPage = () => {
               </select>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, width: '100%' }}>
-              <select name="disability_status" value={form.disability_status} onChange={handleFormChange} style={{ ...selectStyle, flex: '1 1 48%' }}>
+              <select name="disability_status" value={form.disability_status} onChange={handleFormChange} disabled={processing} style={{ ...selectStyle, flex: '1 1 48%' }}>
                 <option value="">Disability Status (optional)</option>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
                 <option value="Prefer not to say">Prefer not to say</option>
               </select>
-              <select name="veteran_status" value={form.veteran_status} onChange={handleFormChange} style={{ ...selectStyle, flex: '1 1 48%' }}>
+              <select name="veteran_status" value={form.veteran_status} onChange={handleFormChange} disabled={processing} style={{ ...selectStyle, flex: '1 1 48%' }}>
                 <option value="">Veteran Status (optional)</option>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
                 <option value="Prefer not to say">Prefer not to say</option>
               </select>
             </div>
-            <button type="submit" style={{
+            <button type="submit" disabled={processing} style={{
               background: '#53a6f3', color: '#fff', border: 'none', borderRadius: 8,
-              padding: '16px 0', fontSize: 19, marginTop: 5, fontWeight: 800, letterSpacing: 0.5, cursor: 'pointer'
+              padding: '16px 0', fontSize: 19, marginTop: 5, fontWeight: 800, letterSpacing: 0.5, cursor: processing ? 'default' : 'pointer'
             }}>
-              Submit Application
+              {processing ? 'Processing resume…' : 'Submit Application'}
             </button>
             {submitMsg && <div style={{ marginTop: 16, color: submitMsg.includes('Error') ? '#ff4d4d' : '#a8d0ff', fontWeight: 600 }}>
               {submitMsg}
