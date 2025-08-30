@@ -15,7 +15,7 @@ Rails.application.routes.draw do
     get "companies/:slug/jobs", to: "companies#jobs_by_slug"
     get "matching", to: "matching#show"
     resources :jobs
-    resources :job_descriptions, only: [:create]
+    resources :job_descriptions, only: [:create, :update]
     resources :job_applications, only: [:create, :index] do
       collection do
         post :extract_resume
