@@ -59,9 +59,7 @@ const JobApplicationPage = () => {
     formData.append('job_application[job_id]', job.id);
     if (resumeFile) formData.append('job_application[resume_file]', resumeFile);
 
-    api.post('/api/job_applications', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    api.post('/api/job_applications', formData)
       .then(() => {
         setSubmitMsg('Thank you for applying!');
         setSubmitted(true);

@@ -51,7 +51,7 @@ test('shows processing state and then thank you after submission', async () => {
 
   await screen.findByText('Thank you for applying!');
 
-  expect(api.post).toHaveBeenCalledWith('/api/job_applications', expect.any(FormData), expect.any(Object));
+  expect(api.post).toHaveBeenCalledWith('/api/job_applications', expect.any(FormData));
   expect(screen.queryByPlaceholderText('Full Name *')).not.toBeInTheDocument();
   expect(screen.getByText('About Your Role:')).toBeInTheDocument();
 });
