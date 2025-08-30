@@ -1,5 +1,5 @@
 class Api::JobsController < ApplicationController
-  before_action :authenticate_user!, only: [:create]
+  before_action :authenticate_user!, only: [:create, :update]
   # GET /api/jobs
   # Lists all active jobs. Can filter by company_id and search by query string.
   # 
@@ -53,6 +53,17 @@ class Api::JobsController < ApplicationController
     job = Job.new(job_params)
     if job.save
       render json: job, status: :created
+    else
+      render json: { errors: job.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  # PUT /api/jobs/:id
+  # Updates an existing job.
+  def update
+    job = Job.find(params[:id])
+    if job.update(job_params)
+      render json: job
     else
       render json: { errors: job.errors.full_messages }, status: :unprocessable_entity
     end

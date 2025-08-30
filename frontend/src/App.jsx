@@ -49,6 +49,11 @@ function App() {
           </PrivateRoute>
         } />
       </Route>
+      <Route path="/admin/jobs/:id/edit" element={
+        <PrivateRoute>
+          <AdminJobForm />
+        </PrivateRoute>
+      } />
       <Route path="/admin/jobs/:id/applicants" element={
         <PrivateRoute>
           <JobApplicantsPage />
