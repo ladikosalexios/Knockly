@@ -7,11 +7,10 @@ class Api::JobApplicationsController < ApplicationController
   def create
     Rails.logger.info "Starting job application creation..."
     Rails.logger.info "PARAMS: #{params.inspect}"
-    resume_text = if job_application_params[:resume_file].present?
-                    extract_resume_text(job_application_params[:resume_file])
-                  else
-                    job_application_params[:resume_text]
-                  end
+    resume_text = job_application_params[:resume_text].presence
+    if resume_text.blank? && job_application_params[:resume_file].present?
+      resume_text = extract_resume_text(job_application_params[:resume_file])
+    end
     if resume_text.present?
       gpt_output = parse_resume_with_gpt(resume_text)
       Rails.logger.info("GPT Output: #{gpt_output.inspect}")
@@ -94,7 +93,8 @@ class Api::JobApplicationsController < ApplicationController
 
       # Now create the JobApplication and associate the profile
       Rails.logger.info "Building JobApplication with: #{job_application_params.inspect}"
-      @job_application = JobApplication.new(job_application_params.except(:resume_file, :resume_text).merge(email: email, resume_text: resume_text))
+      application_attrs = job_application_params.except(:resume_file, :resume_text, :total_years_experience, :experiences, :educations, :skills)
+      @job_application = JobApplication.new(application_attrs.merge(email: email, resume_text: resume_text))
       @job_application.resume_file.attach(job_application_params[:resume_file]) if job_application_params[:resume_file]
       Rails.logger.info "JobApplication built: #{@job_application.inspect}"
       @job_application.applicant_profile = profile
@@ -175,6 +175,15 @@ class Api::JobApplicationsController < ApplicationController
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.info "Errors: #{e.message}"
     render json: { errors: e.message }, status: :unprocessable_entity
+  end
+
+  def extract_resume
+    if params[:resume_file].present?
+      text = extract_resume_text(params[:resume_file])
+      render json: { resume_text: text }
+    else
+      render json: { error: 'resume_file missing' }, status: :unprocessable_entity
+    end
   end
 
   # api/job_applications

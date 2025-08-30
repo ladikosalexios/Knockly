@@ -31,8 +31,21 @@ const JobApplicationPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => {
-    setResumeFile(e.target.files[0]);
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    setResumeFile(file);
+    if (!file) return;
+    setProcessing(true);
+    const formData = new FormData();
+    formData.append('resume_file', file);
+    try {
+      const res = await api.post('/api/job_applications/extract_resume', formData);
+      setForm((f) => ({ ...f, resume_text: res.data.resume_text }));
+    } catch (err) {
+      setSubmitMsg('Error extracting resume');
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const parseFormPayload = (form) => {
@@ -58,6 +71,7 @@ const JobApplicationPage = () => {
     });
     formData.append('job_application[job_id]', job.id);
     if (resumeFile) formData.append('job_application[resume_file]', resumeFile);
+    if (form.resume_text) formData.append('job_application[resume_text]', form.resume_text);
 
     api.post('/api/job_applications', formData)
       .then(() => {

@@ -16,7 +16,11 @@ Rails.application.routes.draw do
     get "matching", to: "matching#show"
     resources :jobs
     resources :job_descriptions, only: [:create]
-    resources :job_applications, only: [:create, :index]
+    resources :job_applications, only: [:create, :index] do
+      collection do
+        post :extract_resume
+      end
+    end
     resources :companies
     resources :skills
     resources :users
