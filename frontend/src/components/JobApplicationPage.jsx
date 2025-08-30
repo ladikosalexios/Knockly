@@ -12,7 +12,7 @@ const JobApplicationPage = () => {
   const [form, setForm] = useState({
     name: '', email: '', resume_text: '', phone: '', work_authorization: '', gender: '',
     ethnicity: '', disability_status: '', veteran_status: '', total_years_experience: '',
-    skills: '', experiences: '', educations: ''
+    skills: ''
   });
 
   useEffect(() => {
@@ -112,8 +112,6 @@ const JobApplicationPage = () => {
             <textarea name="resume_text" placeholder="Paste your resume here *" value={form.resume_text} onChange={handleFormChange} required rows={5} style={textAreaStyle} />
             <input name="total_years_experience" placeholder="Total Years of Experience" value={form.total_years_experience} onChange={handleFormChange} type="number" style={inputStyle} />
             <input name="skills" placeholder="Skills (comma separated)" value={form.skills} onChange={handleFormChange} style={inputStyle} />
-            <textarea name="experiences" placeholder="Work Experience (optional)" value={form.experiences} onChange={handleFormChange} rows={3} style={textAreaStyle} />
-            <textarea name="educations" placeholder="Education (optional)" value={form.educations} onChange={handleFormChange} rows={2} style={textAreaStyle} />
             <input name="work_authorization" placeholder="Work authorization status" value={form.work_authorization} onChange={handleFormChange} style={inputStyle} />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, width: '100%' }}>
               <select name="gender" value={form.gender} onChange={handleFormChange} style={{ ...selectStyle, flex: '1 1 48%' }}>

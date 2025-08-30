@@ -11,9 +11,15 @@ class ApplicantProfile < ApplicationRecord
   validates :email, presence: true
   validates :name, presence: true
 
+  before_validation :normalize_email
+
   after_commit :enqueue_embedding_generation, if: -> { resume_text.present? }
 
   private
+
+  def normalize_email
+    self.email = email.to_s.strip.downcase if email.present?
+  end
 
   def enqueue_embedding_generation
     ApplicantProfileEmbeddingJob.perform_later(id, resume_text)
