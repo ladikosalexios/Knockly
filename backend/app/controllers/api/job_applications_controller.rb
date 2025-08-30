@@ -45,39 +45,45 @@ class Api::JobApplicationsController < ApplicationController
       Rails.logger.info "ApplicantProfile created: #{profile.inspect}"
 
       # Add experiences if present
-      profile.applicant_experiences.destroy_all
-      (parsed_data["experiences"] || []).each do |exp|
-        profile.applicant_experiences.create!(
-          job_title: exp["job_title"],
-          company_name: exp["company_name"],
-          start_date: parse_date_string(exp["start_date"]),
-          end_date: parse_date_string(exp["end_date"]),
-          description: exp["description"]
-        )
+      if experiences.present?
+        profile.applicant_experiences.destroy_all
+        experiences.each do |exp|
+          profile.applicant_experiences.create!(
+            job_title: exp["job_title"],
+            company_name: exp["company_name"],
+            start_date: parse_date_string(exp["start_date"]),
+            end_date: parse_date_string(exp["end_date"]),
+            description: exp["description"]
+          )
+        end
+        Rails.logger.info "Creating #{experiences.count} experiences for ApplicantProfile #{profile.id}"
       end
-      Rails.logger.info "Creating #{(parsed_data["experiences"] || []).count} experiences for ApplicantProfile #{profile.id}"
 
       # Add educations if present
-      profile.applicant_educations.destroy_all
-      (parsed_data["educations"] || []).each do |edu|
-        profile.applicant_educations.create!(
-          degree: edu["degree"],
-          school: edu["school"],
-          field_of_study: edu["field_of_study"],
-          start_year: edu["start_year"],
-          end_year: edu["end_year"],
-          description: edu["description"]
-        )
+      if educations.present?
+        profile.applicant_educations.destroy_all
+        educations.each do |edu|
+          profile.applicant_educations.create!(
+            degree: edu["degree"],
+            school: edu["school"],
+            field_of_study: edu["field_of_study"],
+            start_year: edu["start_year"],
+            end_year: edu["end_year"],
+            description: edu["description"]
+          )
+        end
+        Rails.logger.info "Creating #{educations.count} educations for ApplicantProfile #{profile.id}"
       end
-      Rails.logger.info "Creating #{(parsed_data["educations"] || []).count} educations for ApplicantProfile #{profile.id}"
 
       # Add skills if present
-      profile.applicant_profile_skills.destroy_all
-      (parsed_data["skills"] || []).each do |skill_name|
-        skill = Skill.find_or_create_by!(name: skill_name.downcase.strip)
-        profile.applicant_profile_skills.create!(skill: skill)
+      if skills.present?
+        profile.applicant_profile_skills.destroy_all
+        skills.each do |skill_name|
+          skill = Skill.find_or_create_by!(name: skill_name.downcase.strip)
+          profile.applicant_profile_skills.create!(skill: skill)
+        end
+        Rails.logger.info "Assigning #{skills.count} skills to ApplicantProfile #{profile.id}"
       end
-      Rails.logger.info "Assigning #{(parsed_data["skills"] || []).count} skills to ApplicantProfile #{profile.id}"
 
       # Now create the JobApplication and associate the profile
       Rails.logger.info "Building JobApplication with: #{job_application_params.inspect}"
@@ -95,8 +101,8 @@ class Api::JobApplicationsController < ApplicationController
       job = Job.find(job_application_params[:job_id])
 
       applicant_profile = nil
-      if job_application_params[:experiences] || job_application_params[:educations] ||
-           job_application_params[:skills] || job_application_params[:total_years_experience]
+      if job_application_params[:experiences].present? || job_application_params[:educations].present? ||
+           job_application_params[:skills].present? || job_application_params[:total_years_experience]
         Rails.logger.info "Processing applicant profile creation..."
         email = job_application_params[:email]&.strip&.downcase
         profile_attrs = {
@@ -113,23 +119,27 @@ class Api::JobApplicationsController < ApplicationController
         end
         Rails.logger.info "ApplicantProfile created: #{profile.inspect}"
 
-        if job_application_params[:experiences]
+        if job_application_params[:experiences].present?
           profile.applicant_experiences.destroy_all
           job_application_params[:experiences].each do |exp|
-            profile.applicant_experiences.create!(exp.permit(:job_title, :company_name, :start_date, :end_date, :description))
+            profile.applicant_experiences.create!(
+              exp.permit(:job_title, :company_name, :start_date, :end_date, :description)
+            )
           end
           Rails.logger.info "Creating #{job_application_params[:experiences].count} experiences for ApplicantProfile #{profile.id}"
         end
 
-        if job_application_params[:educations]
+        if job_application_params[:educations].present?
           profile.applicant_educations.destroy_all
           job_application_params[:educations].each do |edu|
-            profile.applicant_educations.create!(edu.permit(:degree, :school, :field_of_study, :start_year, :end_year, :description))
+            profile.applicant_educations.create!(
+              edu.permit(:degree, :school, :field_of_study, :start_year, :end_year, :description)
+            )
           end
           Rails.logger.info "Creating #{job_application_params[:educations].count} educations for ApplicantProfile #{profile.id}"
         end
 
-        if job_application_params[:skills]
+        if job_application_params[:skills].present?
           profile.skills = job_application_params[:skills].map { |name| Skill.find_or_create_by!(name: name) }
           Rails.logger.info "Assigning #{job_application_params[:skills].count} skills to ApplicantProfile #{profile.id}"
         end
