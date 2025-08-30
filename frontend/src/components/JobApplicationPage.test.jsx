@@ -10,7 +10,7 @@ vi.mock('../api', () => ({
 import api from '../api';
 import JobApplicationPage from './JobApplicationPage';
 
-test('hides form and shows thank you after submission', async () => {
+test('shows processing state and then thank you after submission', async () => {
   api.get.mockResolvedValue({
     data: {
       id: 1,
@@ -23,7 +23,8 @@ test('hides form and shows thank you after submission', async () => {
       }
     }
   });
-  api.post.mockImplementation(() => new Promise(() => {}));
+  let resolvePost;
+  api.post.mockImplementation(() => new Promise(res => { resolvePost = res; }));
 
   render(
     <MemoryRouter initialEntries={['/jobs/1/apply']}>
@@ -37,13 +38,20 @@ test('hides form and shows thank you after submission', async () => {
 
   fireEvent.change(screen.getByPlaceholderText('Full Name *'), { target: { value: 'Alice' } });
   fireEvent.change(screen.getByPlaceholderText('Email *'), { target: { value: 'alice@example.com' } });
-  fireEvent.change(screen.getByPlaceholderText('Paste your resume here *'), { target: { value: 'My resume' } });
+  fireEvent.change(screen.getByPlaceholderText('Paste your resume here'), { target: { value: 'My resume' } });
+  const file = new File(['resume'], 'resume.pdf', { type: 'application/pdf' });
+  fireEvent.change(screen.getByLabelText('Resume file'), { target: { files: [file] } });
 
   fireEvent.click(screen.getByRole('button', { name: /submit application/i }));
 
+  expect(screen.getByRole('button', { name: /processing resume/i })).toBeDisabled();
+  expect(screen.getByPlaceholderText('Full Name *')).toBeDisabled();
+
+  resolvePost({});
+
   await screen.findByText('Thank you for applying!');
 
-  expect(api.post).toHaveBeenCalled();
+  expect(api.post).toHaveBeenCalledWith('/api/job_applications', expect.any(FormData), expect.any(Object));
   expect(screen.queryByPlaceholderText('Full Name *')).not.toBeInTheDocument();
   expect(screen.getByText('About Your Role:')).toBeInTheDocument();
 });

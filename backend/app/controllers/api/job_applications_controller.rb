@@ -1,12 +1,19 @@
 require 'openai'
+require 'pdf/reader'
+require 'docx'
 class Api::JobApplicationsController < ApplicationController
   wrap_parameters format: [:json]
   skip_before_action :authenticate_user!
   def create
     Rails.logger.info "Starting job application creation..."
     Rails.logger.info "PARAMS: #{params.inspect}"
-    if job_application_params[:resume_text].present?
-      gpt_output = parse_resume_with_gpt(job_application_params[:resume_text])
+    resume_text = if job_application_params[:resume_file].present?
+                    extract_resume_text(job_application_params[:resume_file])
+                  else
+                    job_application_params[:resume_text]
+                  end
+    if resume_text.present?
+      gpt_output = parse_resume_with_gpt(resume_text)
       Rails.logger.info("GPT Output: #{gpt_output.inspect}")
 
       begin
@@ -32,7 +39,7 @@ class Api::JobApplicationsController < ApplicationController
       profile_attrs = {
         name: parsed_data["name"] || job_application_params[:name],
         total_years_experience: parsed_data["total_years_experience"] || job_application_params[:total_years_experience],
-        resume_text: job_application_params[:resume_text]
+        resume_text: resume_text
       }
       profile = ApplicantProfile.find_or_initialize_by(email: email)
       profile.assign_attributes(profile_attrs)
@@ -87,7 +94,8 @@ class Api::JobApplicationsController < ApplicationController
 
       # Now create the JobApplication and associate the profile
       Rails.logger.info "Building JobApplication with: #{job_application_params.inspect}"
-      @job_application = JobApplication.new(job_application_params.merge(email: email))
+      @job_application = JobApplication.new(job_application_params.except(:resume_file, :resume_text).merge(email: email, resume_text: resume_text))
+      @job_application.resume_file.attach(job_application_params[:resume_file]) if job_application_params[:resume_file]
       Rails.logger.info "JobApplication built: #{@job_application.inspect}"
       @job_application.applicant_profile = profile
       if @job_application.save
@@ -221,6 +229,7 @@ class Api::JobApplicationsController < ApplicationController
       :disability_status,
       :veteran_status,
       :resume_text,
+      :resume_file,
       :total_years_experience,
       experiences: [:job_title, :company_name, :start_date, :end_date, :description],
       educations: [:degree, :school, :field_of_study, :start_year, :end_year, :description],
@@ -239,11 +248,26 @@ class Api::JobApplicationsController < ApplicationController
       :disability_status,
       :veteran_status,
       :resume_text,
+      :resume_file,
       :total_years_experience,
       experiences: [:job_title, :company_name, :start_date, :end_date, :description],
       educations: [:degree, :school, :field_of_study, :start_year, :end_year, :description],
       skills: []
     )
+  end
+
+  def extract_resume_text(file)
+    case File.extname(file.original_filename).downcase
+    when '.pdf'
+      PDF::Reader.new(file.tempfile.path).pages.map(&:text).join("\n")
+    when '.doc', '.docx'
+      Docx::Document.open(file.tempfile.path).paragraphs.map(&:text).join("\n")
+    else
+      file.read
+    end
+  rescue => e
+    Rails.logger.warn "Resume text extraction failed: #{e.message}"
+    ""
   end
   # Parse resume using GPT and return structured data as a hash.
   def parse_resume_with_gpt(resume_text)
