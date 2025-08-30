@@ -13,10 +13,11 @@ class Api::JobsController < ApplicationController
   #   })
   # end
   def index
-# DEPRECATED: use /api/companies/:slug/jobs instead for public-facing job boards
-# Get all active jobs, including their company and job description associations.
-    jobs = Job.includes(:company, :job_description).where(status: "active")
-    
+    # Get all active jobs, joining job_descriptions to allow filtering on its fields
+    jobs = Job.includes(:company, :job_description)
+              .joins(:job_description)
+              .where(status: "active")
+
     if params[:company_id].present?
       jobs = jobs.where(company_id: params[:company_id])
     end
@@ -24,16 +25,48 @@ class Api::JobsController < ApplicationController
     # Optional: Full-text search on job title or location (from job_description).
     if params[:q].present?
       q = "%#{params[:q].downcase}%"
-      jobs = jobs.joins(:job_description).where(
+      jobs = jobs.where(
         "LOWER(job_descriptions.title) LIKE ? OR LOWER(job_descriptions.location) LIKE ?",
         q, q
-      ).distinct
+      )
     end
-    # Render jobs as JSON, including nested company and job description (with skills).
-    render json: jobs.as_json(include: {
-      company: {},
-      job_description: { include: :skills }
-    })
+
+    if params[:job_type].present?
+      jobs = jobs.where(job_descriptions: { job_type: params[:job_type] })
+    end
+
+    if params[:is_remote].present?
+      remote = ActiveModel::Type::Boolean.new.cast(params[:is_remote])
+      jobs = jobs.where(job_descriptions: { is_remote: remote })
+    end
+
+    if params[:salary_min].present?
+      jobs = jobs.where("job_descriptions.salary_min >= ?", params[:salary_min].to_i)
+    end
+
+    if params[:salary_max].present?
+      jobs = jobs.where("job_descriptions.salary_max <= ?", params[:salary_max].to_i)
+    end
+
+    # Pagination
+    page = params.fetch(:page, 1).to_i
+    per_page = params.fetch(:per_page, 20).to_i
+    page = 1 if page < 1
+    per_page = 20 if per_page <= 0
+
+    total_count = jobs.count
+    jobs = jobs.offset((page - 1) * per_page).limit(per_page)
+
+    render json: {
+      jobs: jobs.as_json(include: {
+        company: {},
+        job_description: { include: :skills }
+      }),
+      page: page,
+      per_page: per_page,
+      total_pages: (total_count.to_f / per_page).ceil,
+      total_count: total_count
+    }
   end
 
   # GET /api/jobs/:id

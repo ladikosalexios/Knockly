@@ -6,20 +6,42 @@ function PublicJobBoard() {
   const { companySlug } = useParams();
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const [jobType, setJobType] = useState('');
+  const [isRemote, setIsRemote] = useState(false);
+  const [salaryMin, setSalaryMin] = useState('');
+  const [salaryMax, setSalaryMax] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const perPage = 5;
   const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`/api/companies/slug/${companySlug}`)
-      .then(res => {
-        setCompany(res.data);
-        return axios.get(`/api/companies/${companySlug}/jobs`);
-      })
-      .then(res => setJobs(res.data))
-      .catch(() => {
-        setCompany(null);
-        setJobs([]);
-      });
+      .then(res => setCompany(res.data))
+      .catch(() => setCompany(null));
   }, [companySlug]);
+
+  useEffect(() => {
+    if (!company) return;
+    const params = new URLSearchParams();
+    params.append('company_id', company.id);
+    if (jobType) params.append('job_type', jobType);
+    if (isRemote) params.append('is_remote', true);
+    if (salaryMin) params.append('salary_min', salaryMin);
+    if (salaryMax) params.append('salary_max', salaryMax);
+    params.append('page', page);
+    params.append('per_page', perPage);
+
+    axios.get(`/api/jobs?${params.toString()}`)
+      .then(res => {
+        setJobs(res.data.jobs || []);
+        setTotalPages(res.data.total_pages || 1);
+      })
+      .catch(() => {
+        setJobs([]);
+        setTotalPages(1);
+      });
+  }, [company, jobType, isRemote, salaryMin, salaryMax, page]);
 
   if (!company) return <div style={{ padding: 24 }}>Company not found.</div>;
 
@@ -49,6 +71,34 @@ function PublicJobBoard() {
         color: "#fff",
       }}>
         <h2 style={{ marginBottom: 20 }}>Open Jobs</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+          <select value={jobType} onChange={e => { setJobType(e.target.value); setPage(1); }}>
+            <option value="">All Types</option>
+            <option value="full_time">Full Time</option>
+            <option value="part_time">Part Time</option>
+            <option value="contract">Contract</option>
+            <option value="internship">Internship</option>
+          </select>
+          <label>
+            <input type="checkbox" checked={isRemote} onChange={e => { setIsRemote(e.target.checked); setPage(1); }} /> Remote
+          </label>
+          <div>
+            <input
+              type="number"
+              placeholder="Min Salary"
+              value={salaryMin}
+              onChange={e => { setSalaryMin(e.target.value); setPage(1); }}
+              style={{ width: "45%", marginRight: 8 }}
+            />
+            <input
+              type="number"
+              placeholder="Max Salary"
+              value={salaryMax}
+              onChange={e => { setSalaryMax(e.target.value); setPage(1); }}
+              style={{ width: "45%" }}
+            />
+          </div>
+        </div>
         {jobs.length === 0 && <p>No jobs available.</p>}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {jobs.map(job => (
@@ -72,6 +122,13 @@ function PublicJobBoard() {
             </div>
           ))}
         </div>
+        {jobs.length > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
+            <button disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</button>
+            <span>Page {page} of {totalPages}</span>
+            <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</button>
+          </div>
+        )}
       </div>
       <div style={{
         minWidth: 420,
