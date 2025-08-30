@@ -37,7 +37,7 @@ class Api::JobApplicationsController < ApplicationController
       email = job_application_params[:email]&.strip&.downcase
       profile_attrs = {
         name: parsed_data["name"] || job_application_params[:name],
-        total_years_experience: parsed_data["total_years_experience"] || job_application_params[:total_years_experience],
+        total_years_experience: job_application_params[:total_years_experience],
         resume_text: resume_text
       }
       profile = ApplicantProfile.find_or_initialize_by(email: email)
@@ -289,7 +289,6 @@ class Api::JobApplicationsController < ApplicationController
       - name
       - email
       - phone
-      - total_years_experience
       - skills: array of skill names
       - experiences: array of objects with job_title, company_name, start_date, end_date, description
       - educations: array of objects with degree, school, field_of_study, start_year, end_year, description
