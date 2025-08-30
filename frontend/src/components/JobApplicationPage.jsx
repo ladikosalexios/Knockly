@@ -8,6 +8,7 @@ const JobApplicationPage = () => {
   const { id: jobId } = useParams();
   const [job, setJob] = useState(null);
   const [submitMsg, setSubmitMsg] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: '', email: '', resume_text: '', phone: '', work_authorization: '', gender: '',
     ethnicity: '', disability_status: '', veteran_status: '', total_years_experience: '',
@@ -35,23 +36,17 @@ const JobApplicationPage = () => {
     return payload;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitMsg('');
-    try {
-      await api.post('/api/job_applications', {
-        ...parseFormPayload(form),
-        job_id: job.id
-      });
-      setSubmitMsg('Application submitted!');
-      setForm({
-        name: '', email: '', resume_text: '', phone: '', work_authorization: '', gender: '',
-        ethnicity: '', disability_status: '', veteran_status: '', total_years_experience: '',
-        skills: '', experiences: '', educations: ''
-      });
-    } catch (err) {
+    setSubmitted(true);
+    setSubmitMsg('Thank you for applying!');
+
+    api.post('/api/job_applications', {
+      ...parseFormPayload(form),
+      job_id: job.id
+    }).catch(err => {
       setSubmitMsg('Error submitting: ' + (err.response?.data?.errors || err.message));
-    }
+    });
   };
 
   if (job === null) return <div style={{ color: "#fff", padding: 40 }}>Job not found or loading...</div>;
@@ -102,63 +97,69 @@ const JobApplicationPage = () => {
           </div>
         </div>
         {/* Right: Application Form */}
-        <form onSubmit={handleSubmit} style={{ flex: 1, maxWidth: 600, minWidth: 360, display: "flex", flexDirection: "column", gap: 13, background: "#1e1e1e", padding: 40, borderRadius: 12 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 18, color: "#a8d0ff" }}>
-            Apply for {job.job_description?.title || job.title}
-          </h2>
-          <input name="name" placeholder="Full Name *" value={form.name} onChange={handleFormChange} required style={inputStyle} />
-          <input name="email" placeholder="Email *" value={form.email} onChange={handleFormChange} type="email" required style={inputStyle} />
-          <input name="phone" placeholder="Phone (optional)" value={form.phone} onChange={handleFormChange} style={inputStyle} />
-          <textarea name="resume_text" placeholder="Paste your resume here *" value={form.resume_text} onChange={handleFormChange} required rows={5} style={textAreaStyle} />
-          <input name="total_years_experience" placeholder="Total Years of Experience" value={form.total_years_experience} onChange={handleFormChange} type="number" style={inputStyle} />
-          <input name="skills" placeholder="Skills (comma separated)" value={form.skills} onChange={handleFormChange} style={inputStyle} />
-          <textarea name="experiences" placeholder="Work Experience (optional)" value={form.experiences} onChange={handleFormChange} rows={3} style={textAreaStyle} />
-          <textarea name="educations" placeholder="Education (optional)" value={form.educations} onChange={handleFormChange} rows={2} style={textAreaStyle} />
-          <input name="work_authorization" placeholder="Work authorization status" value={form.work_authorization} onChange={handleFormChange} style={inputStyle} />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, width: "100%" }}>
-            <select name="gender" value={form.gender} onChange={handleFormChange} style={{ ...selectStyle, flex: "1 1 48%" }}>
-              <option value="">Gender (optional)</option>
-              <option value="Female">Female</option>
-              <option value="Male">Male</option>
-              <option value="Non-binary">Non-binary</option>
-              <option value="Prefer not to say">Prefer not to say</option>
-              <option value="Other">Other</option>
-            </select>
-            <select name="ethnicity" value={form.ethnicity} onChange={handleFormChange} style={{ ...selectStyle, flex: "1 1 48%" }}>
-              <option value="">Ethnicity (optional)</option>
-              <option value="White">White</option>
-              <option value="Black or African American">Black or African American</option>
-              <option value="Hispanic or Latino">Hispanic or Latino</option>
-              <option value="Asian">Asian</option>
-              <option value="Native American">Native American</option>
-              <option value="Prefer not to say">Prefer not to say</option>
-              <option value="Other">Other</option>
-            </select>
+        {submitted ? (
+          <div style={{ flex: 1, maxWidth: 600, minWidth: 360, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+            <div style={{ color: '#a8d0ff', fontSize: 24, fontWeight: 700, textAlign: 'center' }}>{submitMsg}</div>
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, width: "100%" }}>
-            <select name="disability_status" value={form.disability_status} onChange={handleFormChange} style={{ ...selectStyle, flex: "1 1 48%" }}>
-              <option value="">Disability Status (optional)</option>
-              <option value="No">No</option>
-              <option value="Yes">Yes</option>
-              <option value="Prefer not to say">Prefer not to say</option>
-            </select>
-            <select name="veteran_status" value={form.veteran_status} onChange={handleFormChange} style={{ ...selectStyle, flex: "1 1 48%" }}>
-              <option value="">Veteran Status (optional)</option>
-              <option value="No">No</option>
-              <option value="Yes">Yes</option>
-              <option value="Prefer not to say">Prefer not to say</option>
-            </select>
-          </div>
-          <button type="submit" style={{
-            background: "#53a6f3", color: "#fff", border: "none", borderRadius: 8,
-            padding: "16px 0", fontSize: 19, marginTop: 5, fontWeight: 800, letterSpacing: 0.5, cursor: "pointer"
-          }}>
-            Submit Application
-          </button>
-          {submitMsg && <div style={{ marginTop: 16, color: submitMsg.includes('Error') ? '#ff4d4d' : '#a8d0ff', fontWeight: 600 }}>
-            {submitMsg}
-          </div>}
-        </form>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ flex: 1, maxWidth: 600, minWidth: 360, display: 'flex', flexDirection: 'column', gap: 13, background: '#1e1e1e', padding: 40, borderRadius: 12 }}>
+            <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 18, color: '#a8d0ff' }}>
+              Apply for {job.job_description?.title || job.title}
+            </h2>
+            <input name="name" placeholder="Full Name *" value={form.name} onChange={handleFormChange} required style={inputStyle} />
+            <input name="email" placeholder="Email *" value={form.email} onChange={handleFormChange} type="email" required style={inputStyle} />
+            <input name="phone" placeholder="Phone (optional)" value={form.phone} onChange={handleFormChange} style={inputStyle} />
+            <textarea name="resume_text" placeholder="Paste your resume here *" value={form.resume_text} onChange={handleFormChange} required rows={5} style={textAreaStyle} />
+            <input name="total_years_experience" placeholder="Total Years of Experience" value={form.total_years_experience} onChange={handleFormChange} type="number" style={inputStyle} />
+            <input name="skills" placeholder="Skills (comma separated)" value={form.skills} onChange={handleFormChange} style={inputStyle} />
+            <textarea name="experiences" placeholder="Work Experience (optional)" value={form.experiences} onChange={handleFormChange} rows={3} style={textAreaStyle} />
+            <textarea name="educations" placeholder="Education (optional)" value={form.educations} onChange={handleFormChange} rows={2} style={textAreaStyle} />
+            <input name="work_authorization" placeholder="Work authorization status" value={form.work_authorization} onChange={handleFormChange} style={inputStyle} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, width: '100%' }}>
+              <select name="gender" value={form.gender} onChange={handleFormChange} style={{ ...selectStyle, flex: '1 1 48%' }}>
+                <option value="">Gender (optional)</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Non-binary">Non-binary</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+                <option value="Other">Other</option>
+              </select>
+              <select name="ethnicity" value={form.ethnicity} onChange={handleFormChange} style={{ ...selectStyle, flex: '1 1 48%' }}>
+                <option value="">Ethnicity (optional)</option>
+                <option value="White">White</option>
+                <option value="Black or African American">Black or African American</option>
+                <option value="Hispanic or Latino">Hispanic or Latino</option>
+                <option value="Asian">Asian</option>
+                <option value="Native American">Native American</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, width: '100%' }}>
+              <select name="disability_status" value={form.disability_status} onChange={handleFormChange} style={{ ...selectStyle, flex: '1 1 48%' }}>
+                <option value="">Disability Status (optional)</option>
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+              <select name="veteran_status" value={form.veteran_status} onChange={handleFormChange} style={{ ...selectStyle, flex: '1 1 48%' }}>
+                <option value="">Veteran Status (optional)</option>
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+            <button type="submit" style={{
+              background: '#53a6f3', color: '#fff', border: 'none', borderRadius: 8,
+              padding: '16px 0', fontSize: 19, marginTop: 5, fontWeight: 800, letterSpacing: 0.5, cursor: 'pointer'
+            }}>
+              Submit Application
+            </button>
+            {submitMsg && <div style={{ marginTop: 16, color: submitMsg.includes('Error') ? '#ff4d4d' : '#a8d0ff', fontWeight: 600 }}>
+              {submitMsg}
+            </div>}
+          </form>
+        )}
       </div>
     </div>
   );
