@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import api from "../api";
 
 export default function AdminJobForm({ onCreated }) {
+  const { id } = useParams();
+  const isEdit = Boolean(id);
   const [jdForm, setJdForm] = useState({
     jd_title: '',
     jd_description: '',
@@ -20,12 +23,41 @@ export default function AdminJobForm({ onCreated }) {
   });
   const [jdJobMsg, setJdJobMsg] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  const [jobDescId, setJobDescId] = useState(null);
 
   useEffect(() => {
     api.get("/api/users/me")
       .then(res => setCurrentUser(res.data))
       .catch(err => console.error("Error fetching current user", err));
   }, []);
+
+  useEffect(() => {
+    if (isEdit) {
+      api.get(`/api/jobs/${id}`)
+        .then(res => {
+          const job = res.data;
+          const jd = job.job_description || {};
+          setJobDescId(jd.id);
+          setJdForm({
+            jd_title: jd.title || '',
+            jd_description: jd.description || '',
+            jd_location: jd.is_remote || jd.location === 'Remote' ? '' : (jd.location || ''),
+            jd_skills: (jd.skills || []).map(s => s.name).join(', '),
+            job_status: job.status || 'active',
+            job_expires_at: job.expires_at || '',
+            job_type: jd.job_type || 'full-time',
+            years_experience_min: jd.years_experience_min?.toString() || '',
+            years_experience_max: jd.years_experience_max?.toString() || '',
+            salary_min: jd.salary_min?.toString() || '',
+            salary_max: jd.salary_max?.toString() || '',
+            salary_currency: jd.salary_currency || 'USD',
+            is_remote: jd.is_remote || jd.location === 'Remote',
+            requirements: jd.requirements || '',
+          });
+        })
+        .catch(err => console.error('Error fetching job', err));
+    }
+  }, [isEdit, id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +68,6 @@ export default function AdminJobForm({ onCreated }) {
       return;
     }
 
-    // Basic validation
     if (!jdForm.jd_title.trim()) {
       setJdJobMsg('Job Title is required.');
       return;
@@ -59,54 +90,81 @@ export default function AdminJobForm({ onCreated }) {
     }
 
     try {
-      // 1. Create Job (using currentUser data)
-      const jobRes = await api.post('/api/jobs', {
-        job: {
-          status: jdForm.job_status,
-          expires_at: jdForm.job_expires_at || null,
-          company_id: currentUser?.company_id,
-          posted_by_user_id: currentUser?.id
-        },
-      });
-      const jobId = jobRes.data.id;
+      if (isEdit) {
+        await api.put(`/api/jobs/${id}`, {
+          job: {
+            status: jdForm.job_status,
+            expires_at: jdForm.job_expires_at || null,
+            company_id: currentUser?.company_id,
+            posted_by_user_id: currentUser?.id,
+          },
+        });
 
-      // 2. Create Job Description
-      await api.post('/api/job_descriptions', {
-        job_id: jobId,
-        title: jdForm.jd_title,
-        description: jdForm.jd_description,
-        location: jdForm.is_remote ? 'Remote' : jdForm.jd_location,
-        skills: jdForm.jd_skills.split(",").map(s => s.trim()).filter(Boolean),
-        job_type: jdForm.job_type,
-        years_experience_min: jdForm.years_experience_min ? Number(jdForm.years_experience_min) : null,
-        years_experience_max: jdForm.years_experience_max ? Number(jdForm.years_experience_max) : null,
-        salary_min: jdForm.salary_min ? Number(jdForm.salary_min) : null,
-        salary_max: jdForm.salary_max ? Number(jdForm.salary_max) : null,
-        salary_currency: jdForm.salary_currency,
-        requirements: jdForm.requirements.split("\n").map(r => r.trim()).filter(Boolean)
-      });
+        await api.put(`/api/job_descriptions/${jobDescId}`, {
+          job_id: id,
+          title: jdForm.jd_title,
+          description: jdForm.jd_description,
+          location: jdForm.is_remote ? 'Remote' : jdForm.jd_location,
+          skills: jdForm.jd_skills.split(',').map(s => s.trim()).filter(Boolean),
+          job_type: jdForm.job_type,
+          years_experience_min: jdForm.years_experience_min ? Number(jdForm.years_experience_min) : null,
+          years_experience_max: jdForm.years_experience_max ? Number(jdForm.years_experience_max) : null,
+          salary_min: jdForm.salary_min ? Number(jdForm.salary_min) : null,
+          salary_max: jdForm.salary_max ? Number(jdForm.salary_max) : null,
+          salary_currency: jdForm.salary_currency,
+          requirements: jdForm.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          is_remote: jdForm.is_remote,
+        });
+        setJdJobMsg('Job + JD updated!');
+      } else {
+        const jobRes = await api.post('/api/jobs', {
+          job: {
+            status: jdForm.job_status,
+            expires_at: jdForm.job_expires_at || null,
+            company_id: currentUser?.company_id,
+            posted_by_user_id: currentUser?.id,
+          },
+        });
+        const jobId = jobRes.data.id;
 
-      setJdJobMsg('Job + JD created!');
-      setJdForm({
-        jd_title: '',
-        jd_description: '',
-        jd_location: '',
-        jd_skills: '',
-        job_status: 'active',
-        job_expires_at: '',
-        job_type: 'full-time',
-        years_experience_min: '',
-        years_experience_max: '',
-        salary_min: '',
-        salary_max: '',
-        salary_currency: 'USD',
-        is_remote: false,
-        requirements: '',
-      });
-      if (onCreated) onCreated();
+        await api.post('/api/job_descriptions', {
+          job_id: jobId,
+          title: jdForm.jd_title,
+          description: jdForm.jd_description,
+          location: jdForm.is_remote ? 'Remote' : jdForm.jd_location,
+          skills: jdForm.jd_skills.split(',').map(s => s.trim()).filter(Boolean),
+          job_type: jdForm.job_type,
+          years_experience_min: jdForm.years_experience_min ? Number(jdForm.years_experience_min) : null,
+          years_experience_max: jdForm.years_experience_max ? Number(jdForm.years_experience_max) : null,
+          salary_min: jdForm.salary_min ? Number(jdForm.salary_min) : null,
+          salary_max: jdForm.salary_max ? Number(jdForm.salary_max) : null,
+          salary_currency: jdForm.salary_currency,
+          requirements: jdForm.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+          is_remote: jdForm.is_remote,
+        });
+
+        setJdJobMsg('Job + JD created!');
+        setJdForm({
+          jd_title: '',
+          jd_description: '',
+          jd_location: '',
+          jd_skills: '',
+          job_status: 'active',
+          job_expires_at: '',
+          job_type: 'full-time',
+          years_experience_min: '',
+          years_experience_max: '',
+          salary_min: '',
+          salary_max: '',
+          salary_currency: 'USD',
+          is_remote: false,
+          requirements: '',
+        });
+        if (onCreated) onCreated();
+      }
     } catch (err) {
       console.error(err);
-      setJdJobMsg('Error creating job/JD');
+      setJdJobMsg(`Error ${isEdit ? 'updating' : 'creating'} job/JD`);
     }
   };
 
@@ -127,7 +185,7 @@ export default function AdminJobForm({ onCreated }) {
         marginRight: "auto",
       }}>
         <h2 style={{ color: "#a8d0ff", fontSize: 24, fontWeight: 600 }}>
-          Create New Job & Job Description (Admin)
+          {isEdit ? 'Edit Job & Job Description' : 'Create New Job & Job Description (Admin)'}
         </h2>
         <form onSubmit={handleSubmit}
           style={{ display: "flex", flexDirection: "column", gap: 16, color: "#fff" }}
@@ -245,9 +303,13 @@ export default function AdminJobForm({ onCreated }) {
               e.currentTarget.style.color = "#fff";
             }}
           >
-            Create Job + JD
+            {isEdit ? 'Update Job + JD' : 'Create Job + JD'}
           </button>
-          {jdJobMsg && <div style={{ color: jdJobMsg.includes('created') ? "lightgreen" : "red", marginTop: 8 }}>{jdJobMsg}</div>}
+          {jdJobMsg && (
+            <div style={{ color: (jdJobMsg.includes('created') || jdJobMsg.includes('updated')) ? 'lightgreen' : 'red', marginTop: 8 }}>
+              {jdJobMsg}
+            </div>
+          )}
         </form>
       </div>
     </div>
