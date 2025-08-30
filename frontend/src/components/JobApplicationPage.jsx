@@ -36,20 +36,17 @@ const JobApplicationPage = () => {
     return payload;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitMsg('');
-    setSubmitted(false);
-    try {
-      await api.post('/api/job_applications', {
-        ...parseFormPayload(form),
-        job_id: job.id
-      });
-      setSubmitted(true);
-      setSubmitMsg('Thank you for applying!');
-    } catch (err) {
+    setSubmitted(true);
+    setSubmitMsg('Thank you for applying!');
+
+    api.post('/api/job_applications', {
+      ...parseFormPayload(form),
+      job_id: job.id
+    }).catch(err => {
       setSubmitMsg('Error submitting: ' + (err.response?.data?.errors || err.message));
-    }
+    });
   };
 
   if (job === null) return <div style={{ color: "#fff", padding: 40 }}>Job not found or loading...</div>;

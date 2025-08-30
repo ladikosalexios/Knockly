@@ -23,7 +23,7 @@ test('hides form and shows thank you after submission', async () => {
       }
     }
   });
-  api.post.mockResolvedValue({});
+  api.post.mockImplementation(() => new Promise(() => {}));
 
   render(
     <MemoryRouter initialEntries={['/jobs/1/apply']}>
