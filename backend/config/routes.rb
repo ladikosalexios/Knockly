@@ -16,7 +16,7 @@ Rails.application.routes.draw do
     get "matching", to: "matching#show"
     resources :jobs
     resources :job_descriptions, only: [:create, :update]
-    resources :job_applications, only: [:create, :index] do
+    resources :job_applications, only: [:create, :index, :update] do
       collection do
         post :extract_resume
       end

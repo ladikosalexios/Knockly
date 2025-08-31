@@ -3,7 +3,8 @@ require 'pdf/reader'
 require 'docx'
 class Api::JobApplicationsController < ApplicationController
   wrap_parameters format: [:json]
-  skip_before_action :authenticate_user!
+  skip_before_action :authenticate_user!, only: [:create]
+  before_action :set_job_application, only: [:update]
   def create
     Rails.logger.info "Starting job application creation..."
     Rails.logger.info "PARAMS: #{params.inspect}"
@@ -223,7 +224,19 @@ class Api::JobApplicationsController < ApplicationController
     render json: results
   end
 
+  def update
+    if @job_application.update(status_params)
+      render json: @job_application
+    else
+      render json: { errors: @job_application.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   private
+
+  def set_job_application
+    @job_application = JobApplication.find(params[:id])
+  end
 
   def job_application_params
     # Accept both top-level and nested under :job_application
@@ -263,6 +276,10 @@ class Api::JobApplicationsController < ApplicationController
       educations: [:degree, :school, :field_of_study, :start_year, :end_year, :description],
       skills: []
     )
+  end
+
+  def status_params
+    params.require(:job_application).permit(:status)
   end
 
   def extract_resume_text(file)

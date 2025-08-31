@@ -6,6 +6,7 @@ export default function JobApplicantsPage() {
   const { id: jobId } = useParams();
   const [applicants, setApplicants] = useState([]);
   const [error, setError] = useState('');
+  const statusOptions = ['submitted', 'reviewed', 'interviewed', 'rejected'];
 
   useEffect(() => {
     const fetchApplicants = async () => {
@@ -19,6 +20,17 @@ export default function JobApplicantsPage() {
     };
     fetchApplicants();
   }, [jobId]);
+
+  const handleStatusChange = async (appId, status) => {
+    try {
+      await api.patch(`/api/job_applications/${appId}`, {
+        job_application: { status }
+      });
+      setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status } : a));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div style={{ padding: 32, color: '#fff' }}>
@@ -36,13 +48,33 @@ export default function JobApplicantsPage() {
               border: '1px solid #444',
             }}>
               <h3 style={{ marginBottom: 4 }}>{app.name}</h3>
-              <p>Email: <a href={`mailto:${app.email}`} style={{ color: '#00d0ff' }}>{app.applicant_profile?.email}</a></p>
-              <p>Phone: {app.phone || 'N/A'}</p>
-              <p>Work Auth: {app.work_authorization || 'N/A'}</p>
-              <p>Gender: {app.gender || 'N/A'}</p>
-              <p>Ethnicity: {app.ethnicity || 'N/A'}</p>
-              <p>Disability: {app.disability_status || 'N/A'}</p>
-              <p>Veteran: {app.veteran_status || 'N/A'}</p>
+
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ marginRight: 8 }}>Status:</label>
+                <select
+                  value={app.status || 'submitted'}
+                  onChange={e => handleStatusChange(app.id, e.target.value)}
+                >
+                  {statusOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '4px 16px',
+                marginBottom: 12
+              }}>
+                <p>Email: <a href={`mailto:${app.email}`} style={{ color: '#00d0ff' }}>{app.applicant_profile?.email}</a></p>
+                <p>Phone: {app.phone || 'N/A'}</p>
+                <p>Work Auth: {app.work_authorization || 'N/A'}</p>
+                <p>Gender: {app.gender || 'N/A'}</p>
+                <p>Ethnicity: {app.ethnicity || 'N/A'}</p>
+                <p>Disability: {app.disability_status || 'N/A'}</p>
+                <p>Veteran: {app.veteran_status || 'N/A'}</p>
+              </div>
 
               {/* Match Score */}
               {app.match_score !== undefined && (
@@ -50,6 +82,15 @@ export default function JobApplicantsPage() {
                   <p><strong>Match Score:</strong> {app.match_score}</p>
                   {app.match_reason && <p style={{ fontStyle: 'italic', color: '#ccc' }}>{app.match_reason}</p>}
                 </div>
+              )}
+
+              {app.resume_text && (
+                <details style={{ marginTop: 16 }}>
+                  <summary style={{ cursor: 'pointer' }}>Resume Text</summary>
+                  <pre style={{ whiteSpace: 'pre-wrap', background: '#111', padding: 12, borderRadius: 8 }}>
+                    {app.resume_text}
+                  </pre>
+                </details>
               )}
 
               {/* Experiences */}
@@ -83,8 +124,8 @@ export default function JobApplicantsPage() {
 
               {/* Skills */}
               {app.applicant_profile?.skills?.length > 0 && (
-                <>
-                  <h4 style={{ marginTop: 16 }}>Skills</h4>
+                <details style={{ marginTop: 16 }}>
+                  <summary style={{ cursor: 'pointer' }}>Skills</summary>
                   <div style={{
                     display: 'flex',
                     flexWrap: 'wrap',
@@ -103,7 +144,7 @@ export default function JobApplicantsPage() {
                       </span>
                     ))}
                   </div>
-                </>
+                </details>
               )}
             </div>
           ))}
