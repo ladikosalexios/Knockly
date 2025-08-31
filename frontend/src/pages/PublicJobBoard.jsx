@@ -84,9 +84,25 @@ function PublicJobBoard() {
         fontSize: 16,
         lineHeight: 1.5,
       }}>
+        {company.logo_url && (
+          <img
+            src={company.logo_url}
+            alt={`${company.name} logo`}
+            style={{
+              display: "block",
+              maxWidth: 200,
+              maxHeight: 200,
+              margin: "0 auto 16px",
+              objectFit: "contain",
+            }}
+          />
+        )}
         <h2 style={{ marginBottom: 16, color: "#a8d0ff", textAlign: "center" }}>
           Welcome to the {company.name} Job Openings Page!
         </h2>
+        {company.description && (
+          <p style={{ marginBottom: 16 }}>{company.description}</p>
+        )}
         <p style={{ marginBottom: 16 }}>
           From here you can view and apply for any of our open roles. Should our hiring team see a match between your background and our role, we will be in touch to learn more about you.
         </p>
