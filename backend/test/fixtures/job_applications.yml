@@ -1,11 +1,17 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  job_id: 1
-  name: MyString
-  email: MyString
+  job: one
+  name: John Doe
+  email: applicant@example.com
+  phone: "555-555-5555"
+  work_authorization: Citizen
+  status: submitted
 
 two:
-  job_id: 1
-  name: MyString
-  email: MyString
+  job: one
+  name: Jane Smith
+  email: another@example.com
+  phone: "555-555-0000"
+  work_authorization: Citizen
+  status: reviewed
