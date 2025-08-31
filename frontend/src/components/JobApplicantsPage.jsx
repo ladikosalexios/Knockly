@@ -8,11 +8,18 @@ export default function JobApplicantsPage() {
   const [error, setError] = useState('');
   const statusOptions = ['submitted', 'reviewed', 'interviewed', 'rejected'];
 
+  const normalizeStatus = (status) =>
+    typeof status === 'number' ? statusOptions[status] : status;
+
   useEffect(() => {
     const fetchApplicants = async () => {
       try {
         const res = await api.get(`/api/job_applications?job_id=${jobId}`);
-        setApplicants(res.data);
+        const apps = res.data.map(app => ({
+          ...app,
+          status: normalizeStatus(app.status)
+        }));
+        setApplicants(apps);
       } catch (err) {
         console.error(err);
         setError('Failed to fetch applicants');
@@ -52,7 +59,7 @@ export default function JobApplicantsPage() {
               <div style={{ marginBottom: 12 }}>
                 <label style={{ marginRight: 8 }}>Status:</label>
                 <select
-                  value={app.status || 'submitted'}
+                  value={normalizeStatus(app.status) || 'submitted'}
                   onChange={e => handleStatusChange(app.id, e.target.value)}
                 >
                   {statusOptions.map(opt => (
