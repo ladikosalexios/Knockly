@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from "axios";
+import api from "../api";
 
 function PublicJobBoard() {
   const { companySlug } = useParams();
@@ -9,10 +9,10 @@ function PublicJobBoard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`/api/companies/slug/${companySlug}`)
+    api.get(`/api/companies/slug/${companySlug}`)
       .then(res => {
         setCompany(res.data);
-        return axios.get(`/api/companies/${companySlug}/jobs`);
+        return api.get(`/api/companies/${companySlug}/jobs`);
       })
       .then(res => setJobs(res.data))
       .catch(() => {
