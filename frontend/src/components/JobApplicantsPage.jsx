@@ -91,42 +91,37 @@ export default function JobApplicantsPage() {
                 </div>
               )}
 
-              {app.resume_text && (
-                <details style={{ marginTop: 16 }}>
-                  <summary style={{ cursor: 'pointer' }}>Resume Text</summary>
-                  <pre style={{ whiteSpace: 'pre-wrap', background: '#111', padding: 12, borderRadius: 8 }}>
-                    {app.resume_text}
-                  </pre>
-                </details>
-              )}
-
               {/* Experiences */}
               {app.applicant_profile?.applicant_experiences?.length > 0 && (
-                <>
-                  <h4 style={{ marginTop: 16 }}>Experience</h4>
-                  {app.applicant_profile.applicant_experiences.map((exp, i) => (
-                    <div key={i}>
-                      <p><strong>{exp.job_title}</strong> at {exp.company_name}</p>
-                      <p style={{ fontSize: '14px', color: '#aaa' }}>
-                        {exp.start_date || 'Start N/A'} – {exp.end_date || 'End N/A'}
-                      </p>
-                      {exp.description && <p>{exp.description}</p>}
-                    </div>
-                  ))}
-                </>
+                <details style={{ marginTop: 16 }}>
+                  <summary style={{ cursor: 'pointer' }}>Experience</summary>
+                  <div>
+                    {app.applicant_profile.applicant_experiences.map((exp, i) => (
+                      <div key={i} style={{ marginTop: 8 }}>
+                        <p><strong>{exp.job_title}</strong> at {exp.company_name}</p>
+                        <p style={{ fontSize: '14px', color: '#aaa' }}>
+                          {exp.start_date || 'Start N/A'} – {exp.end_date || 'End N/A'}
+                        </p>
+                        {exp.description && <p>{exp.description}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </details>
               )}
 
               {/* Educations */}
               {app.applicant_profile?.applicant_educations?.length > 0 && (
-                <>
-                  <h4 style={{ marginTop: 16 }}>Education</h4>
-                  {app.applicant_profile.applicant_educations.map((edu, i) => (
-                    <div key={i}>
-                      <p><strong>{edu.degree}</strong> from {edu.school}</p>
-                      {edu.description && <p>{edu.description}</p>}
-                    </div>
-                  ))}
-                </>
+                <details style={{ marginTop: 16 }}>
+                  <summary style={{ cursor: 'pointer' }}>Education</summary>
+                  <div>
+                    {app.applicant_profile.applicant_educations.map((edu, i) => (
+                      <div key={i} style={{ marginTop: 8 }}>
+                        <p><strong>{edu.degree}</strong> from {edu.school}</p>
+                        {edu.description && <p>{edu.description}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </details>
               )}
 
               {/* Skills */}
