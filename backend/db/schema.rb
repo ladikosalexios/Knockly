@@ -98,6 +98,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_07_032545) do
     t.string "ethnicity"
     t.string "disability_status"
     t.string "veteran_status"
+    t.integer "status", default: 0, null: false
     t.index ["applicant_profile_id"], name: "index_job_applications_on_applicant_profile_id"
   end
 
