@@ -39,10 +39,17 @@ export default function InterviewScheduler({ jobApplicationId }) {
     }
   };
 
+  const toLocalInput = (isoString) => {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0,16);
+  };
+
   const startEdit = (interview) => {
     setForm({
       id: interview.id,
-      scheduled_at: interview.scheduled_at?.slice(0,16),
+      scheduled_at: toLocalInput(interview.scheduled_at),
       location: interview.location || '',
       notes: interview.notes || ''
     });
