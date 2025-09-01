@@ -251,9 +251,9 @@ class Api::JobApplicationsController < ApplicationController
   end
 
   def require_company!
-    unless current_user&.company_id.present?
-      render json: { error: "Unauthorized" }, status: :unauthorized
-    end
+    return if current_user&.company_id.present?
+
+    head :unauthorized
   end
 
   def job_application_params

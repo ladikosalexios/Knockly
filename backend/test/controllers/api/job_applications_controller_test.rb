@@ -37,4 +37,13 @@ class Api::JobApplicationsControllerTest < ActionDispatch::IntegrationTest
     body = JSON.parse(@response.body)
     assert_equal 0, body.length
   end
+
+  test "returns unauthorized when user lacks company" do
+    sign_out @user
+    user2 = User.create!(email: "no@e.com", password: "password")
+    sign_in user2, scope: :user
+
+    get "/api/job_applications"
+    assert_response :unauthorized
+  end
 end
