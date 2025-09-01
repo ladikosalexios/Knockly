@@ -21,6 +21,7 @@ Rails.application.routes.draw do
         post :extract_resume
       end
     end
+    get "jobs/:job_id/matches", to: "job_matches#index"
     resources :companies
     resources :skills
     resources :users
