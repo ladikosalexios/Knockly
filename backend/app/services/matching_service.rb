@@ -1,5 +1,7 @@
 class MatchingService
   def self.score(applicant_profile:, job_description:, job_requirements:)
+    return { score: nil, reason: "Missing job description" } if job_description.nil?
+
     if applicant_profile.embedding.present? && job_description.embedding.present?
       return score_with_embeddings(applicant_profile: applicant_profile, job_description: job_description)
     else
