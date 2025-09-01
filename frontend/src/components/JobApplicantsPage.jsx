@@ -6,6 +6,8 @@ export default function JobApplicantsPage() {
   const { id: jobId } = useParams();
   const [applicants, setApplicants] = useState([]);
   const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
   const statusOptions = ['submitted', 'reviewed', 'interviewed', 'rejected'];
 
   const normalizeStatus = (status) =>
@@ -39,9 +41,42 @@ export default function JobApplicantsPage() {
     }
   };
 
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.get('/api/applicant_profiles', { params: { q: query } });
+      setResults(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div style={{ padding: 32, color: '#fff' }}>
       <h2 style={{ marginBottom: 24 }}>Applicants for Job #{jobId}</h2>
+      <form onSubmit={handleSearch} style={{ marginBottom: 24 }}>
+        <input
+          placeholder="Search applicants"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+        />
+        <button type="submit">Search</button>
+      </form>
+      {results.length > 0 && (
+        <div style={{ marginBottom: 32 }}>
+          <h3>Search Results</h3>
+          {results.map(r => (
+            <div key={r.id} style={{ marginTop: 8 }}>
+              <p>
+                {r.name} (Similarity: {r.similarity?.toFixed(2)})
+              </p>
+              {r.skills && r.skills.length > 0 && (
+                <p>Skills: {r.skills.join(', ')}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {applicants.length === 0 ? (
         <p>No applicants yet.</p>
