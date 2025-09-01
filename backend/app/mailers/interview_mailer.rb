@@ -19,6 +19,7 @@ class InterviewMailer < ApplicationMailer
   def generate_ics(interview)
     start_time = interview.scheduled_at.utc.strftime('%Y%m%dT%H%M%SZ')
     end_time = (interview.scheduled_at + 1.hour).utc.strftime('%Y%m%dT%H%M%SZ')
+    title = interview.job_application.job.job_description&.title || 'Interview'
     <<~ICS
     BEGIN:VCALENDAR
     VERSION:2.0
@@ -28,7 +29,7 @@ class InterviewMailer < ApplicationMailer
     DTSTAMP:#{Time.now.utc.strftime('%Y%m%dT%H%M%SZ')}
     DTSTART:#{start_time}
     DTEND:#{end_time}
-    SUMMARY:Interview for #{interview.job_application.job.title}
+    SUMMARY:Interview for #{title}
     DESCRIPTION:#{interview.notes}
     LOCATION:#{interview.location}
     END:VEVENT
