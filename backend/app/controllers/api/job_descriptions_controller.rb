@@ -11,11 +11,6 @@ class Api::JobDescriptionsController < ApplicationController
       end
 
       jd = JobDescription.create!(jd_params)
-      begin
-        jd.update!(embedding: EmbeddingService.generate("#{jd.title}\n#{jd.description}\n#{jd.requirements}"))
-      rescue => e
-        Rails.logger.warn "[JobDescription] Failed to generate embedding: #{e.message}"
-      end
       (params[:skills] || []).each do |name|
         canonical = name.to_s.downcase.strip
         skill = Skill.find_or_create_by!(name: canonical)
@@ -37,11 +32,6 @@ class Api::JobDescriptionsController < ApplicationController
       end
 
       jd.update!(jd_params)
-      begin
-        jd.update!(embedding: EmbeddingService.generate("#{jd.title}\n#{jd.description}\n#{jd.requirements}"))
-      rescue => e
-        Rails.logger.warn "[JobDescription] Failed to generate embedding: #{e.message}"
-      end
 
       if params.key?(:skills)
         jd.skills.clear

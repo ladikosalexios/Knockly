@@ -3,19 +3,14 @@ class JobDescription < ApplicationRecord
   has_many :job_description_skills
   has_many :skills, through: :job_description_skills
 
-  after_save :generate_embedding, if: :saved_change_to_description?
+  after_commit :enqueue_embedding_generation, on: [:create, :update]
 
-  def generate_embedding
-    return if description.blank?
+  private
 
-    client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
-    response = client.embeddings(parameters: {
-      model: "text-embedding-ada-002",
-      input: description
-    })
+  def enqueue_embedding_generation
+    text = [title, description, requirements].compact.join("\n")
+    return if text.blank?
 
-    update_column(:embedding, response.dig("data", 0, "embedding"))
-  rescue => e
-    Rails.logger.error "Embedding error for JobDescription #{id}: #{e.message}"
+    JobDescriptionEmbeddingJob.perform_later(id, text)
   end
 end
