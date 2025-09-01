@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api';
+import Modal from './Modal';
+import InterviewScheduler from './admin/InterviewScheduler';
 
 export default function JobApplicantsPage() {
   const { id: jobId } = useParams();
   const [applicants, setApplicants] = useState([]);
   const [error, setError] = useState('');
+  const [selectedAppId, setSelectedAppId] = useState(null);
   const statusOptions = ['submitted', 'reviewed', 'interviewed', 'rejected'];
 
   const normalizeStatus = (status) =>
@@ -38,6 +41,9 @@ export default function JobApplicantsPage() {
       console.error(err);
     }
   };
+
+  const openScheduler = (appId) => setSelectedAppId(appId);
+  const closeScheduler = () => setSelectedAppId(null);
 
   return (
     <div style={{ padding: 32, color: '#fff' }}>
@@ -150,9 +156,15 @@ export default function JobApplicantsPage() {
                   </div>
                 </details>
               )}
+              <button onClick={() => openScheduler(app.id)} style={{ marginTop: 16 }}>Schedule Interview</button>
             </div>
           ))}
         </div>
+      )}
+      {selectedAppId && (
+        <Modal onClose={closeScheduler}>
+          <InterviewScheduler jobApplicationId={selectedAppId} />
+        </Modal>
       )}
     </div>
   );

@@ -41,9 +41,9 @@ const JobApplicationPage = () => {
     try {
       const res = await api.post('/api/job_applications/extract_resume', formData);
       setForm((f) => ({ ...f, resume_text: res.data.resume_text }));
-    } catch (err) {
-      setSubmitMsg('Error extracting resume');
-    } finally {
+      } catch {
+        setSubmitMsg('Error extracting resume');
+      } finally {
       setProcessing(false);
     }
   };
