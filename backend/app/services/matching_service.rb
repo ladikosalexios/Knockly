@@ -16,9 +16,9 @@ class MatchingService
     b = job_description.embedding
     return { score: nil, reason: "Missing embeddings" } if a.nil? || b.nil?
 
-    dot = a.zip(b).map { |x, y| x * y }.sum
-    norm_a = Math.sqrt(a.map { |x| x**2 }.sum)
-    norm_b = Math.sqrt(b.map { |y| y**2 }.sum)
+    dot = a.zip(b).sum { |x, y| x * y }
+    norm_a = Math.sqrt(a.sum { |x| x * x })
+    norm_b = Math.sqrt(b.sum { |y| y * y })
     return { score: nil, reason: "Missing embeddings" } if norm_a.zero? || norm_b.zero?
     cosine_similarity = dot / (norm_a * norm_b)
 
@@ -37,7 +37,7 @@ class MatchingService
   end
 
   def self.semantic_score_with_gpt(applicant_profile:, job_description:, job_requirements:)
-    client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+    client = OPENAI_CLIENT
 
     prompt = <<~PROMPT
       You are a helpful AI assistant skilled in evaluating job fit between a candidate and a job.
