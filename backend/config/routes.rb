@@ -23,6 +23,7 @@ Rails.application.routes.draw do
     end
     resources :companies
     resources :skills
+    resources :applicant_profiles, only: [:index]
     resources :users
     namespace :admin do
       get 'dashboard', to: 'dashboard#index'
