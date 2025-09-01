@@ -84,11 +84,14 @@ class Api::JobApplicationsController < ApplicationController
 
       # Add skills if present
       if skills.present?
-        profile.applicant_profile_skills.destroy_all
-        skills.each do |skill_name|
-          skill = Skill.find_or_create_by!(name: skill_name.downcase.strip)
-          profile.applicant_profile_skills.create!(skill: skill)
+        names = skills.map { |s| s.to_s.downcase.strip }.uniq
+        skills_map = Skill.where(name: names).index_by(&:name)
+        missing = names - skills_map.keys
+        if missing.any?
+          Skill.insert_all(missing.map { |n| { name: n, created_at: Time.current, updated_at: Time.current } })
+          skills_map.merge!(Skill.where(name: missing).index_by(&:name))
         end
+        profile.skills = skills_map.values
         Rails.logger.info "Assigning #{skills.count} skills to ApplicantProfile #{profile.id}"
       end
 
@@ -149,7 +152,14 @@ class Api::JobApplicationsController < ApplicationController
         end
 
         if job_application_params[:skills].present?
-          profile.skills = job_application_params[:skills].map { |name| Skill.find_or_create_by!(name: name) }
+          names = job_application_params[:skills].map { |n| n.to_s.downcase.strip }.uniq
+          skills_map = Skill.where(name: names).index_by(&:name)
+          missing = names - skills_map.keys
+          if missing.any?
+            Skill.insert_all(missing.map { |n| { name: n, created_at: Time.current, updated_at: Time.current } })
+            skills_map.merge!(Skill.where(name: missing).index_by(&:name))
+          end
+          profile.skills = skills_map.values
           Rails.logger.info "Assigning #{job_application_params[:skills].count} skills to ApplicantProfile #{profile.id}"
         end
 

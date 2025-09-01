@@ -16,11 +16,14 @@ class Api::JobDescriptionsController < ApplicationController
       rescue => e
         Rails.logger.warn "[JobDescription] Failed to generate embedding: #{e.message}"
       end
-      (params[:skills] || []).each do |name|
-        canonical = name.to_s.downcase.strip
-        skill = Skill.find_or_create_by!(name: canonical)
-        JobDescriptionSkill.find_or_create_by!(job_description: jd, skill: skill)
+      names = (params[:skills] || []).map { |n| n.to_s.downcase.strip }.uniq
+      skills_map = Skill.where(name: names).index_by(&:name)
+      missing = names - skills_map.keys
+      if missing.any?
+        Skill.insert_all(missing.map { |n| { name: n, created_at: Time.current, updated_at: Time.current } })
+        skills_map.merge!(Skill.where(name: missing).index_by(&:name))
       end
+      jd.skills = skills_map.values
     render json: jd.as_json(include: { skills: {} }), status: :created
     end
   rescue ActiveRecord::RecordInvalid => e
@@ -44,12 +47,14 @@ class Api::JobDescriptionsController < ApplicationController
       end
 
       if params.key?(:skills)
-        jd.skills.clear
-        (params[:skills] || []).each do |name|
-          canonical = name.to_s.downcase.strip
-          skill = Skill.find_or_create_by!(name: canonical)
-          JobDescriptionSkill.find_or_create_by!(job_description: jd, skill: skill)
+        names = (params[:skills] || []).map { |n| n.to_s.downcase.strip }.uniq
+        skills_map = Skill.where(name: names).index_by(&:name)
+        missing = names - skills_map.keys
+        if missing.any?
+          Skill.insert_all(missing.map { |n| { name: n, created_at: Time.current, updated_at: Time.current } })
+          skills_map.merge!(Skill.where(name: missing).index_by(&:name))
         end
+        jd.skills = skills_map.values
       end
 
       render json: jd.as_json(include: { skills: {} })
