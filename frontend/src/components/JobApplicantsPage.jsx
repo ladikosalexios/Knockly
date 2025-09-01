@@ -4,15 +4,17 @@ import api from '../api';
 import Modal from './Modal';
 import InterviewScheduler from './admin/InterviewScheduler';
 
+const STATUS_OPTIONS = ['submitted', 'reviewed', 'interviewed', 'rejected'];
+const normalizeStatus = (status) =>
+  typeof status === 'number' ? STATUS_OPTIONS[status] : status;
+
 export default function JobApplicantsPage() {
   const { id: jobId } = useParams();
   const [applicants, setApplicants] = useState([]);
   const [error, setError] = useState('');
   const [selectedAppId, setSelectedAppId] = useState(null);
-  const statusOptions = ['submitted', 'reviewed', 'interviewed', 'rejected'];
-
-  const normalizeStatus = (status) =>
-    typeof status === 'number' ? statusOptions[status] : status;
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const statusOptions = STATUS_OPTIONS;
 
   useEffect(() => {
     const fetchApplicants = async () => {
@@ -42,8 +44,18 @@ export default function JobApplicantsPage() {
     }
   };
 
-  const openScheduler = (appId) => setSelectedAppId(appId);
-  const closeScheduler = () => setSelectedAppId(null);
+  const openScheduler = (app) => {
+    setSelectedAppId(app.id);
+    setSelectedApplicant(app);
+  };
+  const closeScheduler = () => {
+    setSelectedAppId(null);
+    setSelectedApplicant(null);
+  };
+  const markScheduled = (appId) => {
+    setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status: 'interviewed' } : a));
+    closeScheduler();
+  };
 
   return (
     <div style={{ padding: 32, color: '#fff' }}>
@@ -156,14 +168,24 @@ export default function JobApplicantsPage() {
                   </div>
                 </details>
               )}
-              <button onClick={() => openScheduler(app.id)} style={{ marginTop: 16 }}>Schedule Interview</button>
+              <button
+                onClick={() => openScheduler(app)}
+                style={{ marginTop: 16 }}
+                disabled={app.status === 'interviewed'}
+              >
+                {app.status === 'interviewed' ? 'Interview Scheduled' : 'Schedule Interview'}
+              </button>
             </div>
           ))}
         </div>
       )}
       {selectedAppId && (
         <Modal onClose={closeScheduler}>
-          <InterviewScheduler jobApplicationId={selectedAppId} />
+          <InterviewScheduler
+            jobApplicationId={selectedAppId}
+            applicantName={selectedApplicant?.name}
+            onScheduled={() => markScheduled(selectedAppId)}
+          />
         </Modal>
       )}
     </div>

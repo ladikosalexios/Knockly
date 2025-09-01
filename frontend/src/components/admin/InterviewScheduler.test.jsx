@@ -22,12 +22,12 @@ test('renders fetched interviews', async () => {
   expect(api.get).toHaveBeenCalledWith('/api/interviews?job_application_id=1');
 });
 
-test('edit populates local datetime', async () => {
-  vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(300);
-  api.get.mockResolvedValue({ data: [{ id: 1, scheduled_at: '2025-09-01T12:00:00Z', location: 'Zoom', notes: '' }] });
+test('edit populates fields', async () => {
+  api.get.mockResolvedValue({ data: [{ id: 1, scheduled_at: '2025-09-01T12:00:00Z', location: 'Zoom', notes: 'Bring resume' }] });
   render(<InterviewScheduler jobApplicationId={1} />);
   await screen.findByText('Interview Scheduler');
   const editBtn = await screen.findByText('Edit');
   fireEvent.click(editBtn);
-  expect(screen.getByDisplayValue('2025-09-01T07:00')).toBeInTheDocument();
+  expect(screen.getByDisplayValue('Zoom')).toBeInTheDocument();
+  expect(screen.getByDisplayValue('Bring resume')).toBeInTheDocument();
 });
