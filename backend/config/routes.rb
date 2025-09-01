@@ -21,6 +21,7 @@ Rails.application.routes.draw do
         post :extract_resume
       end
     end
+    resources :interviews
     resources :companies
     resources :skills
     resources :users
