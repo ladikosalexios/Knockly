@@ -36,18 +36,12 @@ class Api::JobMatchesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "returns candidates even without embeddings" do
-    @jd.update!(embedding: nil)
-    stub = ->(applicant_profile:, job_description:, job_requirements:) {
-      { score: applicant_profile == @p1 ? 70 : 30 }
-    }
-    MatchingService.stub :score, stub do
-      get "/api/jobs/#{@job.id}/matches"
-    end
-    assert_response :success
-    body = JSON.parse(@response.body)
-    assert_equal 2, body.length
-    assert_equal ["Alice", "Bob"], body.map { |h| h["name"] }
-    assert_equal [70, 30], body.map { |h| h["score"] }
+  test "requires company for matches" do
+    sign_out @user
+    user_without_company = User.create!(email: "no@company.com", password: "password")
+    sign_in user_without_company
+
+    get "/api/jobs/#{@job.id}/matches"
+    assert_response :unauthorized
   end
 end

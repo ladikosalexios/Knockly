@@ -28,19 +28,4 @@ class JobMatcherTest < ActiveSupport::TestCase
     refute_includes matches.map { |m| m[:profile] }, @p3
   end
 
-  test "falls back to MatchingService when job description lacks embedding" do
-    @jd.update!(embedding: nil)
-
-    stub = ->(applicant_profile:, job_description:, job_requirements:) {
-      { score: applicant_profile == @p1 ? 80 : 20 }
-    }
-
-    matches = nil
-    MatchingService.stub :score, stub do
-      matches = JobMatcher.new(@jd, company_id: @jd.job.company_id).top_candidates(limit: 3)
-    end
-
-    assert_equal [@p1, @p2], matches.map { |m| m[:profile] }
-    assert_equal [80, 20], matches.map { |m| m[:score] }
-  end
 end

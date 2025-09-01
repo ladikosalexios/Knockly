@@ -5,28 +5,18 @@ class JobMatcher
   end
 
   def top_candidates(limit: 5)
+    return [] unless @job_description&.embedding.present?
+
     candidates = ApplicantProfile
       .joins(job_applications: :job)
       .where(jobs: { company_id: @company_id })
+      .where.not(embedding: nil)
       .distinct
 
-    candidates = candidates.where.not(embedding: nil) if @job_description&.embedding.present?
-
-    scored = candidates.map do |profile|
-      score = if @job_description&.embedding.present? && profile.embedding.present?
-        cosine_similarity(@job_description.embedding, profile.embedding) * 100
-      else
-        MatchingService.score(
-          applicant_profile: profile,
-          job_description: @job_description,
-          job_requirements: @job_description&.requirements
-        )[:score]
-      end
-
+    candidates.map do |profile|
+      score = cosine_similarity(@job_description.embedding, profile.embedding) * 100
       { profile: profile, score: score }
-    end
-
-    scored.sort_by { |h| -(h[:score] || 0) }.first(limit)
+    end.sort_by { |h| -h[:score] }.first(limit)
   end
 
   private
