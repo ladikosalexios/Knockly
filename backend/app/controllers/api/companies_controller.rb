@@ -1,7 +1,7 @@
 class Api::CompaniesController < ApplicationController
-  # ✅ Require the user to be logged in
+# ✅ Require the user to be logged in
 before_action :authenticate_user!
-skip_before_action :authenticate_user!, only: [:show_by_slug, :jobs_by_slug]
+skip_before_action :authenticate_user!, only: [ :show_by_slug, :jobs_by_slug ]
 
   def create
     name = params[:name]
@@ -33,7 +33,7 @@ skip_before_action :authenticate_user!, only: [:show_by_slug, :jobs_by_slug]
 
   def jobs_by_slug
     company = Company.find_by!(slug: params[:slug])
-    jobs = company.jobs.includes(:job_description)
+    jobs = company.jobs.includes(job_description: :skills)
 
     render json: jobs.as_json(include: { job_description: { include: :skills } })
   end
