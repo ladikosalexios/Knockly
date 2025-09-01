@@ -290,9 +290,9 @@ def create_candidate(job:, profile:, experience:, education:, skills:, applicati
     ApplicantProfileSkill.find_or_create_by!(applicant_profile: profile_record, skill: skill)
   end
 
-  JobApplication.find_or_create_by!(job: job, applicant_profile: profile_record) do |app|
+  JobApplication.find_or_initialize_by(job: job, email: profile_record.email).tap do |app|
+    app.applicant_profile = profile_record
     app.name = profile_record.name
-    app.email = profile_record.email
     app.phone = application[:phone]
     app.resume_text = application[:resume_text]
     app.work_authorization = application[:work_authorization]
@@ -301,6 +301,7 @@ def create_candidate(job:, profile:, experience:, education:, skills:, applicati
     app.disability_status = application[:disability_status]
     app.veteran_status = application[:veteran_status]
     app.status = application[:status]
+    app.save!
   end
 end
 
