@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import api from '../../api';
 
-export default function JobMatches({ jobId }) {
+export default function JobMatches() {
+  const { id: jobId } = useParams();
   const [matches, setMatches] = useState([]);
   const [error, setError] = useState('');
 
