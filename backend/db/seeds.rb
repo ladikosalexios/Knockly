@@ -403,7 +403,15 @@ jd1.skills = %w[ruby rails react postgresql].map { |name| Skill.find_or_create_b
 jd2.skills = %w[react typescript css html].map { |name| Skill.find_or_create_by!(name: name) }
 jd3.skills = %w[selenium rspec capybara].map { |name| Skill.find_or_create_by!(name: name) }
 jd4.skills = %w[sql tableau python].map { |name| Skill.find_or_create_by!(name: name) }
-[jd1, jd2, jd3, jd4].each(&:save!)
+[
+  jd1,
+  jd2,
+  jd3,
+  jd4
+].each do |jd|
+  jd.embedding ||= random_embedding
+  jd.save!
+end
 
 # --- Globex Corp ---
 company2 = Company.find_or_create_by!(name: "Globex Corp")
@@ -447,7 +455,13 @@ end
 
 globex_jd1.skills = %w[go postgresql grpc].map { |name| Skill.find_or_create_by!(name: name) }
 globex_jd2.skills = %w[terraform aws docker kubernetes].map { |name| Skill.find_or_create_by!(name: name) }
-[globex_jd1, globex_jd2].each(&:save!)
+[
+  globex_jd1,
+  globex_jd2
+].each do |jd|
+  jd.embedding ||= random_embedding
+  jd.save!
+end
 
 # --- Example candidates for Acme ---
 create_candidate(
@@ -787,5 +801,6 @@ playground_jd = JobDescription.find_or_create_by!(job: playground_job) do |jd|
 end
 
 playground_jd.skills = %w[ruby rails react].map { |s| Skill.find_or_create_by!(name: s) }
+playground_jd.embedding ||= random_embedding
 playground_jd.save!
 
