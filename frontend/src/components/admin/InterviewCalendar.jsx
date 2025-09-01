@@ -59,11 +59,6 @@ export default function InterviewCalendar() {
       setInterviews(prev =>
         prev.map(i => (i.id === editingEvent.id ? res.data : i))
       );
-      try {
-        await api.post(`/api/interviews/${editingEvent.id}/notify`);
-      } catch {
-        // notification endpoint may not exist; update sends emails
-      }
       setEditingEvent(null);
     } catch (err) {
       console.error(err);
