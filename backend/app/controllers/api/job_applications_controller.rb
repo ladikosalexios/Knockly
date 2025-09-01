@@ -190,10 +190,9 @@ class Api::JobApplicationsController < ApplicationController
   # api/job_applications
   def index
     if params[:job_id].present?
-      job = Job.find(params[:job_id])
-      apps = JobApplication.where(job_id: params[:job_id]).includes(applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
+      apps = JobApplication.where(job_id: params[:job_id]).includes(job: { job_description: :skills }, applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
     else
-      apps = JobApplication.includes(:job).includes(applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
+      apps = JobApplication.includes(job: { job_description: :skills }, applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
     end
 
     results = apps.map do |app|
