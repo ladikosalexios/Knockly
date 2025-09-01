@@ -5,7 +5,9 @@ import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import enUS from 'date-fns/locale/en-US';
+import DatePicker from 'react-datepicker';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import 'react-datepicker/dist/react-datepicker.css';
 import './InterviewCalendar.css';
 import api from '../../api';
 
@@ -17,6 +19,9 @@ export default function InterviewCalendar() {
   const [error, setError] = useState('');
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState('month');
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [editDate, setEditDate] = useState(new Date());
+  const [editNotes, setEditNotes] = useState('');
 
   useEffect(() => {
     const fetchInterviews = async () => {
@@ -39,22 +44,27 @@ export default function InterviewCalendar() {
     notes: i.notes,
   }));
 
-  const handleEdit = async event => {
-    const newDateInput = window.prompt(
-      'Enter new date and time (YYYY-MM-DD HH:mm)',
-      format(event.start, 'yyyy-MM-dd HH:mm')
-    );
-    if (!newDateInput) return;
-    const newDate = new Date(newDateInput);
-    if (isNaN(newDate)) return;
-    const newNotes = window.prompt('Enter notes', event.notes || '') ?? '';
+  const handleEdit = event => {
+    setEditingEvent(event);
+    setEditDate(event.start);
+    setEditNotes(event.notes || '');
+  };
+
+  const saveEdit = async () => {
+    if (!editingEvent) return;
     try {
-      const res = await api.put(`/api/interviews/${event.id}`, {
-        interview: { scheduled_at: newDate.toISOString(), notes: newNotes },
+      const res = await api.put(`/api/interviews/${editingEvent.id}`, {
+        interview: { scheduled_at: editDate.toISOString(), notes: editNotes },
       });
       setInterviews(prev =>
-        prev.map(i => (i.id === event.id ? res.data : i))
+        prev.map(i => (i.id === editingEvent.id ? res.data : i))
       );
+      try {
+        await api.post(`/api/interviews/${editingEvent.id}/notify`);
+      } catch {
+        // notification endpoint may not exist; update sends emails
+      }
+      setEditingEvent(null);
     } catch (err) {
       console.error(err);
       setError('Failed to update interview');
@@ -79,6 +89,34 @@ export default function InterviewCalendar() {
         selectable
         onSelectEvent={handleEdit}
       />
+      {editingEvent && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h4>Edit Interview</h4>
+            <div style={{ marginBottom: 8 }}>
+              <DatePicker
+                selected={editDate}
+                onChange={date => setEditDate(date)}
+                showTimeSelect
+                timeIntervals={15}
+                dateFormat="Pp"
+              />
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <input
+                type="text"
+                value={editNotes}
+                onChange={e => setEditNotes(e.target.value)}
+                placeholder="Notes"
+              />
+            </div>
+            <div>
+              <button onClick={saveEdit}>Save</button>
+              <button onClick={() => setEditingEvent(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
