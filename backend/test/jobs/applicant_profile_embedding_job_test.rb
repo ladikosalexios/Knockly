@@ -9,18 +9,8 @@ class ApplicantProfileEmbeddingJobTest < ActiveJob::TestCase
   end
 
   test "updates applicant profile embedding" do
-    embedding = [0.1, 0.2, 0.3]
-    client = Class.new do
-      def initialize(response)
-        @response = response
-      end
-
-      def embeddings(parameters:)
-        @response
-      end
-    end.new({ "data" => [{ "embedding" => embedding }] })
-
-    OpenAI::Client.stub :new, client do
+    embedding = [ 0.1, 0.2, 0.3 ]
+    OPENAI_CLIENT.stub(:embeddings, ->(**) { { "data" => [ { "embedding" => embedding } ] } }) do
       perform_enqueued_jobs do
         ApplicantProfileEmbeddingJob.perform_later(@profile.id, "Resume text")
       end
@@ -29,15 +19,9 @@ class ApplicantProfileEmbeddingJobTest < ActiveJob::TestCase
   end
 
   test "logs error when embedding generation fails" do
-    error_client = Class.new do
-      def embeddings(*)
-        raise StandardError, "boom"
-      end
-    end.new
-
     messages = []
     Rails.logger.stub :error, ->(msg) { messages << msg } do
-      OpenAI::Client.stub :new, error_client do
+      OPENAI_CLIENT.stub(:embeddings, ->(*) { raise StandardError, "boom" }) do
         perform_enqueued_jobs do
           ApplicantProfileEmbeddingJob.perform_later(@profile.id, "Resume text")
         end

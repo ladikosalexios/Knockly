@@ -3,35 +3,11 @@
 one:
   company: one
   posted_by_user: one
-  title: MyString
-  description: MyText
-  location: MyString
-  is_remote: false
-  job_type: MyString
-  experience_level: MyString
-  salary_min: 1
-  salary_max: 1
-  salary_currency: MyString
-  is_salary_visible: false
-  status: MyString
-  created_at: 2025-05-22 23:41:33
-  updated_at: 2025-05-22 23:41:33
+  status: open
   expires_at: 2025-05-22 23:41:33
 
 two:
   company: two
   posted_by_user: two
-  title: MyString
-  description: MyText
-  location: MyString
-  is_remote: false
-  job_type: MyString
-  experience_level: MyString
-  salary_min: 1
-  salary_max: 1
-  salary_currency: MyString
-  is_salary_visible: false
-  status: MyString
-  created_at: 2025-05-22 23:41:33
-  updated_at: 2025-05-22 23:41:33
+  status: open
   expires_at: 2025-05-22 23:41:33
