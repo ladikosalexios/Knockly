@@ -4,9 +4,6 @@ class Api::JobMatchesController < ApplicationController
   def index
     job = Job.where(company_id: current_user.company_id).find(params[:job_id])
     jd = job.job_description
-    unless jd&.embedding.present?
-      render json: [] and return
-    end
 
     matches = JobMatcher.new(jd, company_id: job.company_id)
                     .top_candidates(limit: params.fetch(:limit, 5).to_i)

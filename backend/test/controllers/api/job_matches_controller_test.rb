@@ -25,7 +25,7 @@ class Api::JobMatchesControllerTest < ActionDispatch::IntegrationTest
     body = JSON.parse(@response.body)
     assert_equal 2, body.length
     assert_equal "Alice", body.first["name"]
-    assert body.first.key?("score")
+    assert body.first["score"] > body.last["score"]
   end
 
   test "rejects matches for unauthorized job" do
@@ -34,5 +34,20 @@ class Api::JobMatchesControllerTest < ActionDispatch::IntegrationTest
     JobDescription.create!(job: other_job, description: "desc", embedding: [1.0, 0.0])
     get "/api/jobs/#{other_job.id}/matches"
     assert_response :not_found
+  end
+
+  test "returns candidates even without embeddings" do
+    @jd.update!(embedding: nil)
+    stub = ->(applicant_profile:, job_description:, job_requirements:) {
+      { score: applicant_profile == @p1 ? 70 : 30 }
+    }
+    MatchingService.stub :score, stub do
+      get "/api/jobs/#{@job.id}/matches"
+    end
+    assert_response :success
+    body = JSON.parse(@response.body)
+    assert_equal 2, body.length
+    assert_equal ["Alice", "Bob"], body.map { |h| h["name"] }
+    assert_equal [70, 30], body.map { |h| h["score"] }
   end
 end
