@@ -28,7 +28,7 @@ RICH_RESUMES = [
     SKILLS
 
         • Ruby on Rails, React, PostgreSQL, Vue.js, Node.js
-  RESUME1,
+RESUME1
   <<~RESUME2,
     Carlos Ramirez
     carlos@example.com ❖ (555) 3030 ❖ Denver, CO
@@ -53,7 +53,7 @@ RICH_RESUMES = [
     SKILLS
 
         • Go, Ruby, GraphQL, Kafka, Docker, AWS
-  RESUME2,
+RESUME2
   <<~RESUME3,
     Bob Smith
     bob@example.com ❖ (555) 2020 ❖ Portland, OR
@@ -78,7 +78,7 @@ RICH_RESUMES = [
     SKILLS
 
         • React, TypeScript, CSS, HTML, Redux
-  RESUME3,
+RESUME3
   <<~RESUME4,
     Dana Lee
     dana@example.com ❖ (555) 4040 ❖ Seattle, WA
@@ -103,7 +103,7 @@ RICH_RESUMES = [
     SKILLS
 
         • React, Vue.js, CSS, Figma, Jest
-  RESUME4,
+RESUME4
   <<~RESUME5,
     Emily Davis
     emily@example.com ❖ (555) 5050 ❖ Chicago, IL
@@ -128,7 +128,7 @@ RICH_RESUMES = [
     SKILLS
 
         • Selenium, RSpec, JMeter, CircleCI, AWS
-  RESUME5,
+RESUME5
   <<~RESUME6,
     Frank Ortiz
     frank@example.com ❖ (555) 6060 ❖ Miami, FL
@@ -153,7 +153,7 @@ RICH_RESUMES = [
     SKILLS
 
         • SQL, Tableau, Python, Excel, Statistics
-  RESUME6,
+RESUME6
   <<~RESUME7,
     Grace Hopper
     grace@example.com ❖ (555) 7070 ❖ New York, NY
@@ -178,7 +178,7 @@ RICH_RESUMES = [
     SKILLS
 
         • Go, gRPC, PostgreSQL, Kubernetes, Java
-  RESUME7,
+RESUME7
   <<~RESUME8,
     Henry Ford
     henry@example.com ❖ (555) 8080 ❖ Detroit, MI
@@ -203,7 +203,7 @@ RICH_RESUMES = [
     SKILLS
 
         • Go, Docker, PostgreSQL, Jenkins, REST APIs
-  RESUME8,
+RESUME8
   <<~RESUME9,
     Isabel Allende
     isabel@example.com ❖ (555) 9090 ❖ San Francisco, CA
@@ -228,7 +228,7 @@ RICH_RESUMES = [
     SKILLS
 
         • Terraform, AWS, Kubernetes, Docker, Prometheus
-  RESUME9,
+RESUME9
   <<~RESUME10,
     Jack Sparrow
     jack@example.com ❖ (555) 0101 ❖ Tampa, FL
@@ -253,7 +253,7 @@ RICH_RESUMES = [
     SKILLS
 
         • AWS, Docker, Kubernetes, Terraform, Helm
-  RESUME10
+RESUME10
 ]
 
 RESUME_QUEUE = RICH_RESUMES.shuffle
