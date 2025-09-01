@@ -1,0 +1,26 @@
+.rbc-toolbar {
+  background-color: #000;
+  color: #fff;
+}
+
+.rbc-toolbar button {
+  color: #fff;
+}
+
+.rbc-toolbar button:hover,
+.rbc-toolbar button:focus {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.rbc-event {
+  background-color: #007bff;
+  border: none;
+}
+
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+  background-color: #fff;
+  color: #000;
+}
