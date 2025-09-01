@@ -5,6 +5,7 @@ class Api::JobApplicationsController < ApplicationController
   wrap_parameters format: [:json]
   skip_before_action :authenticate_user!, only: [:create]
   before_action :set_job_application, only: [:update]
+  before_action :require_company!, only: [:index, :update]
   def create
     Rails.logger.info "Starting job application creation..."
     Rails.logger.info "PARAMS: #{params.inspect}"
@@ -201,11 +202,11 @@ class Api::JobApplicationsController < ApplicationController
 
   # api/job_applications
   def index
-    if params[:job_id].present?
-      apps = JobApplication.where(job_id: params[:job_id]).includes(job: { job_description: :skills }, applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
-    else
-      apps = JobApplication.includes(job: { job_description: :skills }, applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
-    end
+    apps = JobApplication
+      .joins(:job)
+      .where(jobs: { company_id: current_user.company_id })
+    apps = apps.where(job_id: params[:job_id]) if params[:job_id].present?
+    apps = apps.includes(job: { job_description: :skills }, applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
 
     results = apps.map do |app|
       profile = app.applicant_profile
@@ -247,6 +248,12 @@ class Api::JobApplicationsController < ApplicationController
 
   def set_job_application
     @job_application = JobApplication.find(params[:id])
+  end
+
+  def require_company!
+    unless current_user&.company_id.present?
+      render json: { error: "Unauthorized" }, status: :unauthorized
+    end
   end
 
   def job_application_params

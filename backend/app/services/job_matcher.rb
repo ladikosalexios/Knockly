@@ -1,12 +1,19 @@
 class JobMatcher
-  def initialize(job_description)
+  def initialize(job_description, company_id:)
     @job_description = job_description
+    @company_id = company_id
   end
 
   def top_candidates(limit: 5)
     return [] unless @job_description&.embedding.present?
 
-    ApplicantProfile.where.not(embedding: nil).map do |profile|
+    candidates = ApplicantProfile
+      .joins(job_applications: :job)
+      .where(jobs: { company_id: @company_id })
+      .where.not(embedding: nil)
+      .distinct
+
+    candidates.map do |profile|
       score = cosine_similarity(@job_description.embedding, profile.embedding)
       { profile: profile, score: score }
     end.sort_by { |h| -h[:score] }.first(limit)

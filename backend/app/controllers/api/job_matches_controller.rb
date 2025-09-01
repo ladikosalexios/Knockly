@@ -8,7 +8,8 @@ class Api::JobMatchesController < ApplicationController
       render json: [] and return
     end
 
-    matches = JobMatcher.new(jd).top_candidates(limit: params.fetch(:limit, 5).to_i)
+    matches = JobMatcher.new(jd, company_id: job.company_id)
+                    .top_candidates(limit: params.fetch(:limit, 5).to_i)
     render json: matches.map { |m|
       profile = m[:profile]
       profile.as_json(only: [:id, :name, :email]).merge(score: m[:score])
