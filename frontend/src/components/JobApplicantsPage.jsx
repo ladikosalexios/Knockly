@@ -84,10 +84,12 @@ export default function JobApplicantsPage() {
               </div>
 
               {/* Match Score */}
-              {app.match_score !== undefined && (
+              {app.match_score != null && (
                 <div style={{ marginTop: 16 }}>
-                  <p><strong>Match Score:</strong> {app.match_score}</p>
-                  {app.match_reason && <p style={{ fontStyle: 'italic', color: '#ccc' }}>{app.match_reason}</p>}
+                  <p><strong>Match Score:</strong> {app.match_score.toFixed(1)}%</p>
+                  {app.match_reason && (
+                    <p style={{ fontStyle: 'italic', color: '#ccc' }}>{app.match_reason}</p>
+                  )}
                 </div>
               )}
 
