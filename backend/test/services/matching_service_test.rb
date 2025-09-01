@@ -4,6 +4,13 @@ require_relative "../../app/services/matching_service"
 class MatchingServiceTest < Minitest::Test
   DummyProfile = Struct.new(:embedding)
 
+  def test_score_returns_nil_without_job_description
+    applicant = DummyProfile.new([1.0, 0.0, 0.0])
+    result = MatchingService.score(applicant_profile: applicant, job_description: nil, job_requirements: "")
+    assert_nil result[:score]
+    assert_equal "Missing job description", result[:reason]
+  end
+
   def test_score_with_zero_vector_returns_nil
     applicant = DummyProfile.new([0.0, 0.0, 0.0])
     job = DummyProfile.new([0.1, 0.2, 0.3])

@@ -145,6 +145,9 @@ const DashboardLayout = () => {
                         <Link to={`/admin/jobs/${job.id}/applicants`}>
                           <span style={{ fontSize: '1rem', color: '#a8d0ff' }}>📄</span>
                         </Link>
+                        <Link to={`/admin/jobs/${job.id}/matches`} style={{ marginLeft: 10 }}>
+                          <span style={{ fontSize: '1rem', color: '#a8d0ff' }}>🤝</span>
+                        </Link>
                       </td>
                     </tr>
                   );

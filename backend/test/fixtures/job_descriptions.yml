@@ -4,12 +4,10 @@ one:
   title: MyString
   description: MyText
   requirements: MyText
-  benefits: MyText
   company_name: MyString
   location: MyString
   is_remote: false
   job_type: MyString
-  experience_level: MyString
   salary_min: 1
   salary_max: 1
   salary_currency: MyString
@@ -17,17 +15,18 @@ one:
   external_id: MyString
   source: MyString
   parsed_at: 2025-07-14 22:07:36
+  job: one
+  years_experience_min: 1
+  years_experience_max: 3
 
 two:
   title: MyString
   description: MyText
   requirements: MyText
-  benefits: MyText
   company_name: MyString
   location: MyString
   is_remote: false
   job_type: MyString
-  experience_level: MyString
   salary_min: 1
   salary_max: 1
   salary_currency: MyString
@@ -35,3 +34,6 @@ two:
   external_id: MyString
   source: MyString
   parsed_at: 2025-07-14 22:07:36
+  job: two
+  years_experience_min: 2
+  years_experience_max: 5

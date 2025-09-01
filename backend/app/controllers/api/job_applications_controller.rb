@@ -5,6 +5,7 @@ class Api::JobApplicationsController < ApplicationController
   wrap_parameters format: [:json]
   skip_before_action :authenticate_user!, only: [:create]
   before_action :set_job_application, only: [:update]
+  before_action :require_company!, only: [:index, :update]
   def create
     Rails.logger.info "Starting job application creation..."
     Rails.logger.info "PARAMS: #{params.inspect}"
@@ -84,11 +85,15 @@ class Api::JobApplicationsController < ApplicationController
 
       # Add skills if present
       if skills.present?
-        profile.applicant_profile_skills.destroy_all
-        skills.each do |skill_name|
-          skill = Skill.find_or_create_by!(name: skill_name.downcase.strip)
-          profile.applicant_profile_skills.create!(skill: skill)
+        names = skills.map { |s| s.to_s.downcase.strip }.uniq
+        skills_map = Skill.where(name: names).index_by(&:name)
+        missing = names - skills_map.keys
+        if missing.any?
+          missing.each do |n|
+            skills_map[n] = Skill.create!(name: n)
+          end
         end
+        profile.skills = skills_map.values
         Rails.logger.info "Assigning #{skills.count} skills to ApplicantProfile #{profile.id}"
       end
 
@@ -149,7 +154,15 @@ class Api::JobApplicationsController < ApplicationController
         end
 
         if job_application_params[:skills].present?
-          profile.skills = job_application_params[:skills].map { |name| Skill.find_or_create_by!(name: name) }
+          names = job_application_params[:skills].map { |n| n.to_s.downcase.strip }.uniq
+          skills_map = Skill.where(name: names).index_by(&:name)
+          missing = names - skills_map.keys
+          if missing.any?
+            missing.each do |n|
+              skills_map[n] = Skill.create!(name: n)
+            end
+          end
+          profile.skills = skills_map.values
           Rails.logger.info "Assigning #{job_application_params[:skills].count} skills to ApplicantProfile #{profile.id}"
         end
 
@@ -189,12 +202,11 @@ class Api::JobApplicationsController < ApplicationController
 
   # api/job_applications
   def index
-    if params[:job_id].present?
-      job = Job.find(params[:job_id])
-      apps = JobApplication.where(job_id: params[:job_id]).includes(applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
-    else
-      apps = JobApplication.includes(:job).includes(applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
-    end
+    apps = JobApplication
+      .joins(:job)
+      .where(jobs: { company_id: current_user.company_id })
+    apps = apps.where(job_id: params[:job_id]) if params[:job_id].present?
+    apps = apps.includes(job: { job_description: :skills }, applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
 
     results = apps.map do |app|
       profile = app.applicant_profile
@@ -236,6 +248,12 @@ class Api::JobApplicationsController < ApplicationController
 
   def set_job_application
     @job_application = JobApplication.find(params[:id])
+  end
+
+  def require_company!
+    return if current_user&.company_id.present?
+
+    head :unauthorized
   end
 
   def job_application_params
