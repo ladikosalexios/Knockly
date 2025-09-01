@@ -3,6 +3,10 @@
 
 require "date"
 
+def random_embedding(dim = 8)
+  Array.new(dim) { rand }
+end
+
 RICH_RESUMES = [
   <<~RESUME1,
     Alice Johnson
@@ -267,6 +271,7 @@ def create_candidate(job:, profile:, experience:, education:, skills:, applicati
     p.name = profile[:name]
     p.total_years_experience = profile[:total_years_experience]
   end
+  profile_record.update!(embedding: random_embedding) unless profile_record.embedding.present?
 
   profile_record.applicant_experiences.find_or_create_by!(
     job_title: experience[:job_title],
@@ -349,6 +354,7 @@ jd1 = JobDescription.find_or_create_by!(job: job1) do |jd|
   jd.salary_max = 150000
   jd.salary_currency = "USD"
   jd.is_salary_visible = true
+  jd.embedding = random_embedding
 end
 
 jd2 = JobDescription.find_or_create_by!(job: job2) do |jd|
@@ -362,6 +368,7 @@ jd2 = JobDescription.find_or_create_by!(job: job2) do |jd|
   jd.salary_max = 170000
   jd.salary_currency = "USD"
   jd.is_salary_visible = true
+  jd.embedding = random_embedding
 end
 
 jd3 = JobDescription.find_or_create_by!(job: job3) do |jd|
@@ -375,6 +382,7 @@ jd3 = JobDescription.find_or_create_by!(job: job3) do |jd|
   jd.salary_max = 110000
   jd.salary_currency = "USD"
   jd.is_salary_visible = true
+  jd.embedding = random_embedding
 end
 
 jd4 = JobDescription.find_or_create_by!(job: job4) do |jd|
@@ -388,6 +396,7 @@ jd4 = JobDescription.find_or_create_by!(job: job4) do |jd|
   jd.salary_max = 125000
   jd.salary_currency = "USD"
   jd.is_salary_visible = true
+  jd.embedding = random_embedding
 end
 
 jd1.skills = %w[ruby rails react postgresql].map { |name| Skill.find_or_create_by!(name: name) }
@@ -419,6 +428,7 @@ globex_jd1 = JobDescription.find_or_create_by!(job: globex_job1) do |jd|
   jd.salary_max = 140000
   jd.salary_currency = "USD"
   jd.is_salary_visible = true
+  jd.embedding = random_embedding
 end
 
 globex_jd2 = JobDescription.find_or_create_by!(job: globex_job2) do |jd|
@@ -432,6 +442,7 @@ globex_jd2 = JobDescription.find_or_create_by!(job: globex_job2) do |jd|
   jd.salary_max = 160000
   jd.salary_currency = "USD"
   jd.is_salary_visible = true
+  jd.embedding = random_embedding
 end
 
 globex_jd1.skills = %w[go postgresql grpc].map { |name| Skill.find_or_create_by!(name: name) }
@@ -772,6 +783,7 @@ playground_jd = JobDescription.find_or_create_by!(job: playground_job) do |jd|
   jd.salary_max = 140000
   jd.salary_currency = "USD"
   jd.is_salary_visible = true
+  jd.embedding = random_embedding
 end
 
 playground_jd.skills = %w[ruby rails react].map { |s| Skill.find_or_create_by!(name: s) }
