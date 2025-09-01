@@ -1,6 +1,8 @@
 class Api::JobMatchesController < ApplicationController
+  before_action :require_company!
+
   def index
-    job = Job.find(params[:job_id])
+    job = Job.where(company_id: current_user.company_id).find(params[:job_id])
     jd = job.job_description
     unless jd&.embedding.present?
       render json: [] and return
@@ -11,5 +13,13 @@ class Api::JobMatchesController < ApplicationController
       profile = m[:profile]
       profile.as_json(only: [:id, :name, :email]).merge(score: m[:score])
     }
+  end
+
+  private
+
+  def require_company!
+    unless current_user&.company_id.present?
+      render json: { error: "Unauthorized" }, status: :unauthorized
+    end
   end
 end
