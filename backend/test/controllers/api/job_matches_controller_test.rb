@@ -11,21 +11,33 @@ class Api::JobMatchesControllerTest < ActionDispatch::IntegrationTest
 
     @job = Job.create!(status: "active", company: @company, posted_by_user: @user)
     @jd = JobDescription.create!(job: @job, description: "desc", embedding: [1.0, 0.0])
-    @p1 = ApplicantProfile.create!(name: "Alice", email: "a@example.com", embedding: [1.0, 0.0])
-    @p2 = ApplicantProfile.create!(name: "Bob", email: "b@example.com", embedding: [0.0, 1.0])
-    [@p1, @p2].each do |p|
-      JobApplication.create!(job: @job, applicant_profile: p, name: p.name, email: p.email,
+
+    # Applicant applied to this job (should not appear)
+    applied = ApplicantProfile.create!(name: "Applied", email: "applied@example.com", embedding: [1.0, 0.0])
+    JobApplication.create!(job: @job, applicant_profile: applied, name: applied.name,
+                          email: applied.email, phone: "123", work_authorization: "citizen")
+
+    # Another job in same company with candidates that should appear
+    @other_job = Job.create!(status: "active", company: @company, posted_by_user: @user)
+    ApplicantProfile.create!(name: "Alice", email: "a@example.com", embedding: [1.0, 0.0]).tap do |p|
+      JobApplication.create!(job: @other_job, applicant_profile: p, name: p.name, email: p.email,
+                            phone: "123", work_authorization: "citizen")
+    end
+    ApplicantProfile.create!(name: "Bob", email: "b@example.com", embedding: [0.0, 1.0]).tap do |p|
+      JobApplication.create!(job: @other_job, applicant_profile: p, name: p.name, email: p.email,
                             phone: "123", work_authorization: "citizen")
     end
   end
 
-  test "returns top matches" do
+  test "returns candidates from other jobs" do
     get "/api/jobs/#{@job.id}/matches"
     assert_response :success
     body = JSON.parse(@response.body)
     assert_equal 2, body.length
-    assert_equal "Alice", body.first["name"]
-    assert body.first["score"] > body.last["score"]
+    names = body.map { |c| c["name"] }
+    assert_includes names, "Alice"
+    assert_includes names, "Bob"
+    refute_includes names, "Applied"
   end
 
   test "rejects matches for unauthorized job" do

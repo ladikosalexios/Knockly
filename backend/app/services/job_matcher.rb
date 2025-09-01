@@ -1,7 +1,8 @@
 class JobMatcher
-  def initialize(job_description, company_id:)
+  def initialize(job_description, company_id:, exclude_job_id: nil)
     @job_description = job_description
     @company_id = company_id
+    @exclude_job_id = exclude_job_id
   end
 
   def top_candidates(limit: 5)
@@ -11,7 +12,8 @@ class JobMatcher
       .joins(job_applications: :job)
       .where(jobs: { company_id: @company_id })
       .where.not(embedding: nil)
-      .distinct
+    candidates = candidates.where.not(job_applications: { job_id: @exclude_job_id }) if @exclude_job_id
+    candidates = candidates.distinct
 
     candidates.map do |profile|
       score = cosine_similarity(@job_description.embedding, profile.embedding) * 100

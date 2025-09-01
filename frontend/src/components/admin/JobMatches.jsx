@@ -31,7 +31,7 @@ export default function JobMatches() {
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {matches.map(m => (
           <li key={m.id} style={{ marginBottom: 12 }}>
-            <strong>{m.name}</strong> – {(m.score * 100).toFixed(1)}%
+            <strong>{m.name}</strong> – {m.score.toFixed(1)}%
           </li>
         ))}
       </ul>
