@@ -1,0 +1,11 @@
+one:
+  job_application: one
+  scheduled_at: 2025-09-01 12:00:00
+  location: Zoom
+  notes: First interview
+
+two:
+  job_application: two
+  scheduled_at: 2025-09-02 13:00:00
+  location: Office
+  notes: Second interview

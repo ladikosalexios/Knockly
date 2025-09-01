@@ -3,6 +3,7 @@ import api from '../api';
 import { Typography, CssBaseline, Drawer, List, ListItem, ListItemText, Box } from '@mui/material';
 import AdminJobForm from '../pages/AdminJobForm';
 import InviteUserForm from '../components/InviteUserForm';
+import InterviewCalendar from './admin/InterviewCalendar';
 import { Link } from 'react-router-dom';
 import useAutoLogout from '../hooks/useAutoLogout'; // or wherever you save it
 
@@ -73,6 +74,9 @@ const DashboardLayout = () => {
           </ListItem>
           <ListItem button onClick={() => setSelectedView('jobForm')}>
             <ListItemText primary="Post a Job" />
+          </ListItem>
+          <ListItem button onClick={() => setSelectedView('calendar')}>
+            <ListItemText primary="Calendar" />
           </ListItem>
           {currentUser?.is_looply_admin && (
             <ListItem button onClick={() => setSelectedView('inviteUser')}>
@@ -171,6 +175,9 @@ const DashboardLayout = () => {
             </Typography>
             <InviteUserForm />
           </div>
+        )}
+        {selectedView === 'calendar' && (
+          <InterviewCalendar />
         )}
       </Box>
     </Box>
