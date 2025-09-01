@@ -6,7 +6,7 @@ module Api
       # GET /api/admin/dashboard
       def index
         jobs = Job
-          .includes(job_description: :skills, :job_applications)
+          .includes(:job_applications, job_description: :skills)
           .where(company_id: current_user.company_id)
           .order(created_at: :desc)
 
