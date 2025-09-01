@@ -20,8 +20,9 @@ class Api::JobDescriptionsController < ApplicationController
       skills_map = Skill.where(name: names).index_by(&:name)
       missing = names - skills_map.keys
       if missing.any?
-        Skill.insert_all(missing.map { |n| { name: n, created_at: Time.current, updated_at: Time.current } })
-        skills_map.merge!(Skill.where(name: missing).index_by(&:name))
+        missing.each do |n|
+          skills_map[n] = Skill.create!(name: n)
+        end
       end
       jd.skills = skills_map.values
     render json: jd.as_json(include: { skills: {} }), status: :created
@@ -51,8 +52,9 @@ class Api::JobDescriptionsController < ApplicationController
         skills_map = Skill.where(name: names).index_by(&:name)
         missing = names - skills_map.keys
         if missing.any?
-          Skill.insert_all(missing.map { |n| { name: n, created_at: Time.current, updated_at: Time.current } })
-          skills_map.merge!(Skill.where(name: missing).index_by(&:name))
+          missing.each do |n|
+            skills_map[n] = Skill.create!(name: n)
+          end
         end
         jd.skills = skills_map.values
       end
