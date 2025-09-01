@@ -2,9 +2,14 @@ class Api::InterviewsController < ApplicationController
   before_action :set_interview, only: [:show, :update, :destroy]
 
   def index
-    interviews = Interview.all
+    interviews = Interview.includes(job_application: { job: :posted_by_user })
     interviews = interviews.where(job_application_id: params[:job_application_id]) if params[:job_application_id]
-    render json: interviews
+    render json: interviews.as_json(include: {
+      job_application: {
+        only: [:id, :name],
+        include: { job: { include: { posted_by_user: { only: [:id, :name, :email] } } } }
+      }
+    })
   end
 
   def show
@@ -14,6 +19,7 @@ class Api::InterviewsController < ApplicationController
   def create
     @interview = Interview.new(interview_params)
     if @interview.save
+      @interview.job_application.update(status: :interviewed)
       InterviewMailer.calendar_invite(@interview).deliver_later
       render json: @interview, status: :created
     else
