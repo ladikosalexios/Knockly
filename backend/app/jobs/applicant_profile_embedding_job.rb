@@ -7,7 +7,7 @@ class ApplicantProfileEmbeddingJob < ApplicationJob
     profile = ApplicantProfile.find_by(id: applicant_profile_id)
     return unless profile
 
-    client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+    client = OPENAI_CLIENT
     response = client.embeddings(
       parameters: {
         model: "text-embedding-ada-002",
