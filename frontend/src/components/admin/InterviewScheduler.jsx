@@ -8,17 +8,18 @@ export default function InterviewScheduler({ jobApplicationId, applicantName = '
   const [form, setForm] = useState({ id: null, scheduled_at: null, location: '', notes: '' });
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  const fetchInterviews = async () => {
     if (!jobApplicationId) return;
-    const fetchInterviews = async () => {
-      try {
-        const res = await api.get(`/api/interviews?job_application_id=${jobApplicationId}`);
-        setInterviews(res.data);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to fetch interviews');
-      }
-    };
+    try {
+      const res = await api.get(`/api/interviews?job_application_id=${jobApplicationId}`);
+      setInterviews(res.data);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to fetch interviews');
+    }
+  };
+
+  useEffect(() => {
     fetchInterviews();
   }, [jobApplicationId]);
 
@@ -27,16 +28,16 @@ export default function InterviewScheduler({ jobApplicationId, applicantName = '
     try {
       if (form.id) {
         const payload = { ...form, scheduled_at: form.scheduled_at?.toISOString() };
-        const res = await api.put(`/api/interviews/${form.id}`, { interview: payload });
-        setInterviews(prev => prev.map(i => i.id === res.data.id ? res.data : i));
+        await api.put(`/api/interviews/${form.id}`, { interview: payload });
+        await fetchInterviews();
       } else {
         const payload = {
           ...form,
           scheduled_at: form.scheduled_at?.toISOString(),
           job_application_id: jobApplicationId
         };
-        const res = await api.post('/api/interviews', { interview: payload });
-        setInterviews(prev => [...prev, res.data]);
+        await api.post('/api/interviews', { interview: payload });
+        await fetchInterviews();
         onScheduled && onScheduled();
       }
       setForm({ id: null, scheduled_at: null, location: '', notes: '' });
