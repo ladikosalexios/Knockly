@@ -1,7 +1,6 @@
-require "minitest/autorun"
-require_relative "../../app/services/matching_service"
+require "test_helper"
 
-class MatchingServiceTest < Minitest::Test
+class MatchingServiceTest < ActiveSupport::TestCase
   DummyProfile = Struct.new(:embedding)
   DummyApplication = Struct.new(:fit_feedback)
   DummyProfileWithFeedback = Struct.new(:embedding, :job_applications)
@@ -63,5 +62,31 @@ class MatchingServiceTest < Minitest::Test
     job = DummyProfile.new([0.8, 0.6])
     result = MatchingService.score(applicant_profile: applicant, job_description: job, job_requirements: "")
     assert_equal 85, result[:score]
+  end
+  
+  def test_reason_threshold_boundaries
+    applicant = DummyProfile.new([1.0, 0.0])
+
+    job = DummyProfile.new([0.9, Math.sqrt(1 - 0.9**2)])
+    result = MatchingService.score_with_embeddings(applicant_profile: applicant, job_description: job)
+    assert_equal 90, result[:score]
+    assert_equal "Perfect match — you'd be hard-pressed to find a better fit.", result[:reason]
+
+    job = DummyProfile.new([0.75, Math.sqrt(1 - 0.75**2)])
+    result = MatchingService.score_with_embeddings(applicant_profile: applicant, job_description: job)
+    assert_equal 75, result[:score]
+    assert_equal "Strong match — the candidate aligns well, though not flawlessly.", result[:reason]
+
+    job = DummyProfile.new([0.5, Math.sqrt(1 - 0.5**2)])
+    result = MatchingService.score_with_embeddings(applicant_profile: applicant, job_description: job)
+    assert_equal 50, result[:score]
+    assert_equal "Average fit — some promising overlaps but room for improvement.", result[:reason]
+  end
+
+  def test_result_contains_score_and_reason
+    applicant = DummyProfile.new([1.0, 0.0])
+    job = DummyProfile.new([1.0, 0.0])
+    result = MatchingService.score_with_embeddings(applicant_profile: applicant, job_description: job)
+    assert_equal [:reason, :score], result.keys.sort
   end
 end
