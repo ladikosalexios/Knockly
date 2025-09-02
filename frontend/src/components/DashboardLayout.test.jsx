@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 
 vi.mock('../api', () => ({ default: { get: vi.fn(), delete: vi.fn() } }));
 vi.mock('./admin/InterviewCalendar', () => ({ default: () => <div>Calendar View</div> }));
+vi.mock('./admin/AnalyticsDashboard', () => ({ default: () => <div>Analytics View</div> }));
 vi.mock('../pages/AdminJobForm', () => ({ default: () => <div>Job Form</div> }));
 vi.mock('./InviteUserForm', () => ({ default: () => <div>Invite Form</div> }));
 vi.mock('../hooks/useAutoLogout', () => ({ default: () => {} }));
@@ -28,7 +29,7 @@ afterEach(() => {
 test('navigates to calendar view from menu', async () => {
   api.get.mockImplementation(url => {
     if (url === '/api/admin/dashboard') return Promise.resolve({ data: [] });
-    if (url === '/api/users/me') return Promise.resolve({ data: {} });
+    if (url === '/api/users/me') return Promise.resolve({ data: { is_looply_admin: true } });
     return Promise.resolve({ data: [] });
   });
 
@@ -40,4 +41,22 @@ test('navigates to calendar view from menu', async () => {
 
   fireEvent.click(screen.getByText('Calendar'));
   expect(await screen.findByText('Calendar View')).toBeInTheDocument();
+});
+
+test('navigates to analytics view from menu', async () => {
+  api.get.mockImplementation(url => {
+    if (url === '/api/admin/dashboard') return Promise.resolve({ data: [] });
+    if (url === '/api/users/me') return Promise.resolve({ data: { is_looply_admin: true } });
+    return Promise.resolve({ data: [] });
+  });
+
+  render(
+    <MemoryRouter>
+      <DashboardLayout />
+    </MemoryRouter>
+  );
+
+  const analyticsItem = await screen.findByText('Analytics');
+  fireEvent.click(analyticsItem);
+  expect(await screen.findByText('Analytics View')).toBeInTheDocument();
 });

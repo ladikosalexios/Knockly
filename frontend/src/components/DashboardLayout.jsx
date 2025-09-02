@@ -4,6 +4,7 @@ import { Typography, CssBaseline, Drawer, List, ListItem, ListItemText, Box } fr
 import AdminJobForm from '../pages/AdminJobForm';
 import InviteUserForm from '../components/InviteUserForm';
 import InterviewCalendar from './admin/InterviewCalendar';
+import AnalyticsDashboard from './admin/AnalyticsDashboard';
 import { Link } from 'react-router-dom';
 import useAutoLogout from '../hooks/useAutoLogout'; // or wherever you save it
 
@@ -78,6 +79,11 @@ const DashboardLayout = () => {
           <ListItem button onClick={() => setSelectedView('calendar')}>
             <ListItemText primary="Calendar" />
           </ListItem>
+          {currentUser?.is_looply_admin && (
+            <ListItem button onClick={() => setSelectedView('analytics')}>
+              <ListItemText primary="Analytics" />
+            </ListItem>
+          )}
           {currentUser?.is_looply_admin && (
             <ListItem button onClick={() => setSelectedView('inviteUser')}>
               <ListItemText primary="Invite User" />
@@ -175,6 +181,9 @@ const DashboardLayout = () => {
             </Typography>
             <InviteUserForm />
           </div>
+        )}
+        {selectedView === 'analytics' && currentUser?.is_looply_admin && (
+          <AnalyticsDashboard />
         )}
         {selectedView === 'calendar' && (
           <InterviewCalendar />
