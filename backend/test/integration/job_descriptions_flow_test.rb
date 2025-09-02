@@ -45,13 +45,15 @@ class JobDescriptionsFlowTest < ActionDispatch::IntegrationTest
     assert_equal ["rails"], jd.skills.pluck(:name)
   end
 
-  test "import endpoint returns not found" do
-    post "/api/job_descriptions/import"
-    assert_response :not_found
+  test "import endpoint is not routed" do
+    assert_raises(ActionController::RoutingError) do
+      post "/api/job_descriptions/import"
+    end
   end
 
-  test "export endpoint returns not found" do
-    get "/api/job_descriptions/export"
-    assert_response :not_found
+  test "export endpoint is not routed" do
+    assert_raises(ActionController::RoutingError) do
+      get "/api/job_descriptions/export"
+    end
   end
 end
