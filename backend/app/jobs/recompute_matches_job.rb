@@ -11,11 +11,13 @@ class RecomputeMatchesJob < ApplicationJob
     recruiter = job.posted_by_user
 
     cache_key = "job_matches:#{jd.id}"
+    # Store scores for each profile so we can detect threshold crossings later.
     previous_scores = Rails.cache.read(cache_key) || {}
     if previous_scores.is_a?(Array)
       previous_scores = previous_scores.index_by { |m| m[:profile_id] }.transform_values { |m| m[:score] }
     end
 
+    # Skip rescoring profiles that already produced high-score notifications.
     excluded_ids = previous_scores.select { |_, s| s.to_i >= THRESHOLD }.keys
 
     matcher = JobMatcher.new(jd, company_id: job.company_id, exclude_job_id: job.id)
