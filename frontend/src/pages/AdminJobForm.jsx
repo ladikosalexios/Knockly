@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from "../api";
 
-export default function AdminJobForm({ onCreated }) {
+export default function AdminJobForm({ onCreated, onUpdated }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
@@ -117,7 +117,11 @@ export default function AdminJobForm({ onCreated }) {
           is_remote: jdForm.is_remote,
         });
         setJdJobMsg('Job + JD updated!');
-        navigate('/admin');
+        if (onUpdated) {
+          onUpdated();
+        } else {
+          navigate('/admin');
+        }
       } else {
         const jobRes = await api.post('/api/jobs', {
           job: {
@@ -162,7 +166,11 @@ export default function AdminJobForm({ onCreated }) {
           is_remote: false,
           requirements: '',
         });
-        if (onCreated) onCreated();
+        if (onCreated) {
+          onCreated();
+        } else {
+          navigate('/admin');
+        }
       }
     } catch (err) {
       console.error(err);
@@ -317,3 +325,4 @@ export default function AdminJobForm({ onCreated }) {
     </div>
   );
 }
+

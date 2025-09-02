@@ -16,14 +16,19 @@ const DashboardLayout = () => {
   const [jobs, setJobs] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
+  const fetchJobs = () => {
+    return api
+      .get('/api/admin/dashboard')
+      .then(res => {
+        setJobs(res.data);
+      })
+      .catch(err => {
+        console.error('Error fetching dashboard jobs', err);
+      });
+  };
+
   useEffect(() => {
-    api.get("/api/admin/dashboard")
-    .then(res => {
-      setJobs(res.data);
-    })
-    .catch(err => {
-      console.error("Error fetching dashboard jobs", err);
-    });
+    fetchJobs();
   }, []);
 
   useEffect(() => {
@@ -70,7 +75,13 @@ const DashboardLayout = () => {
         }}
       >
         <List>
-          <ListItem button onClick={() => setSelectedView('dashboard')}>
+          <ListItem
+            button
+            onClick={() => {
+              setSelectedView('dashboard');
+              fetchJobs();
+            }}
+          >
             <ListItemText primary="My Job Posts" />
           </ListItem>
           <ListItem button onClick={() => setSelectedView('jobForm')}>
@@ -163,11 +174,8 @@ const DashboardLayout = () => {
           </Box>
         )}
         {selectedView === 'jobForm' && (
-          <div style={{ backgroundColor: "#1e1e1e" }}>
-            <AdminJobForm onCreated={() => {
-              // Optionally trigger refresh or message
-              console.log("Job created!");
-            }} />
+          <div style={{ backgroundColor: '#1e1e1e' }}>
+            <AdminJobForm onCreated={fetchJobs} onUpdated={fetchJobs} />
           </div>
         )}
         {selectedView === 'inviteUser' && currentUser?.is_looply_admin && (
