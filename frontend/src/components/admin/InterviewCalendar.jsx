@@ -14,6 +14,11 @@ import api from '../../api';
 const locales = { 'en-US': enUS };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
+export const fetchInterviews = async () => {
+  const res = await api.get('/api/interviews');
+  return res.data;
+};
+
 export default function InterviewCalendar() {
   const [interviews, setInterviews] = useState([]);
   const [error, setError] = useState('');
@@ -23,17 +28,22 @@ export default function InterviewCalendar() {
   const [editDate, setEditDate] = useState(new Date());
   const [editNotes, setEditNotes] = useState('');
 
+  const loadInterviews = async () => {
+    try {
+      const data = await fetchInterviews();
+      setInterviews(data);
+      setError('');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load interviews');
+    }
+  };
+
   useEffect(() => {
-    const fetchInterviews = async () => {
-      try {
-        const res = await api.get('/api/interviews');
-        setInterviews(res.data);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load interviews');
-      }
-    };
-    fetchInterviews();
+    loadInterviews();
+    const handler = () => loadInterviews();
+    window.addEventListener('interviewScheduled', handler);
+    return () => window.removeEventListener('interviewScheduled', handler);
   }, []);
 
   const events = interviews.map(i => ({
@@ -53,13 +63,11 @@ export default function InterviewCalendar() {
   const saveEdit = async () => {
     if (!editingEvent) return;
     try {
-      const res = await api.put(`/api/interviews/${editingEvent.id}`, {
+      await api.put(`/api/interviews/${editingEvent.id}`, {
         interview: { scheduled_at: editDate.toISOString(), notes: editNotes },
       });
-      setInterviews(prev =>
-        prev.map(i => (i.id === editingEvent.id ? res.data : i))
-      );
       setEditingEvent(null);
+      await loadInterviews();
     } catch (err) {
       console.error(err);
       setError('Failed to update interview');
