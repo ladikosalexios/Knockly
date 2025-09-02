@@ -71,8 +71,9 @@ class RecomputeMatchesJobTest < ActiveJob::TestCase
       end
     end
 
+    matcher = matcher_class.new([first_matches, second_matches])
     broadcasts = []
-    JobMatcher.stub :new, ->(*args) { matcher_class.new([first_matches, second_matches]) } do
+    JobMatcher.stub :new, matcher do
       ActionCable.server.stub :broadcast, ->(channel, payload) { broadcasts << [channel, payload] } do
         assert_emails 1 do
           perform_enqueued_jobs do
