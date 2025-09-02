@@ -3,6 +3,8 @@ require_relative "../../app/services/matching_service"
 
 class MatchingServiceTest < Minitest::Test
   DummyProfile = Struct.new(:embedding)
+  DummyApplication = Struct.new(:fit_feedback)
+  DummyProfileWithFeedback = Struct.new(:embedding, :job_applications)
 
   def test_score_returns_nil_without_job_description
     applicant = DummyProfile.new([1.0, 0.0, 0.0])
@@ -53,5 +55,13 @@ class MatchingServiceTest < Minitest::Test
     assert_equal 30, result[:score]
     expected_reason = "Weak match — the connection feels tenuous at best."
     assert_equal expected_reason, result[:reason]
+  end
+
+  def test_score_adjusts_with_feedback
+    apps = [DummyApplication.new(10), DummyApplication.new(0)]
+    applicant = DummyProfileWithFeedback.new([1.0, 0.0], apps)
+    job = DummyProfile.new([0.8, 0.6])
+    result = MatchingService.score(applicant_profile: applicant, job_description: job, job_requirements: "")
+    assert_equal 85, result[:score]
   end
 end
