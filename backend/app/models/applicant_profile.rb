@@ -14,6 +14,7 @@ class ApplicantProfile < ApplicationRecord
   before_validation :normalize_email
 
   after_commit :enqueue_embedding_generation, if: -> { resume_text.present? }
+  after_commit :enqueue_match_recomputation, if: -> { saved_change_to_embedding? }
 
   private
 
@@ -23,5 +24,12 @@ class ApplicantProfile < ApplicationRecord
 
   def enqueue_embedding_generation
     ApplicantProfileEmbeddingJob.perform_later(id, resume_text)
+  end
+
+  def enqueue_match_recomputation
+    job_applications.includes(job: :job_description).find_each do |application|
+      jd_id = application.job.job_description&.id
+      RecomputeMatchesJob.perform_later(jd_id) if jd_id
+    end
   end
 end

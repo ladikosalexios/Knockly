@@ -6,6 +6,7 @@ class Api::InterviewsControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     @job_application = job_applications(:one)
+    sign_in users(:one)
   end
 
   # test "creates interview updates status and sends email" do
