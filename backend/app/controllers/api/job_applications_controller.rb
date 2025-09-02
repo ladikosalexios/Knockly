@@ -255,7 +255,10 @@ class Api::JobApplicationsController < ApplicationController
   private
 
   def set_job_application
-    @job_application = JobApplication.find(params[:id])
+    @job_application = JobApplication
+                      .joins(:job)
+                      .where(jobs: { company_id: current_user.company_id })
+                      .find(params[:id])
   end
 
   def require_company!
