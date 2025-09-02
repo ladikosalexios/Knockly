@@ -83,7 +83,7 @@ class RecomputeMatchesJobTest < ActiveJob::TestCase
       end
     end
 
-    assert_equal { profile.id => 85 }, Rails.cache.read(cache_key)
+    assert_equal({ profile.id => 85 }, Rails.cache.read(cache_key))
     expected_payload = { job_id: job.id, applicant_profile_id: profile.id, score: 85 }
     assert_equal [["recruiter_notifications_#{recruiter.id}", expected_payload]], broadcasts
   ensure
