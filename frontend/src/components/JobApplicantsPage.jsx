@@ -16,20 +16,21 @@ export default function JobApplicantsPage() {
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const statusOptions = STATUS_OPTIONS;
 
+  const fetchApplicants = async () => {
+    try {
+      const res = await api.get(`/api/job_applications?job_id=${jobId}`);
+      const apps = res.data.map(app => ({
+        ...app,
+        status: normalizeStatus(app.status)
+      }));
+      setApplicants(apps);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to fetch applicants');
+    }
+  };
+
   useEffect(() => {
-    const fetchApplicants = async () => {
-      try {
-        const res = await api.get(`/api/job_applications?job_id=${jobId}`);
-        const apps = res.data.map(app => ({
-          ...app,
-          status: normalizeStatus(app.status)
-        }));
-        setApplicants(apps);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to fetch applicants');
-      }
-    };
     fetchApplicants();
   }, [jobId]);
 
@@ -39,6 +40,7 @@ export default function JobApplicantsPage() {
         job_application: { status }
       });
       setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status } : a));
+      fetchApplicants();
     } catch (err) {
       console.error(err);
     }
@@ -55,6 +57,7 @@ export default function JobApplicantsPage() {
   const markScheduled = (appId) => {
     setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status: 'interviewed' } : a));
     closeScheduler();
+    fetchApplicants();
   };
 
   return (

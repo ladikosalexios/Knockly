@@ -42,7 +42,9 @@ test('disables schedule button after interview scheduled', async () => {
   }));
   const { default: JobApplicantsPageMocked } = await import('./JobApplicantsPage');
 
-  api.get.mockResolvedValueOnce({ data: [{ id: 1, name: 'Alice', applicant_profile: { email: 'a@example.com' }, status: 'submitted' }] });
+  api.get
+    .mockResolvedValueOnce({ data: [{ id: 1, name: 'Alice', applicant_profile: { email: 'a@example.com' }, status: 'submitted' }] })
+    .mockResolvedValueOnce({ data: [{ id: 1, name: 'Alice', applicant_profile: { email: 'a@example.com' }, status: 'interviewed' }] });
   render(<JobApplicantsPageMocked />);
   await screen.findByText('Alice');
   fireEvent.click(screen.getByText('Schedule Interview'));
