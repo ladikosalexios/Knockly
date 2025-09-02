@@ -1,7 +1,6 @@
-require "minitest/autorun"
-require_relative "../../app/services/matching_service"
+require "test_helper"
 
-class MatchingServiceTest < Minitest::Test
+class MatchingServiceTest < ActiveSupport::TestCase
   DummyProfile = Struct.new(:embedding)
 
   def test_score_returns_nil_without_job_description

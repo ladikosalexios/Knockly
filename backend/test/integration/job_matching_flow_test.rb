@@ -1,7 +1,7 @@
 require "test_helper"
 
 class JobMatchingFlowTest < ActionDispatch::IntegrationTest
-  include Devise::Test::IntegrationHelpers
+  include Warden::Test::Helpers
 
   setup do
     @company = Company.create!(name: "Co")
@@ -22,8 +22,12 @@ class JobMatchingFlowTest < ActionDispatch::IntegrationTest
                                                    email: profile.email, phone: "123", work_authorization: "citizen")
   end
 
+  teardown do
+    Warden.test_reset!
+  end
+
   test "job matches endpoint returns candidates" do
-    sign_in @user
+    login_as(@user, scope: :user)
     get "/api/jobs/#{@job.id}/matches", as: :json
     assert_response :success
     body = JSON.parse(@response.body)
@@ -33,7 +37,7 @@ class JobMatchingFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "feedback endpoint not found" do
-    sign_in @user
+    login_as(@user, scope: :user)
     post "/api/job_applications/#{@feedback_application.id}/feedback", params: { feedback: "Great" }, as: :json
     assert_response :not_found
   end
