@@ -29,6 +29,7 @@ Rails.application.routes.draw do
     namespace :admin do
       get 'dashboard', to: 'dashboard#index'
     end
+    get "analytics", to: "analytics#index"
   end
   # get '*path', to: 'static#index', constraints: ->(req) { !req.xhr? && req.format.html? }
 end
