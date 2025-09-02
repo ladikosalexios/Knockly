@@ -4,6 +4,10 @@ class Api::AnalyticsController < ApplicationController
   # GET /api/analytics
   def index
     data = Rails.cache.fetch("analytics_summary", expires_in: 10.minutes) do
+      application_status_distribution = JobApplication.group(:status).count.transform_keys do |status|
+        JobApplication.statuses.key(status) || status
+      end
+
       {
         users_count: User.count,
         companies_count: Company.count,
@@ -12,7 +16,7 @@ class Api::AnalyticsController < ApplicationController
         avg_job_post_lifespan: average_job_lifespan,
         avg_application_processing_time: average_application_processing_time,
         job_status_distribution: Job.group(:status).count,
-        application_status_distribution: JobApplication.group(:status).count
+        application_status_distribution: application_status_distribution
       }
     end
 
