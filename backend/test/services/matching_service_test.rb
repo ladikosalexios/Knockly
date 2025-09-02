@@ -2,7 +2,8 @@ require "minitest/autorun"
 require_relative "../../app/services/matching_service"
 
 class MatchingServiceTest < Minitest::Test
-  DummyProfile = Struct.new(:embedding)
+  DummyProfile = Struct.new(:embedding, :total_years_experience, :location, :certifications)
+  DummyJob     = Struct.new(:embedding, :description, :years_experience_min, :years_experience_max, :location, :is_remote)
 
   def test_score_returns_nil_without_job_description
     applicant = DummyProfile.new([1.0, 0.0, 0.0])
@@ -53,5 +54,19 @@ class MatchingServiceTest < Minitest::Test
     assert_equal 30, result[:score]
     expected_reason = "Weak match — the connection feels tenuous at best."
     assert_equal expected_reason, result[:reason]
+  end
+
+  def test_weighted_scoring_with_additional_attributes
+    applicant = DummyProfile.new([1.0, 0.0], 5, "New York", ["AWS"])
+    job = DummyJob.new([1.0, 0.0], "", 3, nil, "New York", false)
+
+    result = MatchingService.score(
+      applicant_profile: applicant,
+      job_description: job,
+      job_requirements: { required_certifications: ["AWS"] },
+      weights: { skills: 0.0, experience: 1.0, location: 1.0, certifications: 1.0 }
+    )
+
+    assert_equal 100, result[:score]
   end
 end

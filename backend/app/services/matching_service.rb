@@ -1,16 +1,61 @@
 class MatchingService
-  def self.score(applicant_profile:, job_description:, job_requirements:)
+  # Compute an overall match score between an applicant and a job description.
+  #
+  # The score is a weighted combination of several sub-scores:
+  # - skills/semantic similarity (existing behaviour)
+  # - experience years match
+  # - location proximity
+  # - required certifications match
+  #
+  # Recruiters can tune the importance of each factor by passing a `weights`
+  # hash. Any missing weight falls back to a sensible default.
+  def self.score(applicant_profile:, job_description:, job_requirements:, weights: {})
     return { score: nil, reason: "Missing job description" } if job_description.nil?
 
-    if applicant_profile.embedding.present? && job_description.embedding.present?
-      return score_with_embeddings(applicant_profile: applicant_profile, job_description: job_description)
-    else
-      return semantic_score_with_gpt(
-        applicant_profile: applicant_profile,
-        job_description: job_description.description,
-        job_requirements: job_requirements
-      )
-    end
+    weights = {
+      skills: 0.5,
+      experience: 0.25,
+      location: 0.15,
+      certifications: 0.1
+    }.merge(weights || {})
+
+    skill_data = if applicant_profile.embedding.present? && job_description.embedding.present?
+                   score_with_embeddings(applicant_profile: applicant_profile, job_description: job_description)
+                 else
+                   semantic_score_with_gpt(
+                     applicant_profile: applicant_profile,
+                     job_description: job_description.description,
+                     job_requirements: job_requirements
+                   )
+                 end
+    skill_score = skill_data[:score] || 0
+
+    experience_score = experience_match_score(
+      applicant_profile&.total_years_experience,
+      job_description&.years_experience_min,
+      job_description&.years_experience_max
+    )
+
+    location_score = location_match_score(
+      applicant_profile&.location,
+      job_description&.location,
+      job_description&.is_remote
+    )
+
+    certification_score = certification_match_score(
+      applicant_profile&.certifications,
+      job_requirements
+    )
+
+    total_weight = weights.values.sum
+    combined_score = (
+      skill_score * weights[:skills] +
+      experience_score * weights[:experience] +
+      location_score * weights[:location] +
+      certification_score * weights[:certifications]
+    ) / total_weight
+
+    { score: combined_score.round, reason: skill_data[:reason] }
   end
 
   def self.score_with_embeddings(applicant_profile:, job_description:)
@@ -83,5 +128,38 @@ class MatchingService
   rescue => e
     Rails.logger.warn "[MatchingService] Failed to compute match score: #{e.message}"
     { score: nil, reason: "Unable to evaluate match at this time." }
+  end
+
+  # --------------------
+  # Scoring helpers
+  # --------------------
+  def self.experience_match_score(candidate_years, min_years, max_years)
+    return 0 if candidate_years.nil? && min_years.nil? && max_years.nil?
+    return 0 if candidate_years.nil?
+
+    min_years ||= 0
+    return 100 if candidate_years >= min_years
+
+    [(candidate_years.to_f / min_years) * 100, 0].max
+  end
+
+  def self.location_match_score(candidate_location, job_location, is_remote)
+    return 100 if is_remote
+    return 0 if candidate_location.to_s.strip.empty? || job_location.to_s.strip.empty?
+
+    candidate_location.to_s.strip.downcase == job_location.to_s.strip.downcase ? 100 : 0
+  end
+
+  def self.certification_match_score(candidate_certs, job_requirements)
+    required = if job_requirements.is_a?(Hash)
+                 Array(job_requirements[:required_certifications])
+               else
+                 []
+               end
+    return 0 if required.empty?
+
+    candidate = Array(candidate_certs).map { |c| c.to_s.downcase }
+    matched = required.count { |r| candidate.include?(r.to_s.downcase) }
+    (matched.to_f / required.size) * 100
   end
 end

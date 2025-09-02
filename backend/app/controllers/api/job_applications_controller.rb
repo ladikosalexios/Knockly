@@ -201,12 +201,23 @@ class Api::JobApplicationsController < ApplicationController
   end
 
   # api/job_applications
+  # GET /api/job_applications
+  # Optional query parameters allow tuning of the matching algorithm:
+  # - experience_weight: relative weight for years-of-experience matching
+  # - location_weight: relative weight for location proximity
+  # - certification_weight: relative weight for certification requirements
   def index
     apps = JobApplication
       .joins(:job)
       .where(jobs: { company_id: current_user.company_id })
     apps = apps.where(job_id: params[:job_id]) if params[:job_id].present?
     apps = apps.includes(job: { job_description: :skills }, applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
+
+    weight_params = {
+      experience: params[:experience_weight]&.to_f,
+      location: params[:location_weight]&.to_f,
+      certifications: params[:certification_weight]&.to_f
+    }.compact
 
     results = apps.map do |app|
       profile = app.applicant_profile
@@ -215,7 +226,8 @@ class Api::JobApplicationsController < ApplicationController
       score_data = MatchingService.score(
         applicant_profile: profile,
         job_description: job_description,
-        job_requirements: job_description.requirements
+        job_requirements: job_description.requirements,
+        weights: weight_params
       )
 
 
