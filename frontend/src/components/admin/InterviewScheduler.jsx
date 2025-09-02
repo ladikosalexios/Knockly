@@ -39,6 +39,7 @@ export default function InterviewScheduler({ jobApplicationId, applicantName = '
         await api.post('/api/interviews', { interview: payload });
         await fetchInterviews();
         onScheduled && onScheduled();
+        window.dispatchEvent(new Event('interviewScheduled'));
       }
       setForm({ id: null, scheduled_at: null, location: '', notes: '' });
       setError('');
