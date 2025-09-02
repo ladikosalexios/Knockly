@@ -16,14 +16,18 @@ const DashboardLayout = () => {
   const [jobs, setJobs] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
+  const fetchJobs = () => {
     api.get("/api/admin/dashboard")
-    .then(res => {
-      setJobs(res.data);
-    })
-    .catch(err => {
-      console.error("Error fetching dashboard jobs", err);
-    });
+      .then(res => {
+        setJobs(res.data);
+      })
+      .catch(err => {
+        console.error("Error fetching dashboard jobs", err);
+      });
+  };
+
+  useEffect(() => {
+    fetchJobs();
   }, []);
 
   useEffect(() => {
@@ -165,8 +169,8 @@ const DashboardLayout = () => {
         {selectedView === 'jobForm' && (
           <div style={{ backgroundColor: "#1e1e1e" }}>
             <AdminJobForm onCreated={() => {
-              // Optionally trigger refresh or message
-              console.log("Job created!");
+              fetchJobs();
+              setSelectedView('dashboard');
             }} />
           </div>
         )}

@@ -117,6 +117,7 @@ export default function AdminJobForm({ onCreated }) {
           is_remote: jdForm.is_remote,
         });
         setJdJobMsg('Job + JD updated!');
+        if (onCreated) onCreated();
         navigate('/admin');
       } else {
         const jobRes = await api.post('/api/jobs', {
