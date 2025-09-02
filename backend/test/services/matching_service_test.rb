@@ -2,6 +2,8 @@ require "test_helper"
 
 class MatchingServiceTest < ActiveSupport::TestCase
   DummyProfile = Struct.new(:embedding)
+  DummyApplication = Struct.new(:fit_feedback)
+  DummyProfileWithFeedback = Struct.new(:embedding, :job_applications)
 
   def test_score_returns_nil_without_job_description
     applicant = DummyProfile.new([1.0, 0.0, 0.0])
@@ -54,6 +56,14 @@ class MatchingServiceTest < ActiveSupport::TestCase
     assert_equal expected_reason, result[:reason]
   end
 
+  def test_score_adjusts_with_feedback
+    apps = [DummyApplication.new(10), DummyApplication.new(0)]
+    applicant = DummyProfileWithFeedback.new([1.0, 0.0], apps)
+    job = DummyProfile.new([0.8, 0.6])
+    result = MatchingService.score(applicant_profile: applicant, job_description: job, job_requirements: "")
+    assert_equal 85, result[:score]
+  end
+  
   def test_reason_threshold_boundaries
     applicant = DummyProfile.new([1.0, 0.0])
 

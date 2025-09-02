@@ -4,8 +4,8 @@ require 'docx'
 class Api::JobApplicationsController < ApplicationController
   wrap_parameters format: [:json]
   skip_before_action :authenticate_user!, only: [:create]
-  before_action :set_job_application, only: [:update]
-  before_action :require_company!, only: [:index, :update]
+  before_action :set_job_application, only: [:update, :feedback]
+  before_action :require_company!, only: [:index, :update, :feedback]
   def create
     Rails.logger.info "Starting job application creation..."
     Rails.logger.info "PARAMS: #{params.inspect}"
@@ -244,6 +244,14 @@ class Api::JobApplicationsController < ApplicationController
     end
   end
 
+  def feedback
+    if @job_application.update(feedback_params)
+      render json: @job_application
+    else
+      render json: { errors: @job_application.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def set_job_application
@@ -298,6 +306,10 @@ class Api::JobApplicationsController < ApplicationController
 
   def status_params
     params.require(:job_application).permit(:status)
+  end
+
+  def feedback_params
+    params.require(:job_application).permit(:fit_feedback)
   end
 
   def extract_resume_text(file)

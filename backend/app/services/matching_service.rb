@@ -2,15 +2,24 @@ class MatchingService
   def self.score(applicant_profile:, job_description:, job_requirements:)
     return { score: nil, reason: "Missing job description" } if job_description.nil?
 
-    if applicant_profile.embedding.present? && job_description.embedding.present?
-      return score_with_embeddings(applicant_profile: applicant_profile, job_description: job_description)
-    else
-      return semantic_score_with_gpt(
-        applicant_profile: applicant_profile,
-        job_description: job_description.description,
-        job_requirements: job_requirements
-      )
+    result = if applicant_profile.embedding.present? && job_description.embedding.present?
+               score_with_embeddings(applicant_profile: applicant_profile, job_description: job_description)
+             else
+               semantic_score_with_gpt(
+                 applicant_profile: applicant_profile,
+                 job_description: job_description.description,
+                 job_requirements: job_requirements
+               )
+             end
+
+    if result[:score] && applicant_profile.respond_to?(:job_applications)
+      feedbacks = applicant_profile.job_applications.map(&:fit_feedback).compact
+      if feedbacks.any?
+        avg = feedbacks.sum.to_f / feedbacks.size
+        result[:score] = (result[:score] + avg).clamp(0, 100).round
+      end
     end
+    result
   end
 
   def self.score_with_embeddings(applicant_profile:, job_description:)

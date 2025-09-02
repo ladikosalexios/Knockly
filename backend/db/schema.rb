@@ -127,6 +127,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_31_133603) do
     t.string "disability_status"
     t.string "veteran_status"
     t.integer "status", default: 0, null: false
+    t.integer "fit_feedback"
     t.index ["applicant_profile_id"], name: "index_job_applications_on_applicant_profile_id"
     t.index ["job_id"], name: "index_job_applications_on_job_id"
   end
