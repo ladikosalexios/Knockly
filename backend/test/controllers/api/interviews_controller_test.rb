@@ -2,6 +2,7 @@ require "test_helper"
 
 class Api::InterviewsControllerTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
+  include ActionMailer::TestHelper
 
   setup do
     @job_application = job_applications(:one)
