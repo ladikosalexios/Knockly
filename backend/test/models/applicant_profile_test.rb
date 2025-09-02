@@ -34,7 +34,7 @@ class ApplicantProfileTest < ActiveSupport::TestCase
                           email: profile.email, phone: "123", work_authorization: "citizen")
 
     clear_enqueued_jobs
-    assert_no_enqueued_with(job: RecomputeMatchesJob) do
+    assert_no_enqueued_jobs only: RecomputeMatchesJob do
       profile.update!(name: "Janet Smith")
     end
   end

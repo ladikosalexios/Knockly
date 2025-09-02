@@ -22,7 +22,7 @@ class JobDescriptionTest < ActiveSupport::TestCase
     jd = JobDescription.create!(job: job, description: "desc", embedding: [0.1, 0.2])
 
     clear_enqueued_jobs
-    assert_no_enqueued_with(job: RecomputeMatchesJob) do
+    assert_no_enqueued_jobs only: RecomputeMatchesJob do
       jd.update!(description: "new desc")
     end
   end
