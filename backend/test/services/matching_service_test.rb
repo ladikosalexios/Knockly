@@ -2,7 +2,7 @@ require "minitest/autorun"
 require_relative "../../app/services/matching_service"
 
 class MatchingServiceTest < Minitest::Test
-  DummyProfile = Struct.new(:embedding)
+  DummyProfile = Struct.new(:embedding, :skills, :total_years_experience, :location, :is_remote)
 
   def test_score_returns_nil_without_job_description
     applicant = DummyProfile.new([1.0, 0.0, 0.0])
@@ -17,6 +17,7 @@ class MatchingServiceTest < Minitest::Test
     result = MatchingService.score_with_embeddings(applicant_profile: applicant, job_description: job)
     assert_nil result[:score]
     assert_equal "Missing embeddings", result[:reason]
+    assert_equal({}, result[:breakdown])
   end
 
   def test_score_with_valid_vectors
@@ -26,6 +27,7 @@ class MatchingServiceTest < Minitest::Test
     assert_equal 100, result[:score]
     expected_reason = "Perfect match — you'd be hard-pressed to find a better fit."
     assert_equal expected_reason, result[:reason]
+    assert_equal %i[skill_overlap experience location], result[:breakdown].keys.sort
   end
 
   def test_score_with_strong_match_vectors

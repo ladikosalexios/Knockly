@@ -7,10 +7,22 @@ class Api::JobMatchesController < ApplicationController
 
     matches = JobMatcher.new(jd, company_id: job.company_id, exclude_job_id: job.id)
                     .top_candidates(limit: params.fetch(:limit, 5).to_i)
-    render json: matches.map { |m|
+
+    render json: matches.map do |m|
       profile = m[:profile]
-      profile.as_json(only: [:id, :name, :email]).merge(score: m[:score])
-    }
+      score_data = MatchingService.score(
+        applicant_profile: profile,
+        job_description: jd,
+        job_requirements: jd.requirements
+      )
+
+      profile.as_json(only: [:id, :name, :email]).merge(
+        score: score_data[:score],
+        reason: score_data[:reason],
+        breakdown: score_data[:breakdown],
+        explanation: score_data[:explanation]
+      )
+    end
   end
 
   private

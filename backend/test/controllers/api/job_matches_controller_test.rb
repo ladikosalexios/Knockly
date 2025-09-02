@@ -38,6 +38,10 @@ class Api::JobMatchesControllerTest < ActionDispatch::IntegrationTest
     assert_includes names, "Alice"
     assert_includes names, "Bob"
     refute_includes names, "Applied"
+    candidate = body.first
+    assert candidate.key?("score")
+    assert candidate.key?("breakdown")
+    assert candidate.key?("reason")
   end
 
   test "rejects matches for unauthorized job" do

@@ -6,6 +6,7 @@ export default function JobMatches() {
   const { id: jobId } = useParams();
   const [matches, setMatches] = useState([]);
   const [error, setError] = useState('');
+  const [openId, setOpenId] = useState(null);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -31,7 +32,26 @@ export default function JobMatches() {
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {matches.map(m => (
           <li key={m.id} style={{ marginBottom: 12 }}>
-            <strong>{m.name}</strong> – {m.score.toFixed(1)}%
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <strong style={{ flex: 1 }}>{m.name}</strong>
+              <span style={{ marginRight: 8 }}>{m.score?.toFixed ? m.score.toFixed(1) : m.score}%</span>
+              <button onClick={() => setOpenId(openId === m.id ? null : m.id)}>
+                {openId === m.id ? 'Hide' : 'Details'}
+              </button>
+            </div>
+            {openId === m.id && (
+              <div style={{ marginTop: 8, paddingLeft: 16 }}>
+                {m.reason && <p><strong>Reason:</strong> {m.reason}</p>}
+                {m.breakdown && (
+                  <ul style={{ listStyle: 'disc', paddingLeft: 20 }}>
+                    <li>Skill overlap: {m.breakdown.skill_overlap ?? 'N/A'}%</li>
+                    <li>Experience: {m.breakdown.experience ?? 'N/A'}%</li>
+                    <li>Location: {m.breakdown.location ?? 'N/A'}%</li>
+                  </ul>
+                )}
+                {m.explanation && <p>{m.explanation}</p>}
+              </div>
+            )}
           </li>
         ))}
       </ul>
