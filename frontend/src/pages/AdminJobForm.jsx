@@ -25,11 +25,18 @@ export default function AdminJobForm({ onCreated }) {
   const [jdJobMsg, setJdJobMsg] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [jobDescId, setJobDescId] = useState(null);
+  const [templates, setTemplates] = useState([]);
 
   useEffect(() => {
     api.get("/api/users/me")
       .then(res => setCurrentUser(res.data))
       .catch(err => console.error("Error fetching current user", err));
+  }, []);
+
+  useEffect(() => {
+    api.get('/api/job_description_templates')
+      .then(res => setTemplates(res.data))
+      .catch(err => console.error('Error fetching templates', err));
   }, []);
 
   useEffect(() => {
@@ -171,6 +178,46 @@ export default function AdminJobForm({ onCreated }) {
     }
   };
 
+  const handleSaveTemplate = async () => {
+    try {
+      const res = await api.post('/api/job_description_templates', {
+        title: jdForm.jd_title,
+        description: jdForm.jd_description,
+        location: jdForm.is_remote ? 'Remote' : jdForm.jd_location,
+        job_type: jdForm.job_type,
+        years_experience_min: jdForm.years_experience_min ? Number(jdForm.years_experience_min) : null,
+        years_experience_max: jdForm.years_experience_max ? Number(jdForm.years_experience_max) : null,
+        salary_min: jdForm.salary_min ? Number(jdForm.salary_min) : null,
+        salary_max: jdForm.salary_max ? Number(jdForm.salary_max) : null,
+        salary_currency: jdForm.salary_currency,
+        is_remote: jdForm.is_remote,
+        requirements: jdForm.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+        skills: jdForm.jd_skills.split(',').map(s => s.trim()).filter(Boolean),
+      });
+      setTemplates(t => [res.data, ...t]);
+    } catch (err) {
+      console.error('Error saving template', err);
+    }
+  };
+
+  const applyTemplate = tpl => {
+    setJdForm(f => ({
+      ...f,
+      jd_title: tpl.title || '',
+      jd_description: tpl.description || '',
+      jd_location: tpl.is_remote || tpl.location === 'Remote' ? '' : (tpl.location || ''),
+      job_type: tpl.job_type || 'full-time',
+      years_experience_min: tpl.years_experience_min?.toString() || '',
+      years_experience_max: tpl.years_experience_max?.toString() || '',
+      salary_min: tpl.salary_min?.toString() || '',
+      salary_max: tpl.salary_max?.toString() || '',
+      salary_currency: tpl.salary_currency || 'USD',
+      is_remote: tpl.is_remote || tpl.location === 'Remote',
+      requirements: tpl.requirements || '',
+      jd_skills: (tpl.skills || []).map(s => s.name).join(', '),
+    }));
+  };
+
   const inputStyle = {
     padding: 10,
     background: "#111",
@@ -285,6 +332,22 @@ export default function AdminJobForm({ onCreated }) {
             placeholder="Expiration Date (YYYY-MM-DD)" style={inputStyle}
           />
           <button
+            type="button"
+            onClick={handleSaveTemplate}
+            style={{
+              background: "#333",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              padding: "12px 24px",
+              fontWeight: 700,
+              marginTop: 12,
+              cursor: "pointer"
+            }}
+          >
+            Save as Template
+          </button>
+          <button
             type="submit"
             style={{
               background: "#222",
@@ -314,6 +377,20 @@ export default function AdminJobForm({ onCreated }) {
             </div>
           )}
         </form>
+        {templates.length > 0 && (
+          <div style={{ marginTop: 24 }}>
+            <h3 style={{ color: '#a8d0ff' }}>Revision History</h3>
+            {templates.map(tpl => (
+              <div
+                key={tpl.id}
+                style={{ cursor: 'pointer', padding: '4px 0' }}
+                onClick={() => applyTemplate(tpl)}
+              >
+                {tpl.title} - {new Date(tpl.updated_at).toLocaleString()}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
