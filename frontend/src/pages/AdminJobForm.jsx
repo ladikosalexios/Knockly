@@ -440,24 +440,6 @@ export default function AdminJobForm({ onCreated }) {
             </div>
           )}
         </form>
-        {templates.length > 0 && (
-          <div style={{ marginTop: 24, background: '#111', border: '1px solid #333', borderRadius: 8, padding: 16 }}>
-            <h3 style={{ color: '#a8d0ff', marginTop: 0 }}>Revision History</h3>
-            {templates.map((tpl, idx) => (
-              <div
-                key={tpl.id}
-                style={{
-                  cursor: 'pointer',
-                  padding: '6px 0',
-                  borderTop: idx === 0 ? 'none' : '1px solid #333'
-                }}
-                onClick={() => applyTemplate(tpl)}
-              >
-                {tpl.title} - {new Date(tpl.updated_at).toLocaleString()}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
