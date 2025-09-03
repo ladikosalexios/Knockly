@@ -26,6 +26,7 @@ export default function AdminJobForm({ onCreated }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [jobDescId, setJobDescId] = useState(null);
   const [templates, setTemplates] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
 
   useEffect(() => {
     api.get("/api/users/me")
@@ -218,6 +219,13 @@ export default function AdminJobForm({ onCreated }) {
     }));
   };
 
+  const handleTemplateChange = e => {
+    const tplId = e.target.value;
+    setSelectedTemplateId(tplId);
+    const tpl = templates.find(t => t.id === Number(tplId));
+    if (tpl) applyTemplate(tpl);
+  };
+
   const inputStyle = {
     padding: 10,
     background: "#111",
@@ -237,6 +245,20 @@ export default function AdminJobForm({ onCreated }) {
         <h2 style={{ color: "#a8d0ff", fontSize: 24, fontWeight: 600 }}>
           {isEdit ? 'Edit Job & Job Description' : 'Create New Job & Job Description (Admin)'}
         </h2>
+        {templates.length > 0 && (
+          <div style={{ margin: '16px 0' }}>
+            <select
+              value={selectedTemplateId}
+              onChange={handleTemplateChange}
+              style={{ ...inputStyle, width: '100%' }}
+            >
+              <option value="">Load from template...</option>
+              {templates.map(tpl => (
+                <option key={tpl.id} value={tpl.id}>{tpl.title}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <form onSubmit={handleSubmit}
           style={{ display: "flex", flexDirection: "column", gap: 16, color: "#fff" }}
         >
