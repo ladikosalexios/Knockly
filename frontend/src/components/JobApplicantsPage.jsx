@@ -46,6 +46,19 @@ export default function JobApplicantsPage() {
     }
   };
 
+  const handleFeedbackChange = async (appId, fitFeedback) => {
+    try {
+      await api.post(`/api/job_applications/${appId}/feedback`, {
+        job_application: { fit_feedback: fitFeedback }
+      });
+      setApplicants(prev =>
+        prev.map(a => (a.id === appId ? { ...a, fit_feedback: fitFeedback } : a))
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const openScheduler = (app) => {
     setSelectedAppId(app.id);
     setSelectedApplicant(app);
@@ -113,6 +126,23 @@ export default function JobApplicantsPage() {
                   )}
                 </div>
               )}
+
+              {/* Fit Feedback */}
+              <div style={{ marginTop: 16 }}>
+                <label>
+                  Fit Feedback:
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={app.fit_feedback ?? ''}
+                    onChange={e =>
+                      handleFeedbackChange(app.id, Number(e.target.value))
+                    }
+                    style={{ marginLeft: 8, width: 60 }}
+                  />
+                </label>
+              </div>
 
               {/* Experiences */}
               {app.applicant_profile?.applicant_experiences?.length > 0 && (

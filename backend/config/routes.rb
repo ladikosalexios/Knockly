@@ -21,6 +21,9 @@ Rails.application.routes.draw do
       end
     end
     resources :job_applications, only: [:create, :index, :update] do
+      member do
+        post :feedback
+      end
       collection do
         post :extract_resume
       end
