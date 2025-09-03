@@ -5,7 +5,7 @@ class JobMatcher
     @exclude_job_id = exclude_job_id
   end
 
-  def top_candidates(limit: 5)
+  def top_candidates(limit: 5, exclude_profile_ids: [])
     return [] unless @job_description&.embedding.present?
 
     candidates = ApplicantProfile
@@ -13,6 +13,7 @@ class JobMatcher
       .where(jobs: { company_id: @company_id })
       .where.not(embedding: nil)
     candidates = candidates.where.not(job_applications: { job_id: @exclude_job_id }) if @exclude_job_id
+    candidates = candidates.where.not(id: exclude_profile_ids) if exclude_profile_ids.any?
     candidates = candidates.distinct
 
     candidates.map do |profile|

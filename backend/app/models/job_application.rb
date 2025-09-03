@@ -8,6 +8,7 @@ class JobApplication < ApplicationRecord
 
   validates :name, :email, :phone, :work_authorization, presence: true
   validates :email, uniqueness: { scope: :job_id, message: "already applied for this job" }
+  validates :fit_feedback, numericality: { only_integer: true, allow_nil: true }
 
   after_update :send_status_notification, if: :saved_change_to_status?
 

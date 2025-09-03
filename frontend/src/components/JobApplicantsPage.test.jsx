@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
@@ -52,4 +52,29 @@ test('disables schedule button after interview scheduled', async () => {
   fireEvent.click(screen.getByText('Save'));
   const btn = await screen.findByText('Interview Scheduled');
   expect(btn).toBeDisabled();
+});
+
+test('records fit feedback for applicant', async () => {
+  vi.resetModules();
+  api.get.mockResolvedValueOnce({
+    data: [
+      {
+        id: 1,
+        name: 'Alice',
+        applicant_profile: { email: 'a@example.com' },
+        status: 'submitted'
+      }
+    ]
+  });
+  const { default: JobApplicantsPage } = await import('./JobApplicantsPage');
+  render(<JobApplicantsPage />);
+  await screen.findByText('Alice');
+  const input = screen.getByLabelText('Fit Feedback:');
+  fireEvent.change(input, { target: { value: '25' } });
+  await waitFor(() =>
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/job_applications/1/feedback',
+      { job_application: { fit_feedback: 25 } }
+    )
+  );
 });
