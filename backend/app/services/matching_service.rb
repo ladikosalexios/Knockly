@@ -37,13 +37,13 @@ class MatchingService
     )
 
     location_score = location_match_score(
-      applicant_profile&.location,
+      applicant_profile.respond_to?(:location) ? applicant_profile.location : nil,
       job_description&.location,
       job_description&.is_remote
     )
 
     certification_score = certification_match_score(
-      applicant_profile&.certifications,
+      applicant_profile.respond_to?(:certifications) ? applicant_profile.certifications : nil,
       job_requirements
     )
 

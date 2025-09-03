@@ -69,4 +69,17 @@ class MatchingServiceTest < Minitest::Test
 
     assert_equal 100, result[:score]
   end
+
+  def test_handles_profiles_without_location_or_certifications
+    minimal_profile = Struct.new(:embedding, :total_years_experience).new([1.0, 0.0], 5)
+    job = DummyJob.new([1.0, 0.0], "", 3, nil, "RemoteTown", true)
+
+    result = MatchingService.score(
+      applicant_profile: minimal_profile,
+      job_description: job,
+      job_requirements: { required_certifications: ["AWS"] }
+    )
+
+    assert_equal 90, result[:score]
+  end
 end
