@@ -25,12 +25,20 @@ export default function AdminJobForm({ onCreated }) {
   const [jdJobMsg, setJdJobMsg] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [jobDescId, setJobDescId] = useState(null);
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [statusAlert, setStatusAlert] = useState(null);
 
   useEffect(() => {
     api.get("/api/users/me")
       .then(res => setCurrentUser(res.data))
       .catch(err => console.error("Error fetching current user", err));
+  }, []);
+
+  useEffect(() => {
+    api.get('/api/job_description_templates')
+      .then(res => setTemplates(res.data))
+      .catch(err => console.error('Error fetching templates', err));
   }, []);
 
   useEffect(() => {
@@ -204,6 +212,53 @@ export default function AdminJobForm({ onCreated }) {
     }
   };
 
+  const handleSaveTemplate = async () => {
+    try {
+      const res = await api.post('/api/job_description_templates', {
+        title: jdForm.jd_title,
+        description: jdForm.jd_description,
+        location: jdForm.is_remote ? 'Remote' : jdForm.jd_location,
+        job_type: jdForm.job_type,
+        years_experience_min: jdForm.years_experience_min ? Number(jdForm.years_experience_min) : null,
+        years_experience_max: jdForm.years_experience_max ? Number(jdForm.years_experience_max) : null,
+        salary_min: jdForm.salary_min ? Number(jdForm.salary_min) : null,
+        salary_max: jdForm.salary_max ? Number(jdForm.salary_max) : null,
+        salary_currency: jdForm.salary_currency,
+        is_remote: jdForm.is_remote,
+        requirements: jdForm.requirements.split('\n').map(r => r.trim()).filter(Boolean),
+        skills: jdForm.jd_skills.split(',').map(s => s.trim()).filter(Boolean),
+      });
+      setTemplates(t => [res.data, ...t]);
+    } catch (err) {
+      console.error('Error saving template', err);
+    }
+  };
+
+  const applyTemplate = tpl => {
+    setJdForm(f => ({
+      ...f,
+      jd_title: tpl.title || '',
+      jd_description: tpl.description || '',
+      jd_location: tpl.is_remote || tpl.location === 'Remote' ? '' : (tpl.location || ''),
+      job_type: tpl.job_type || 'full-time',
+      years_experience_min: tpl.years_experience_min?.toString() || '',
+      years_experience_max: tpl.years_experience_max?.toString() || '',
+      salary_min: tpl.salary_min?.toString() || '',
+      salary_max: tpl.salary_max?.toString() || '',
+      salary_currency: tpl.salary_currency || 'USD',
+      is_remote: tpl.is_remote || tpl.location === 'Remote',
+      requirements: tpl.requirements || '',
+      jd_skills: (tpl.skills || []).map(s => s.name).join(', '),
+    }));
+  };
+
+  const handleTemplateChange = e => {
+    const tplId = e.target.value;
+    setSelectedTemplateId(tplId);
+    const tpl = templates.find(t => t.id === Number(tplId));
+    if (tpl) applyTemplate(tpl);
+  };
+
   const inputStyle = {
     padding: 10,
     background: "#111",
@@ -214,15 +269,30 @@ export default function AdminJobForm({ onCreated }) {
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", height: "100vh", overflowY: "hidden" }}>
+    <div style={{ display: "flex", justifyContent: "center", width: "100%", overflowY: "auto" }}>
       <div style={{
         width: "100%",
-        marginLeft: "auto",
-        marginRight: "auto",
+        maxWidth: 720,
+        margin: "0 auto",
+        padding: "24px 0",
       }}>
         <h2 style={{ color: "#a8d0ff", fontSize: 24, fontWeight: 600 }}>
           {isEdit ? 'Edit Job & Job Description' : 'Create New Job & Job Description (Admin)'}
         </h2>
+        {templates.length > 0 && (
+          <div style={{ margin: '16px 0' }}>
+            <select
+              value={selectedTemplateId}
+              onChange={handleTemplateChange}
+              style={{ ...inputStyle, width: '100%' }}
+            >
+              <option value="">Load from template...</option>
+              {templates.map(tpl => (
+                <option key={tpl.id} value={tpl.id}>{tpl.title}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <form onSubmit={handleSubmit}
           style={{ display: "flex", flexDirection: "column", gap: 16, color: "#fff" }}
         >
@@ -318,6 +388,23 @@ export default function AdminJobForm({ onCreated }) {
             placeholder="Expiration Date (YYYY-MM-DD)" style={inputStyle}
           />
           <button
+            type="button"
+            onClick={handleSaveTemplate}
+            style={{
+              background: "#333",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              padding: "12px 24px",
+              width: "100%",
+              fontWeight: 700,
+              marginTop: 12,
+              cursor: "pointer"
+            }}
+          >
+            Save as Template
+          </button>
+          <button
             type="submit"
             style={{
               background: "#222",
@@ -325,6 +412,7 @@ export default function AdminJobForm({ onCreated }) {
               border: "none",
               borderRadius: 8,
               padding: "12px 24px",
+              width: "100%",
               fontWeight: 700,
               marginTop: 12,
               cursor: "pointer",
@@ -352,6 +440,24 @@ export default function AdminJobForm({ onCreated }) {
             </div>
           )}
         </form>
+        {templates.length > 0 && (
+          <div style={{ marginTop: 24, background: '#111', border: '1px solid #333', borderRadius: 8, padding: 16 }}>
+            <h3 style={{ color: '#a8d0ff', marginTop: 0 }}>Revision History</h3>
+            {templates.map((tpl, idx) => (
+              <div
+                key={tpl.id}
+                style={{
+                  cursor: 'pointer',
+                  padding: '6px 0',
+                  borderTop: idx === 0 ? 'none' : '1px solid #333'
+                }}
+                onClick={() => applyTemplate(tpl)}
+              >
+                {tpl.title} - {new Date(tpl.updated_at).toLocaleString()}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
