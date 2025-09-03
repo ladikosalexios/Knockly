@@ -46,4 +46,11 @@ class Api::JobApplicationsControllerTest < ActionDispatch::IntegrationTest
     get "/api/job_applications"
     assert_response :unauthorized
   end
+
+  test "records recruiter feedback" do
+    post "/api/job_applications/#{@job_application.id}/feedback",
+         params: { job_application: { fit_feedback: 10 } }
+    assert_response :success
+    assert_equal 10, @job_application.reload.fit_feedback
+  end
 end
