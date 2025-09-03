@@ -236,11 +236,12 @@ export default function AdminJobForm({ onCreated }) {
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", height: "100vh", overflowY: "hidden" }}>
+    <div style={{ display: "flex", justifyContent: "center", width: "100%", overflowY: "auto" }}>
       <div style={{
         width: "100%",
-        marginLeft: "auto",
-        marginRight: "auto",
+        maxWidth: 720,
+        margin: "0 auto",
+        padding: "24px 0",
       }}>
         <h2 style={{ color: "#a8d0ff", fontSize: 24, fontWeight: 600 }}>
           {isEdit ? 'Edit Job & Job Description' : 'Create New Job & Job Description (Admin)'}
@@ -362,6 +363,7 @@ export default function AdminJobForm({ onCreated }) {
               border: "none",
               borderRadius: 8,
               padding: "12px 24px",
+              width: "100%",
               fontWeight: 700,
               marginTop: 12,
               cursor: "pointer"
@@ -377,6 +379,7 @@ export default function AdminJobForm({ onCreated }) {
               border: "none",
               borderRadius: 8,
               padding: "12px 24px",
+              width: "100%",
               fontWeight: 700,
               marginTop: 12,
               cursor: "pointer",
@@ -400,12 +403,16 @@ export default function AdminJobForm({ onCreated }) {
           )}
         </form>
         {templates.length > 0 && (
-          <div style={{ marginTop: 24 }}>
-            <h3 style={{ color: '#a8d0ff' }}>Revision History</h3>
-            {templates.map(tpl => (
+          <div style={{ marginTop: 24, background: '#111', border: '1px solid #333', borderRadius: 8, padding: 16 }}>
+            <h3 style={{ color: '#a8d0ff', marginTop: 0 }}>Revision History</h3>
+            {templates.map((tpl, idx) => (
               <div
                 key={tpl.id}
-                style={{ cursor: 'pointer', padding: '4px 0' }}
+                style={{
+                  cursor: 'pointer',
+                  padding: '6px 0',
+                  borderTop: idx === 0 ? 'none' : '1px solid #333'
+                }}
                 onClick={() => applyTemplate(tpl)}
               >
                 {tpl.title} - {new Date(tpl.updated_at).toLocaleString()}
