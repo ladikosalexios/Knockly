@@ -16,7 +16,7 @@ Rails.application.routes.draw do
     get "matching", to: "matching#show"
     resources :jobs
     resources :job_descriptions, only: [:create, :update]
-    resources :job_description_templates
+    resources :job_description_templates do
       member do
         get :status
       end
