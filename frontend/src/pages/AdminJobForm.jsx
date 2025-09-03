@@ -25,6 +25,7 @@ export default function AdminJobForm({ onCreated }) {
   const [jdJobMsg, setJdJobMsg] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [jobDescId, setJobDescId] = useState(null);
+  const [statusAlert, setStatusAlert] = useState(null);
 
   useEffect(() => {
     api.get("/api/users/me")
@@ -59,6 +60,29 @@ export default function AdminJobForm({ onCreated }) {
         .catch(err => console.error('Error fetching job', err));
     }
   }, [isEdit, id]);
+
+  const pollStatus = (jdId, attempts = 5) => {
+    return new Promise((resolve) => {
+      const interval = setInterval(async () => {
+        try {
+          const res = await api.get(`/api/job_descriptions/${jdId}/status`);
+          if (res.data.embedding_state === 'generated') {
+            clearInterval(interval);
+            resolve({ ok: true, data: res.data });
+            return;
+          }
+          attempts -= 1;
+          if (attempts <= 0) {
+            clearInterval(interval);
+            resolve({ ok: false, data: res.data });
+          }
+        } catch (err) {
+          clearInterval(interval);
+          resolve({ ok: false });
+        }
+      }, 2000);
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,7 +125,7 @@ export default function AdminJobForm({ onCreated }) {
           },
         });
 
-        await api.put(`/api/job_descriptions/${jobDescId}`, {
+        const jdRes = await api.put(`/api/job_descriptions/${jobDescId}`, {
           job_id: id,
           title: jdForm.jd_title,
           description: jdForm.jd_description,
@@ -116,9 +140,14 @@ export default function AdminJobForm({ onCreated }) {
           requirements: jdForm.requirements.split('\n').map(r => r.trim()).filter(Boolean),
           is_remote: jdForm.is_remote,
         });
-        setJdJobMsg('Job + JD updated!');
-        if (onCreated) onCreated();
-        navigate('/admin');
+        const status = await pollStatus(jdRes.data.id);
+        if (status.ok) {
+          setStatusAlert({ type: 'success', message: `Job + JD updated (${status.data.skill_count} skills)` });
+          if (onCreated) onCreated();
+          navigate('/admin');
+        } else {
+          setStatusAlert({ type: 'error', message: 'Job updated but processing incomplete' });
+        }
       } else {
         const jobRes = await api.post('/api/jobs', {
           job: {
@@ -130,7 +159,7 @@ export default function AdminJobForm({ onCreated }) {
         });
         const jobId = jobRes.data.id;
 
-        await api.post('/api/job_descriptions', {
+        const jdRes = await api.post('/api/job_descriptions', {
           job_id: jobId,
           title: jdForm.jd_title,
           description: jdForm.jd_description,
@@ -145,25 +174,29 @@ export default function AdminJobForm({ onCreated }) {
           requirements: jdForm.requirements.split('\n').map(r => r.trim()).filter(Boolean),
           is_remote: jdForm.is_remote,
         });
-
-        setJdJobMsg('Job + JD created!');
-        setJdForm({
-          jd_title: '',
-          jd_description: '',
-          jd_location: '',
-          jd_skills: '',
-          job_status: 'active',
-          job_expires_at: '',
-          job_type: 'full-time',
-          years_experience_min: '',
-          years_experience_max: '',
-          salary_min: '',
-          salary_max: '',
-          salary_currency: 'USD',
-          is_remote: false,
-          requirements: '',
-        });
-        if (onCreated) onCreated();
+        const status = await pollStatus(jdRes.data.id);
+        if (status.ok) {
+          setStatusAlert({ type: 'success', message: `Job + JD created (${status.data.skill_count} skills)` });
+          setJdForm({
+            jd_title: '',
+            jd_description: '',
+            jd_location: '',
+            jd_skills: '',
+            job_status: 'active',
+            job_expires_at: '',
+            job_type: 'full-time',
+            years_experience_min: '',
+            years_experience_max: '',
+            salary_min: '',
+            salary_max: '',
+            salary_currency: 'USD',
+            is_remote: false,
+            requirements: '',
+          });
+          if (onCreated) onCreated();
+        } else {
+          setStatusAlert({ type: 'error', message: 'Job created but processing incomplete' });
+        }
       }
     } catch (err) {
       console.error(err);
@@ -311,6 +344,11 @@ export default function AdminJobForm({ onCreated }) {
           {jdJobMsg && (
             <div style={{ color: (jdJobMsg.includes('created') || jdJobMsg.includes('updated')) ? 'lightgreen' : 'red', marginTop: 8 }}>
               {jdJobMsg}
+            </div>
+          )}
+          {statusAlert && (
+            <div style={{ color: statusAlert.type === 'error' ? 'red' : 'lightgreen', marginTop: 8 }}>
+              {statusAlert.message}
             </div>
           )}
         </form>

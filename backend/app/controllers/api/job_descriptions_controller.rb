@@ -65,6 +65,12 @@ class Api::JobDescriptionsController < ApplicationController
     render json: { errors: [ e.message ] }, status: :unprocessable_entity
   end
 
+  def status
+    jd = JobDescription.includes(:skills).find(params[:id])
+    state = jd.embedding.present? ? "generated" : "pending"
+    render json: { skill_count: jd.skills.count, embedding_state: state }
+  end
+
   private
 
   def job_description_params
