@@ -7,6 +7,9 @@ class MatchingService
     location_weight: 0.0,
     certification_weight: 0.0
   )
+    experience_weight = [experience_weight.to_f, 0.0].max
+    location_weight = [location_weight.to_f, 0.0].max
+    certification_weight = [certification_weight.to_f, 0.0].max
     return { score: nil, reason: "Missing job description" } if job_description.nil?
 
     result = if applicant_profile.embedding.present? && job_description.embedding.present?

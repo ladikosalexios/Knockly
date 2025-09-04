@@ -203,7 +203,7 @@ class Api::JobApplicationsController < ApplicationController
   # GET /api/job_applications
   # Optional query params:
   # - job_id: filter by a specific job
-  # - experience_weight, location_weight, certification_weight: numeric weights to tune scoring
+  # - experience_weight, location_weight, certification_weight: non-negative numeric weights to tune scoring
   def index
     permitted = params.permit(:job_id, :experience_weight, :location_weight, :certification_weight)
 
@@ -213,9 +213,9 @@ class Api::JobApplicationsController < ApplicationController
     apps = apps.where(job_id: permitted[:job_id]) if permitted[:job_id].present?
     apps = apps.includes(job: { job_description: :skills }, applicant_profile: [:applicant_experiences, :applicant_educations, :skills])
 
-    exp_w = permitted[:experience_weight].to_f
-    loc_w = permitted[:location_weight].to_f
-    cert_w = permitted[:certification_weight].to_f
+    exp_w = [permitted[:experience_weight].to_f, 0.0].max
+    loc_w = [permitted[:location_weight].to_f, 0.0].max
+    cert_w = [permitted[:certification_weight].to_f, 0.0].max
 
     results = apps.map do |app|
       profile = app.applicant_profile
