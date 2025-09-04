@@ -1,7 +1,7 @@
 require "test_helper"
 
 class MatchingServiceTest < ActiveSupport::TestCase
-  DummyProfile = Struct.new(:embedding)
+  DummyProfile = Struct.new(:embedding, :total_years_experience, :location, :skills)
   DummyApplication = Struct.new(:fit_feedback)
   DummyProfileWithFeedback = Struct.new(:embedding, :job_applications)
 
@@ -88,5 +88,55 @@ class MatchingServiceTest < ActiveSupport::TestCase
     job = DummyProfile.new([1.0, 0.0])
     result = MatchingService.score_with_embeddings(applicant_profile: applicant, job_description: job)
     assert_equal [:reason, :score], result.keys.sort
+  end
+
+  def test_weighted_attributes_influence_score
+    skill = Struct.new(:name)
+    applicant = DummyProfile.new([1.0, 0.0], 2, "NYC", [ skill.new("aws") ])
+    job_struct = Struct.new(:embedding, :years_experience_min, :location, :is_remote, :requirements) do
+      def is_remote?
+        is_remote
+      end
+    end
+    job = job_struct.new([1.0, 0.0], 3, "NYC", false, [ "aws" ])
+
+    result = MatchingService.score(
+      applicant_profile: applicant,
+      job_description: job,
+      job_requirements: job.requirements,
+      experience_weight: 1,
+      location_weight: 1,
+      certification_weight: 1
+    )
+
+    assert_equal 92, result[:score]
+  end
+
+  def test_negative_weights_clamped_to_zero
+    skill = Struct.new(:name)
+    applicant = DummyProfile.new([1.0, 0.0], 2, "NYC", [skill.new("aws")])
+    job_struct = Struct.new(:embedding, :years_experience_min, :location, :is_remote, :requirements) do
+      def is_remote?
+        is_remote
+      end
+    end
+    job = job_struct.new([1.0, 0.0], 3, "NYC", false, ["aws"])
+
+    base = MatchingService.score(
+      applicant_profile: applicant,
+      job_description: job,
+      job_requirements: job.requirements
+    )[:score]
+
+    result = MatchingService.score(
+      applicant_profile: applicant,
+      job_description: job,
+      job_requirements: job.requirements,
+      experience_weight: -1,
+      location_weight: -2,
+      certification_weight: -3
+    )
+
+    assert_equal base, result[:score]
   end
 end

@@ -1,5 +1,15 @@
 class MatchingService
-  def self.score(applicant_profile:, job_description:, job_requirements:)
+  def self.score(
+    applicant_profile:,
+    job_description:,
+    job_requirements:,
+    experience_weight: 0.0,
+    location_weight: 0.0,
+    certification_weight: 0.0
+  )
+    experience_weight = [experience_weight.to_f, 0.0].max
+    location_weight = [location_weight.to_f, 0.0].max
+    certification_weight = [certification_weight.to_f, 0.0].max
     return { score: nil, reason: "Missing job description" } if job_description.nil?
 
     result = if applicant_profile.embedding.present? && job_description.embedding.present?
@@ -19,6 +29,65 @@ class MatchingService
         result[:score] = (result[:score] + avg).clamp(0, 100).round
       end
     end
+
+    if result[:score]
+      base = result[:score].to_f
+
+      exp_factor = if experience_weight.positive? &&
+                      job_description.respond_to?(:years_experience_min) &&
+                      applicant_profile.respond_to?(:total_years_experience)
+                     min = job_description.years_experience_min
+                     cand = applicant_profile.total_years_experience
+                     if min && cand
+                       [cand.to_f / min, 1.0].min
+                     else
+                       1.0
+                     end
+                   else
+                     1.0
+                   end
+
+      loc_factor = if location_weight.positive?
+                     if job_description.respond_to?(:is_remote?) && job_description.is_remote?
+                       1.0
+                     elsif job_description.respond_to?(:location) &&
+                           applicant_profile.respond_to?(:location) &&
+                           job_description.location.present? &&
+                           applicant_profile.location.present?
+                       job_description.location.to_s.downcase.strip ==
+                         applicant_profile.location.to_s.downcase.strip ? 1.0 : 0.0
+                     else
+                       1.0
+                     end
+                   else
+                     1.0
+                   end
+
+      cert_factor = if certification_weight.positive? && applicant_profile.respond_to?(:skills)
+                      required = Array(job_requirements).flat_map { |r| r.to_s.split(',') }
+                                  .map { |c| c.strip.downcase }.reject(&:blank?)
+                      if required.any?
+                        have = applicant_profile.skills.map { |s| s.name.downcase }
+                        matched = required.count { |c| have.include?(c) }
+                        matched.to_f / required.size
+                      else
+                        1.0
+                      end
+                    else
+                      1.0
+                    end
+
+      total_weight = 1.0 + experience_weight + location_weight + certification_weight
+      combined = (
+        base * 1.0 +
+        exp_factor * 100 * experience_weight +
+        loc_factor * 100 * location_weight +
+        cert_factor * 100 * certification_weight
+      ) / total_weight
+
+      result[:score] = combined.round
+    end
+
     result
   end
 
