@@ -12,7 +12,7 @@ class Api::JobDescriptionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "status returns skill count and generated state" do
-    jd = JobDescription.create!(job: @job, title: "T", description: "desc", embedding: [1.0])
+    jd = JobDescription.create!(job: @job, title: "T", description: "desc", location: "NYC", embedding: [1.0])
     skill = Skill.create!(name: "ruby")
     jd.skills << skill
 
@@ -24,7 +24,7 @@ class Api::JobDescriptionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "status reports pending without embedding" do
-    jd = JobDescription.create!(job: @job, title: "T", description: "desc")
+    jd = JobDescription.create!(job: @job, title: "T", description: "desc", location: "NYC")
     get "/api/job_descriptions/#{jd.id}/status"
     assert_response :success
     body = JSON.parse(@response.body)

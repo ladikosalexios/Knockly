@@ -8,7 +8,7 @@ class JobDescriptionEmbeddingJobTest < ActiveJob::TestCase
     user = User.create!(email: "u@example.com", password: "password")
     company = Company.create!(name: "Co")
     job = Job.create!(status: "active", company: company, posted_by_user: user)
-    @jd = JobDescription.create!(job: job, description: "Something")
+    @jd = JobDescription.create!(job: job, title: "T", description: "Something", location: "NYC")
   end
 
   test "updates job description embedding" do

@@ -10,7 +10,7 @@ class Api::JobMatchesControllerTest < ActionDispatch::IntegrationTest
     sign_in @user, scope: :user
 
     @job = Job.create!(status: "active", company: @company, posted_by_user: @user)
-    @jd = JobDescription.create!(job: @job, description: "desc", embedding: [1.0, 0.0])
+    @jd = JobDescription.create!(job: @job, title: "T", description: "desc", location: "NYC", embedding: [1.0, 0.0])
 
     # Applicant applied to this job (should not appear)
     applied = ApplicantProfile.create!(name: "Applied", email: "applied@example.com", embedding: [1.0, 0.0])
@@ -43,7 +43,7 @@ class Api::JobMatchesControllerTest < ActionDispatch::IntegrationTest
   test "rejects matches for unauthorized job" do
     other_company = Company.create!(name: "OtherCo")
     other_job = Job.create!(status: "active", company: other_company, posted_by_user: @user)
-    JobDescription.create!(job: other_job, description: "desc", embedding: [1.0, 0.0])
+    JobDescription.create!(job: other_job, title: "T", description: "desc", location: "NYC", embedding: [1.0, 0.0])
     get "/api/jobs/#{other_job.id}/matches"
     assert_response :not_found
   end

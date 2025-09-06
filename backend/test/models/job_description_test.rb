@@ -7,7 +7,9 @@ class JobDescriptionTest < ActiveSupport::TestCase
   # Validation tests
   #
   def setup
-    @job = jobs(:one)
+    company = Company.create!(name: "Co1")
+    user = User.create!(email: "poster@example.com", password: "password", company: company)
+    @job = Job.create!(status: "active", company: company, posted_by_user: user)
   end
 
   test "valid job description" do
@@ -97,7 +99,7 @@ class JobDescriptionTest < ActiveSupport::TestCase
 
   test "does not enqueue match recomputation when embedding unchanged" do
     user = User.create!(email: "u2@example.com", password: "password")
-    company = Company.create!(name: "Co2")
+    company = Company.create!(name: "Co3")
     user.update!(company: company)
     job = Job.create!(status: "active", company: company, posted_by_user: user)
 

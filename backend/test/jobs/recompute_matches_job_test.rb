@@ -8,7 +8,7 @@ class RecomputeMatchesJobTest < ActiveJob::TestCase
     company = Company.create!(name: "Co")
     recruiter.update!(company: company)
     job = Job.create!(status: "active", company: company, posted_by_user: recruiter)
-    jd = JobDescription.create!(job: job, description: "desc", embedding: [1.0, 0.0])
+    jd = JobDescription.create!(job: job, title: "T", description: "desc", location: "NYC", embedding: [1.0, 0.0])
     profile = ApplicantProfile.create!(name: "Alice", email: "alice@example.com", embedding: [1.0, 0.0])
 
     cache_key = "job_matches:#{jd.id}"
@@ -48,7 +48,7 @@ class RecomputeMatchesJobTest < ActiveJob::TestCase
     company = Company.create!(name: "Co2")
     recruiter.update!(company: company)
     job = Job.create!(status: "active", company: company, posted_by_user: recruiter)
-    jd = JobDescription.create!(job: job, description: "desc", embedding: [1.0, 0.0])
+    jd = JobDescription.create!(job: job, title: "T", description: "desc", location: "NYC", embedding: [1.0, 0.0])
     profile = ApplicantProfile.create!(name: "Bob", email: "bob@example.com", embedding: [1.0, 0.0])
 
     cache_key = "job_matches:#{jd.id}"
@@ -96,7 +96,7 @@ class RecomputeMatchesJobTest < ActiveJob::TestCase
     company = Company.create!(name: "Co2")
     recruiter.update!(company: company)
     job = Job.create!(status: "active", company: company, posted_by_user: recruiter)
-    jd = JobDescription.create!(job: job, description: "desc", embedding: [1.0, 0.0])
+    jd = JobDescription.create!(job: job, title: "T", description: "desc", location: "NYC", embedding: [1.0, 0.0])
     profile = ApplicantProfile.create!(name: "Bob", email: "bob@example.com", embedding: [1.0, 0.0])
 
     cache_key = "job_matches:#{jd.id}"

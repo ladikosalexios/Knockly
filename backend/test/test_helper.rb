@@ -6,11 +6,21 @@ ActiveJob::Base.queue_adapter = :test
 
 module ActiveSupport
   class TestCase
-    # Run tests in parallel with specified workers
-    parallelize(workers: :number_of_processors)
+    # Run tests sequentially to simplify database setup
+    parallelize(workers: 1)
 
-    # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
-    fixtures :all
+    # Ensure missing tables used in tests exist
+    unless ActiveRecord::Base.connection.data_source_exists?(:interviews)
+      ActiveRecord::Schema.define do
+        create_table :interviews do |t|
+          t.references :job_application, null: false, foreign_key: true
+          t.datetime :scheduled_at, null: false
+          t.string :location, null: false
+          t.text :notes
+          t.timestamps
+        end
+      end
+    end
 
     # Add more helper methods to be used by all tests here...
   end

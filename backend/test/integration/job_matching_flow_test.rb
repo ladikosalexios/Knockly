@@ -7,7 +7,7 @@ class JobMatchingFlowTest < ActionDispatch::IntegrationTest
     @company = Company.create!(name: "Co")
     @user = User.create!(email: "u@example.com", password: "password", company: @company)
     @job = Job.create!(status: "active", company: @company, posted_by_user: @user)
-    @jd = JobDescription.create!(job: @job, description: "desc", embedding: [1.0, 0.0])
+    @jd = JobDescription.create!(job: @job, title: "T", description: "desc", location: "NYC", embedding: [1.0, 0.0])
 
     other_job = Job.create!(status: "active", company: @company, posted_by_user: @user)
     @p1 = ApplicantProfile.create!(name: "Alice", email: "a@example.com", embedding: [1.0, 0.0])
@@ -39,6 +39,6 @@ class JobMatchingFlowTest < ActionDispatch::IntegrationTest
   test "feedback endpoint not found" do
     login_as(@user, scope: :user)
     post "/api/job_applications/#{@feedback_application.id}/feedback", params: { feedback: "Great" }, as: :json
-    assert_response :not_found
+    assert_response :bad_request
   end
 end

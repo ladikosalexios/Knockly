@@ -24,7 +24,10 @@ class JobApplicationFlowTest < ActionDispatch::IntegrationTest
     end
 
     begin
-      job = jobs(:one)
+      company = Company.create!(name: "Co")
+      user = User.create!(email: "poster@example.com", password: "password", company: company)
+      job = Job.create!(status: "active", company: company, posted_by_user: user)
+      JobDescription.create!(job: job, title: "T", description: "D", location: "NYC")
 
       file = Tempfile.new(["resume", ".pdf"])
       file.write("dummy")
