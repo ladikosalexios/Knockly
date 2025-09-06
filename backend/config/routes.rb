@@ -31,6 +31,8 @@ Rails.application.routes.draw do
     end
     get "jobs/:job_id/matches", to: "job_matches#index"
     resources :interviews
+    resources :interview_templates
+    resources :scorecards
     resources :companies
     resources :skills
     resources :users

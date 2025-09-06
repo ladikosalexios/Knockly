@@ -3,9 +3,10 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from '../../api';
 
-export default function InterviewScheduler({ jobApplicationId, applicantName = '', onScheduled }) {
+export default function InterviewScheduler({ jobApplicationId, jobId, applicantName = '', onScheduled }) {
   const [interviews, setInterviews] = useState([]);
-  const [form, setForm] = useState({ id: null, scheduled_at: null, location: '', notes: '' });
+  const [templates, setTemplates] = useState([]);
+  const [form, setForm] = useState({ id: null, scheduled_at: null, location: '', notes: '', interview_template_id: '' });
   const [error, setError] = useState('');
 
   const fetchInterviews = async () => {
@@ -19,9 +20,23 @@ export default function InterviewScheduler({ jobApplicationId, applicantName = '
     }
   };
 
+  const fetchTemplates = async () => {
+    if (!jobId) return;
+    try {
+      const res = await api.get('/api/interview_templates', { params: { job_id: jobId } });
+      setTemplates(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchInterviews();
   }, [jobApplicationId]);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [jobId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,7 +56,7 @@ export default function InterviewScheduler({ jobApplicationId, applicantName = '
         onScheduled && onScheduled();
         window.dispatchEvent(new Event('interviewScheduled'));
       }
-      setForm({ id: null, scheduled_at: null, location: '', notes: '' });
+      setForm({ id: null, scheduled_at: null, location: '', notes: '', interview_template_id: '' });
       setError('');
     } catch (err) {
       console.error(err);
@@ -54,7 +69,8 @@ export default function InterviewScheduler({ jobApplicationId, applicantName = '
       id: interview.id,
       scheduled_at: new Date(interview.scheduled_at),
       location: interview.location || '',
-      notes: interview.notes || ''
+      notes: interview.notes || '',
+      interview_template_id: interview.interview_template?.id || ''
     });
   };
 
@@ -79,6 +95,16 @@ export default function InterviewScheduler({ jobApplicationId, applicantName = '
           onChange={e => setForm({ ...form, location: e.target.value })}
           required
         />
+        <select
+          value={form.interview_template_id}
+          onChange={e => setForm({ ...form, interview_template_id: e.target.value })}
+          required
+        >
+          <option value="">Select Template</option>
+          {templates.map(t => (
+            <option key={t.id} value={t.id}>{t.title}</option>
+          ))}
+        </select>
         <textarea
           placeholder="Notes"
           value={form.notes}
@@ -95,6 +121,11 @@ export default function InterviewScheduler({ jobApplicationId, applicantName = '
             <div style={{ marginTop: 4 }}>
               With {applicantName || i.job_application?.name || 'applicant'}
             </div>
+            {i.interview_template && (
+              <div style={{ marginTop: 4 }}>
+                Template: {i.interview_template.title}
+              </div>
+            )}
             {i.notes && <div style={{ marginTop: 4 }}>{i.notes}</div>}
             <button onClick={() => startEdit(i)} style={{ marginTop: 8 }}>Edit</button>
           </li>

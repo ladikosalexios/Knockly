@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import api from '../api';
 import Modal from './Modal';
 import InterviewScheduler from './admin/InterviewScheduler';
+import ScorecardForm from './admin/ScorecardForm';
 
 const STATUS_OPTIONS = ['submitted', 'reviewed', 'interviewed', 'rejected'];
 const normalizeStatus = (status) =>
@@ -14,15 +15,22 @@ export default function JobApplicantsPage() {
   const [error, setError] = useState('');
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [scorecardInterviewId, setScorecardInterviewId] = useState(null);
   const statusOptions = STATUS_OPTIONS;
 
   const fetchApplicants = async () => {
     try {
       const res = await api.get(`/api/job_applications?job_id=${jobId}`);
-      const apps = res.data.map(app => ({
-        ...app,
-        status: normalizeStatus(app.status)
-      }));
+      const apps = await Promise.all(
+        res.data.map(async app => {
+          const interviewsRes = await api.get(`/api/interviews?job_application_id=${app.id}`);
+          return {
+            ...app,
+            status: normalizeStatus(app.status),
+            interviews: interviewsRes.data
+          };
+        })
+      );
       setApplicants(apps);
     } catch (err) {
       console.error(err);
@@ -66,6 +74,12 @@ export default function JobApplicantsPage() {
   const closeScheduler = () => {
     setSelectedAppId(null);
     setSelectedApplicant(null);
+  };
+  const openScorecard = (interviewId) => {
+    setScorecardInterviewId(interviewId);
+  };
+  const closeScorecard = () => {
+    setScorecardInterviewId(null);
   };
   const markScheduled = (appId) => {
     setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status: 'interviewed' } : a));
@@ -204,10 +218,36 @@ export default function JobApplicantsPage() {
               <button
                 onClick={() => openScheduler(app)}
                 style={{ marginTop: 16 }}
-                disabled={app.status === 'interviewed'}
               >
-                {app.status === 'interviewed' ? 'Interview Scheduled' : 'Schedule Interview'}
+                {app.status === 'interviewed' ? 'Edit Interview' : 'Schedule Interview'}
               </button>
+
+              {app.interviews && app.interviews.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  {app.interviews.map(iv => (
+                    <div key={iv.id} style={{ marginBottom: 12 }}>
+                      <div>
+                        Interview on {new Date(iv.scheduled_at).toLocaleString()}{' '}
+                        {iv.interview_template && `- ${iv.interview_template.title}`}
+                      </div>
+                      {iv.scorecards && iv.scorecards.length > 0 && (
+                        <ul style={{ marginTop: 4 }}>
+                          {iv.scorecards.map(sc => (
+                            <li key={sc.id}>
+                              {sc.evaluator?.name || sc.evaluator?.email}: {Object.values(sc.responses || {}).join(', ')}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {iv.interview_template && (
+                        <button onClick={() => openScorecard(iv.id)} style={{ marginTop: 4 }}>
+                          Add Scorecard
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -216,8 +256,20 @@ export default function JobApplicantsPage() {
         <Modal onClose={closeScheduler}>
           <InterviewScheduler
             jobApplicationId={selectedAppId}
+            jobId={jobId}
             applicantName={selectedApplicant?.name}
             onScheduled={() => markScheduled(selectedAppId)}
+          />
+        </Modal>
+      )}
+      {scorecardInterviewId && (
+        <Modal onClose={closeScorecard}>
+          <ScorecardForm
+            interviewId={scorecardInterviewId}
+            onSubmitted={() => {
+              closeScorecard();
+              fetchApplicants();
+            }}
           />
         </Modal>
       )}
