@@ -6,6 +6,7 @@ import InviteUserForm from '../components/InviteUserForm';
 import InterviewCalendar from './admin/InterviewCalendar';
 import AnalyticsDashboard from './admin/AnalyticsDashboard';
 import { Link } from 'react-router-dom';
+import InterviewTemplateManager from './admin/InterviewTemplateManager';
 import useAutoLogout from '../hooks/useAutoLogout'; // or wherever you save it
 
 const drawerWidth = 240;
@@ -82,6 +83,9 @@ const DashboardLayout = () => {
           </ListItem>
           <ListItem button onClick={() => setSelectedView('calendar')}>
             <ListItemText primary="Calendar" />
+          </ListItem>
+          <ListItem button onClick={() => setSelectedView('templates')}>
+            <ListItemText primary="Interview Templates" />
           </ListItem>
           {currentUser?.is_looply_admin && (
             <ListItem button onClick={() => setSelectedView('analytics')}>
@@ -191,6 +195,9 @@ const DashboardLayout = () => {
         )}
         {selectedView === 'calendar' && (
           <InterviewCalendar />
+        )}
+        {selectedView === 'templates' && (
+          <InterviewTemplateManager jobs={jobs} />
         )}
       </Box>
     </Box>

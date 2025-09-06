@@ -4,6 +4,7 @@ import api from '../api';
 import Modal from './Modal';
 import InterviewScheduler from './admin/InterviewScheduler';
 import ScorecardForm from './admin/ScorecardForm';
+import InterviewTemplateManager from './admin/InterviewTemplateManager';
 
 const STATUS_OPTIONS = ['submitted', 'reviewed', 'interviewed', 'rejected'];
 const normalizeStatus = (status) =>
@@ -16,6 +17,7 @@ export default function JobApplicantsPage() {
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [scorecardInterviewId, setScorecardInterviewId] = useState(null);
+  const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
   const statusOptions = STATUS_OPTIONS;
 
   const fetchApplicants = async () => {
@@ -89,7 +91,10 @@ export default function JobApplicantsPage() {
 
   return (
     <div style={{ padding: 32, color: '#fff' }}>
-      <h2 style={{ marginBottom: 24 }}>Applicants for Job #{jobId}</h2>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
+        <h2 style={{ margin: 0, marginRight: 16 }}>Applicants for Job #{jobId}</h2>
+        <button onClick={() => setTemplateManagerOpen(true)}>Manage Templates</button>
+      </div>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {applicants.length === 0 ? (
         <p>No applicants yet.</p>
@@ -271,6 +276,11 @@ export default function JobApplicantsPage() {
               fetchApplicants();
             }}
           />
+        </Modal>
+      )}
+      {templateManagerOpen && (
+        <Modal onClose={() => setTemplateManagerOpen(false)}>
+          <InterviewTemplateManager jobId={jobId} />
         </Modal>
       )}
     </div>
