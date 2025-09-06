@@ -2,6 +2,7 @@ require "test_helper"
 
 class Api::JobApplicationsControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
+  include Warden::Test::Helpers
 
   setup do
     @user = User.create!(email: "u@e.com", password: "password")
@@ -10,11 +11,15 @@ class Api::JobApplicationsControllerTest < ActionDispatch::IntegrationTest
     sign_in @user, scope: :user
 
     @job = Job.create!(status: "active", company: @company, posted_by_user: @user)
-    JobDescription.create!(job: @job, description: "desc")
+    JobDescription.create!(job: @job, title: "T", description: "desc", location: "NYC")
     @profile = ApplicantProfile.create!(name: "Alice", email: "a@example.com", embedding: [1.0, 0.0])
     @job_application = JobApplication.create!(job: @job, applicant_profile: @profile,
                                    name: @profile.name, email: @profile.email,
                                    phone: "123", work_authorization: "citizen")
+  end
+
+  teardown do
+    Warden.test_reset!
   end
 
   test "returns applications for job belonging to company" do
@@ -41,7 +46,7 @@ class Api::JobApplicationsControllerTest < ActionDispatch::IntegrationTest
   test "returns unauthorized when user lacks company" do
     sign_out @user
     user2 = User.create!(email: "no@e.com", password: "password")
-    sign_in user2, scope: :user
+    login_as(user2, scope: :user)
 
     get "/api/job_applications"
     assert_response :unauthorized

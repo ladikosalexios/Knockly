@@ -14,7 +14,7 @@ class ApplicantProfileTest < ActiveSupport::TestCase
     company = Company.create!(name: "Co")
     recruiter.update!(company: company)
     job = Job.create!(status: "active", company: company, posted_by_user: recruiter)
-    jd = JobDescription.create!(job: job, description: "desc", embedding: [0.1, 0.2])
+    jd = JobDescription.create!(job: job, title: "T", description: "desc", location: "NYC", embedding: [0.1, 0.2])
     profile = ApplicantProfile.create!(name: "Jane", email: "jane@example.com")
     JobApplication.create!(job: job, applicant_profile: profile, name: profile.name,
                           email: profile.email, phone: "123", work_authorization: "citizen")
@@ -28,7 +28,7 @@ class ApplicantProfileTest < ActiveSupport::TestCase
     company = Company.create!(name: "Co2")
     recruiter.update!(company: company)
     job = Job.create!(status: "active", company: company, posted_by_user: recruiter)
-    jd = JobDescription.create!(job: job, description: "desc", embedding: [0.1, 0.2])
+    jd = JobDescription.create!(job: job, title: "T", description: "desc", location: "NYC", embedding: [0.1, 0.2])
     profile = ApplicantProfile.create!(name: "Janet", email: "janet@example.com", embedding: [0.1, 0.2])
     JobApplication.create!(job: job, applicant_profile: profile, name: profile.name,
                           email: profile.email, phone: "123", work_authorization: "citizen")

@@ -6,7 +6,7 @@ class JobDescriptionsFlowTest < ActionDispatch::IntegrationTest
   setup do
     @company = Company.create!(name: "Co")
     @user = User.create!(email: "user@example.com", password: "password", company: @company)
-    sign_in @user
+    sign_in @user, scope: :user
   end
 
   test "creates a job description" do

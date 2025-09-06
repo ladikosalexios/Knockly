@@ -7,7 +7,7 @@ class JobMatcherTest < ActiveSupport::TestCase
     user.update!(company: @company)
 
     @job = Job.create!(status: "active", company: @company, posted_by_user: user)
-    @jd = JobDescription.create!(job: @job, description: "desc", embedding: [1.0, 0.0])
+    @jd = JobDescription.create!(job: @job, title: "T", description: "desc", location: "NYC", embedding: [1.0, 0.0])
 
     # Candidate applied to this job (should be excluded)
     @applied = ApplicantProfile.create!(name: "Applied", email: "applied@example.com", embedding: [1.0, 0.0])
