@@ -85,6 +85,7 @@ export default function AdminJobForm({ onCreated }) {
             resolve({ ok: false, data: res.data });
           }
         } catch (err) {
+          console.error(err);
           clearInterval(interval);
           resolve({ ok: false });
         }
@@ -117,7 +118,11 @@ export default function AdminJobForm({ onCreated }) {
       setJdJobMsg('Minimum salary cannot be greater than maximum salary.');
       return;
     }
-    if (jdForm.years_experience_min && jdForm.years_experience_max && Number(jdForm.years_experience_min) > Number(jdForm.years_experience_max)) {
+    if (
+      jdForm.years_experience_min &&
+      jdForm.years_experience_max &&
+      Number(jdForm.years_experience_min) > Number(jdForm.years_experience_max)
+    ) {
       setJdJobMsg('Minimum years of experience cannot be greater than maximum years of experience.');
       return;
     }

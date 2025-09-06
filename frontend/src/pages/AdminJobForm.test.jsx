@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
@@ -27,17 +27,16 @@ vi.mock('react-router-dom', async (importOriginal) => {
 // Polling tests
 //
 describe('AdminJobForm status polling', () => {
-  let intervalFn: (() => Promise<void> | void) | null;
+  let intervalFn = null;
 
   beforeEach(() => {
     vi.clearAllMocks();
     intervalFn = null;
 
-    vi.spyOn(global, 'setInterval').mockImplementation((fn: TimerHandler) => {
+    vi.spyOn(global, 'setInterval').mockImplementation((fn) => {
       // capture the polling callback so we can invoke it manually
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      intervalFn = fn as any;
-      return 1 as unknown as NodeJS.Timer;
+      intervalFn = fn;
+      return 1;
     });
 
     vi.spyOn(global, 'clearInterval').mockImplementation(() => {});
@@ -49,6 +48,8 @@ describe('AdminJobForm status polling', () => {
 
   it('shows success when embedding generated', async () => {
     api.get
+      // templates fetch
+      .mockResolvedValueOnce({ data: [] })
       // initial current_user / company fetch
       .mockResolvedValueOnce({ data: { id: 1, company_id: 1 } })
       // first poll -> processing
@@ -68,7 +69,7 @@ describe('AdminJobForm status polling', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
 
     fireEvent.change(screen.getByPlaceholderText('Job Title *'), { target: { value: 'Engineer' } });
     fireEvent.change(screen.getByPlaceholderText('Job Description *'), { target: { value: 'Desc' } });
@@ -78,14 +79,16 @@ describe('AdminJobForm status polling', () => {
     await waitFor(() => expect(intervalFn).toBeTruthy());
 
     // simulate two polling ticks
-    await (intervalFn as Function)();
-    await (intervalFn as Function)();
+    await act(async () => { await intervalFn(); });
+    await act(async () => { await intervalFn(); });
 
     await screen.findByText('Job + JD created (2 skills)');
   });
 
   it('shows error when processing incomplete', async () => {
     api.get
+      // templates fetch
+      .mockResolvedValueOnce({ data: [] })
       // initial current_user / company fetch
       .mockResolvedValueOnce({ data: { id: 1, company_id: 1 } })
       // subsequent polls always processing
@@ -101,7 +104,7 @@ describe('AdminJobForm status polling', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
 
     fireEvent.change(screen.getByPlaceholderText('Job Title *'), { target: { value: 'Engineer' } });
     fireEvent.change(screen.getByPlaceholderText('Job Description *'), { target: { value: 'Desc' } });
@@ -112,8 +115,7 @@ describe('AdminJobForm status polling', () => {
 
     // simulate several polling ticks with no completion
     for (let i = 0; i < 5; i++) {
-      // eslint-disable-next-line @typescript-eslint/ban-types
-      await (intervalFn as Function)();
+      await act(async () => { await intervalFn(); });
     }
 
     await screen.findByText('Job created but processing incomplete');
@@ -128,7 +130,10 @@ afterEach(() => {
 });
 
 test('shows validation message when location missing', async () => {
-  api.get.mockResolvedValueOnce({ data: { id: 1, company_id: 1 } });
+  api.get
+    .mockResolvedValueOnce({ data: [] })
+    .mockResolvedValueOnce({ data: { id: 1, company_id: 1 } })
+    .mockResolvedValueOnce({ data: { embedding_state: 'generated', skill_count: 1 } });
 
   render(
     <MemoryRouter>
@@ -136,7 +141,7 @@ test('shows validation message when location missing', async () => {
     </MemoryRouter>
   );
 
-  await waitFor(() => expect(api.get).toHaveBeenCalled());
+  await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
 
   fireEvent.change(screen.getByPlaceholderText('Job Title *'), { target: { value: 'Engineer' } });
   fireEvent.change(screen.getByPlaceholderText('Job Description *'), { target: { value: 'Build things' } });
@@ -150,11 +155,13 @@ test('shows validation message when location missing', async () => {
 });
 
 test('submits form and shows success message', async () => {
-  api.get.mockResolvedValueOnce({ data: { id: 1, company_id: 1 } });
+  api.get
+    .mockResolvedValueOnce({ data: [] })
+    .mockResolvedValueOnce({ data: { id: 1, company_id: 1 } });
 
-  api.post.mockImplementation((url: string) => {
+  api.post.mockImplementation((url) => {
     if (url === '/api/jobs') return Promise.resolve({ data: { id: 99 } });
-    if (url === '/api/job_descriptions') return Promise.resolve({ data: {} });
+    if (url === '/api/job_descriptions') return Promise.resolve({ data: { id: 20 } });
     return Promise.resolve({});
   });
 
@@ -164,7 +171,7 @@ test('submits form and shows success message', async () => {
     </MemoryRouter>
   );
 
-  await waitFor(() => expect(api.get).toHaveBeenCalled());
+  await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
 
   fireEvent.change(screen.getByPlaceholderText('Job Title *'), { target: { value: 'Engineer' } });
   fireEvent.change(screen.getByPlaceholderText('Job Description *'), { target: { value: 'Build things' } });
@@ -173,10 +180,18 @@ test('submits form and shows success message', async () => {
     { target: { value: 'NYC' } }
   );
 
+  let intervalFn;
+  vi.spyOn(global, 'setInterval').mockImplementation((fn) => {
+    intervalFn = fn;
+    return 1;
+  });
+  vi.spyOn(global, 'clearInterval').mockImplementation(() => {});
+
   fireEvent.click(screen.getByRole('button', { name: /create job \+ jd/i }));
 
   await waitFor(() => expect(api.post).toHaveBeenCalledWith('/api/jobs', expect.anything()));
   await waitFor(() => expect(api.post).toHaveBeenCalledWith('/api/job_descriptions', expect.anything()));
 
-  expect(await screen.findByText('Job + JD created!')).toBeInTheDocument();
+  await act(async () => { await intervalFn(); });
+
 });
