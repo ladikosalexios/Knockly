@@ -9,6 +9,18 @@ class Api::InterviewsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:one)
   end
 
+  test "destroying an interview cascades to scorecards" do
+    interview = interviews(:one)
+    template = InterviewTemplate.create!(job: jobs(:one), title: "Template")
+    interview.update!(interview_template: template)
+    interview.scorecards.create!(interview_template: template, evaluator: users(:one), responses: { q1: "a" })
+
+    assert_difference ["Interview.count", "Scorecard.count"], -1 do
+      delete "/api/interviews/#{interview.id}"
+    end
+    assert_response :no_content
+  end
+
   # test "creates interview updates status and sends email" do
   #   assert_enqueued_emails 1 do
   #     post "/api/interviews", params: {
