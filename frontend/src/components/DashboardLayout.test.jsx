@@ -60,3 +60,26 @@ test('navigates to analytics view from menu', async () => {
   fireEvent.click(analyticsItem);
   expect(await screen.findByText('Analytics View')).toBeInTheDocument();
 });
+
+test('shows variant link for each job', async () => {
+  api.get.mockImplementation(url => {
+    if (url === '/api/admin/dashboard') {
+      return Promise.resolve({ data: [
+        { id: 1, title: 'Job 1', location: 'NY', job_type: 'full-time', status: 'active', expires_at: null, applicants_count: 0 }
+      ] });
+    }
+    if (url === '/api/users/me') {
+      return Promise.resolve({ data: { is_looply_admin: false } });
+    }
+    return Promise.resolve({ data: [] });
+  });
+
+  render(
+    <MemoryRouter>
+      <DashboardLayout />
+    </MemoryRouter>
+  );
+
+  const link = await screen.findByText('🧪');
+  expect(link.closest('a')).toHaveAttribute('href', '/admin/jobs/1/variants');
+});
