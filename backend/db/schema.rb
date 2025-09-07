@@ -204,6 +204,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_08_130000) do
     t.bigint "job_id", null: false
     t.string "title"
     t.text "description"
+    t.string "location"
+    t.boolean "is_remote", default: false
+    t.text "requirements"
+    t.text "skills"
+    t.string "job_type"
+    t.integer "years_experience_min"
+    t.integer "years_experience_max"
+    t.integer "salary_min"
+    t.integer "salary_max"
+    t.string "salary_currency"
+    t.date "expires_at"
     t.boolean "active", default: false
     t.integer "view_count", default: 0, null: false
     t.integer "click_count", default: 0, null: false

@@ -26,9 +26,18 @@ class Api::JobsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "creates variant" do
-    post "/api/jobs/#{@job.id}/variants", params: { variant: { title: "B", description: "Desc" } }
+    post "/api/jobs/#{@job.id}/variants", params: {
+      variant: {
+        title: "B",
+        description: "Desc",
+        location: "NYC",
+        is_remote: true
+      }
+    }
     assert_response :created
-    assert_equal 1, @job.job_post_variants.count
+    variant = @job.job_post_variants.first
+    assert_equal "NYC", variant.location
+    assert variant.is_remote
   end
 
   test "activates variant" do

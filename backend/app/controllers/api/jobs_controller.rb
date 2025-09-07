@@ -116,6 +116,20 @@ class Api::JobsController < ApplicationController
   end
 
   def variant_params
-    params.require(:variant).permit(:title, :description)
+    params.require(:variant).permit(
+      :title,
+      :description,
+      :location,
+      :is_remote,
+      :requirements,
+      :skills,
+      :job_type,
+      :years_experience_min,
+      :years_experience_max,
+      :salary_min,
+      :salary_max,
+      :salary_currency,
+      :expires_at
+    )
   end
 end
