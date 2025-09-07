@@ -5,6 +5,7 @@ import api from '../../api';
 export default function JobPostVariants() {
   const { id: jobId } = useParams();
   const [variants, setVariants] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [error, setError] = useState('');
   const [form, setForm] = useState({
     title: '',
@@ -37,8 +38,20 @@ export default function JobPostVariants() {
     }
   };
 
+  const fetchJobs = async () => {
+    try {
+      const res = await api.get('/api/admin/dashboard');
+      setJobs(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    if (jobId) fetchVariants();
+    if (jobId) {
+      fetchVariants();
+      fetchJobs();
+    }
   }, [jobId]);
 
   const createVariant = async e => {
@@ -77,6 +90,26 @@ export default function JobPostVariants() {
     }
   };
 
+  const prefillFromJob = jobIdToCopy => {
+    const source = jobs.find(j => j.id === Number(jobIdToCopy));
+    if (!source) return;
+    setForm({
+      title: source.title || '',
+      location: source.location || '',
+      is_remote: !!source.is_remote,
+      description: source.description || '',
+      requirements: Array.isArray(source.requirements) ? source.requirements.join('\n') : (source.requirements || ''),
+      skills: Array.isArray(source.skills) ? source.skills.join(', ') : (source.skills || ''),
+      job_type: source.job_type || 'full-time',
+      years_experience_min: source.years_experience_min || '',
+      years_experience_max: source.years_experience_max || '',
+      salary_min: source.salary_min || '',
+      salary_max: source.salary_max || '',
+      salary_currency: source.salary_currency || 'USD',
+      expires_at: source.expires_at || ''
+    });
+  };
+
   if (!jobId) return null;
 
   return (
@@ -84,6 +117,14 @@ export default function JobPostVariants() {
       <h2>Create Variant</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={createVariant} style={{ marginBottom: 24 }}>
+        <select data-testid="variant-template" onChange={e => prefillFromJob(e.target.value)} style={{ width: '100%', marginBottom: 8 }}>
+          <option value="">Copy from existing job...</option>
+          {jobs.map(j => (
+            <option key={j.id} value={j.id}>
+              {j.title} ({j.variant_count} variants)
+            </option>
+          ))}
+        </select>
         <input
           name="title"
           value={form.title}

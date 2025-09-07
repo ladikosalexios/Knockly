@@ -19,11 +19,18 @@ module Api
             created_at: job.created_at,
             title: jd&.title || "(Untitled)",
             location: jd&.location,
+            is_remote: jd&.is_remote,
+            job_type: jd&.job_type,
+            years_experience_min: jd&.years_experience_min,
+            years_experience_max: jd&.years_experience_max,
+            salary_min: jd&.salary_min,
+            salary_max: jd&.salary_max,
+            salary_currency: jd&.salary_currency,
             applicants_count: job.job_applications.size,
             skills: jd&.skills&.map(&:name) || [],
-            description: jd&.description || [],
-            requirements: jd&.requirements || []
-
+            description: jd&.description || "",
+            requirements: jd&.requirements || "",
+            variant_count: job.job_post_variants.count
           }
         }
       end

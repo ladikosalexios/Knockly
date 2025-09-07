@@ -132,6 +132,7 @@ const DashboardLayout = () => {
                   <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Type</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Status</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Applicants</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Variants</th>
                   <th style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>Actions</th>
                 </tr>
               </thead>
@@ -152,6 +153,7 @@ const DashboardLayout = () => {
                       <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>{job.job_type || 'N/A'}</td>
                       <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>{renderStatusDot(job.status, job.expires_at)}</td>
                       <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>{job.applicants_count}</td>
+                      <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>{job.variant_count}</td>
                       <td style={{ padding: '12px 10px', textAlign: 'left', verticalAlign: 'middle' }}>
                         <Link to={`/admin/jobs/${job.id}/edit`} style={{ marginRight: 10 }}>
                           <span style={{ fontSize: '1rem', color: '#a8d0ff' }}>✏️</span>

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import '@testing-library/jest-dom';
@@ -61,11 +61,11 @@ test('navigates to analytics view from menu', async () => {
   expect(await screen.findByText('Analytics View')).toBeInTheDocument();
 });
 
-test('shows variant link for each job', async () => {
+test('shows variant link and count for each job', async () => {
   api.get.mockImplementation(url => {
     if (url === '/api/admin/dashboard') {
       return Promise.resolve({ data: [
-        { id: 1, title: 'Job 1', location: 'NY', job_type: 'full-time', status: 'active', expires_at: null, applicants_count: 0 }
+        { id: 1, title: 'Job 1', location: 'NY', job_type: 'full-time', status: 'active', expires_at: null, applicants_count: 0, variant_count: 2 }
       ] });
     }
     if (url === '/api/users/me') {
@@ -82,4 +82,6 @@ test('shows variant link for each job', async () => {
 
   const link = await screen.findByText('🧪');
   expect(link.closest('a')).toHaveAttribute('href', '/admin/jobs/1/variants');
+  const row = link.closest('tr');
+  expect(within(row).getByText('2')).toBeInTheDocument();
 });
