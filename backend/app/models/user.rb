@@ -5,6 +5,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_many :jobs, foreign_key: :posted_by_user_id
+  has_many :scorecards, foreign_key: :evaluator_id
 
   validates :email, presence: true, uniqueness: true
   validates :invite_token, uniqueness: true, allow_nil: true

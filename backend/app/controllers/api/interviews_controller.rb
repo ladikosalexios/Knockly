@@ -2,9 +2,11 @@ class Api::InterviewsController < ApplicationController
   before_action :set_interview, only: [:show, :update, :destroy]
 
   def index
-    interviews = Interview.includes(job_application: { job: :posted_by_user })
+    interviews = Interview.includes(:interview_template, :scorecards, job_application: { job: :posted_by_user })
     interviews = interviews.where(job_application_id: params[:job_application_id]) if params[:job_application_id]
     render json: interviews.as_json(include: {
+      interview_template: {},
+      scorecards: { include: { evaluator: { only: [:id, :name, :email] } } },
       job_application: {
         only: [:id, :name],
         include: { job: { include: { posted_by_user: { only: [:id, :name, :email] } } } }
@@ -13,7 +15,10 @@ class Api::InterviewsController < ApplicationController
   end
 
   def show
-    render json: @interview
+    render json: @interview.as_json(include: {
+      interview_template: {},
+      scorecards: { include: { evaluator: { only: [:id, :name, :email] } } }
+    })
   end
 
   def create
@@ -48,6 +53,6 @@ class Api::InterviewsController < ApplicationController
   end
 
   def interview_params
-    params.require(:interview).permit(:job_application_id, :scheduled_at, :location, :notes)
+    params.require(:interview).permit(:job_application_id, :scheduled_at, :location, :notes, :interview_template_id)
   end
 end

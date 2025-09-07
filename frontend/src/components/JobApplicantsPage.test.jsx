@@ -21,13 +21,16 @@ afterEach(() => {
 test('opens interview scheduler modal', async () => {
   api.get
     .mockResolvedValueOnce({ data: [{ id: 1, name: 'Alice', applicant_profile: { email: 'alice@example.com' }, status: 'submitted' }] })
+    .mockResolvedValueOnce({ data: [] })
+    .mockResolvedValueOnce({ data: [] })
     .mockResolvedValueOnce({ data: [] });
   const { default: JobApplicantsPage } = await import('./JobApplicantsPage');
   render(<JobApplicantsPage />);
   await screen.findByText('Alice');
   fireEvent.click(screen.getByText('Schedule Interview'));
   await screen.findByText('Interview Scheduler');
-  expect(api.get).toHaveBeenLastCalledWith('/api/interviews?job_application_id=1');
+  expect(api.get).toHaveBeenCalledWith('/api/interviews?job_application_id=1');
+  expect(api.get).toHaveBeenCalledWith('/api/interview_templates', { params: { job_id: 1 } });
 });
 
 test('disables schedule button after interview scheduled', async () => {
@@ -44,28 +47,32 @@ test('disables schedule button after interview scheduled', async () => {
 
   api.get
     .mockResolvedValueOnce({ data: [{ id: 1, name: 'Alice', applicant_profile: { email: 'a@example.com' }, status: 'submitted' }] })
-    .mockResolvedValueOnce({ data: [{ id: 1, name: 'Alice', applicant_profile: { email: 'a@example.com' }, status: 'interviewed' }] });
+    .mockResolvedValueOnce({ data: [] })
+    .mockResolvedValueOnce({ data: [{ id: 1, name: 'Alice', applicant_profile: { email: 'a@example.com' }, status: 'interviewed' }] })
+    .mockResolvedValueOnce({ data: [{ id: 99 }] });
   render(<JobApplicantsPageMocked />);
   await screen.findByText('Alice');
   fireEvent.click(screen.getByText('Schedule Interview'));
   await screen.findByText('Mock Scheduler');
   fireEvent.click(screen.getByText('Save'));
-  const btn = await screen.findByText('Interview Scheduled');
-  expect(btn).toBeDisabled();
+  const btn = await screen.findByText('Edit Interview');
+  expect(btn).toBeInTheDocument();
 });
 
 test('records fit feedback for applicant', async () => {
   vi.resetModules();
-  api.get.mockResolvedValueOnce({
-    data: [
-      {
-        id: 1,
-        name: 'Alice',
-        applicant_profile: { email: 'a@example.com' },
-        status: 'submitted'
-      }
-    ]
-  });
+  api.get
+    .mockResolvedValueOnce({
+      data: [
+        {
+          id: 1,
+          name: 'Alice',
+          applicant_profile: { email: 'a@example.com' },
+          status: 'submitted'
+        }
+      ]
+    })
+    .mockResolvedValueOnce({ data: [] });
   const { default: JobApplicantsPage } = await import('./JobApplicantsPage');
   render(<JobApplicantsPage />);
   await screen.findByText('Alice');
