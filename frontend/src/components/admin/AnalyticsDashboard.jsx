@@ -35,6 +35,14 @@ export default function AnalyticsDashboard() {
 
   const jobStatusData = Object.entries(data.job_status_distribution).map(([status, count]) => ({ status, count }));
   const appStatusData = Object.entries(data.application_status_distribution).map(([status, count]) => ({ status, count }));
+  const funnelData = Object.entries(data.conversion_rates || {}).map(([stage, rate]) => ({
+    stage: stage.replace('_to_', '→'),
+    rate: (rate * 100).toFixed(2),
+  }));
+  const timeData = Object.entries(data.median_stage_times || {}).map(([stage, secs]) => ({
+    stage,
+    hours: (secs / 3600).toFixed(2),
+  }));
 
   return (
     <div style={{ padding: 32, color: '#fff', backgroundColor: '#1e1e1e' }}>
@@ -75,6 +83,30 @@ export default function AnalyticsDashboard() {
               <YAxis />
               <Tooltip />
               <Bar dataKey="count" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 32, marginTop: 32 }}>
+        <div style={{ width: 400, height: 300 }}>
+          <h4>Funnel Conversion Rates (%)</h4>
+          <ResponsiveContainer>
+            <BarChart data={funnelData}>
+              <XAxis dataKey="stage" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="rate" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div style={{ width: 400, height: 300 }}>
+          <h4>Median Time to Stage (hours)</h4>
+          <ResponsiveContainer>
+            <BarChart data={timeData}>
+              <XAxis dataKey="stage" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="hours" fill="#ffc658" />
             </BarChart>
           </ResponsiveContainer>
         </div>
