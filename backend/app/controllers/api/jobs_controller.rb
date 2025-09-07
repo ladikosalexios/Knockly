@@ -1,7 +1,7 @@
 class Api::JobsController < ApplicationController
   skip_before_action :authenticate_user!, only: [:track_variant]
   before_action :authenticate_user!, only: [:create, :update, :variants, :create_variant, :activate_variant]
-  before_action :require_admin!, only: [:variants, :create_variant, :activate_variant]
+  before_action :require_job_company!, only: [:variants, :create_variant, :activate_variant]
   # GET /api/jobs
   # Lists all active jobs. Can filter by company_id and search by query string.
   #
@@ -133,5 +133,12 @@ class Api::JobsController < ApplicationController
       :salary_currency,
       :expires_at
     )
+  end
+
+  def require_job_company!
+    job = Job.find(params[:id])
+    unless current_user&.is_looply_admin? || current_user&.company_id == job.company_id
+      render json: { error: "Forbidden" }, status: :forbidden
+    end
   end
 end

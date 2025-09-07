@@ -5,10 +5,11 @@ class Api::JobsControllerTest < ActionDispatch::IntegrationTest
   include Warden::Test::Helpers
 
   setup do
-    @user = User.create!(email: "u@e.com", password: "password")
-    @admin = User.create!(email: "a@e.com", password: "password", is_looply_admin: true)
     @company = Company.create!(name: "Co")
-    [@user, @admin].each { |u| u.update!(company: @company) }
+    @other_company = Company.create!(name: "Other")
+    @user = User.create!(email: "u@e.com", password: "password", company: @company)
+    @other_user = User.create!(email: "o@e.com", password: "password", company: @other_company)
+    @admin = User.create!(email: "a@e.com", password: "password", is_looply_admin: true, company: @other_company)
     @job = Job.create!(status: "active", company: @company, posted_by_user: @user)
   end
 
@@ -16,8 +17,8 @@ class Api::JobsControllerTest < ActionDispatch::IntegrationTest
     Warden.test_reset!
   end
 
-  test "lists variants" do
-    sign_in @admin, scope: :user
+  test "company member lists variants" do
+    sign_in @user, scope: :user
     @job.job_post_variants.create!(title: "A", description: "Desc")
     get "/api/jobs/#{@job.id}/variants"
     assert_response :success
@@ -26,8 +27,8 @@ class Api::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "A", body.first["title"]
   end
 
-  test "creates variant" do
-    sign_in @admin, scope: :user
+  test "company member creates variant" do
+    sign_in @user, scope: :user
     post "/api/jobs/#{@job.id}/variants", params: {
       variant: {
         title: "B",
@@ -42,8 +43,8 @@ class Api::JobsControllerTest < ActionDispatch::IntegrationTest
     assert variant.is_remote
   end
 
-  test "activates variant" do
-    sign_in @admin, scope: :user
+  test "company member activates variant" do
+    sign_in @user, scope: :user
     v1 = @job.job_post_variants.create!(title: "A", description: "Desc")
     v2 = @job.job_post_variants.create!(title: "B", description: "Desc")
     post "/api/jobs/#{@job.id}/variants/#{v2.id}/activate"
@@ -59,11 +60,9 @@ class Api::JobsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, v.reload.view_count
   end
 
-  test "non-admin cannot manage variants" do
-    sign_in @user, scope: :user
-    get "/api/jobs/#{@job.id}/variants"
-    assert_response :forbidden
+  test "looply admin can manage variants for any company" do
+    sign_in @admin, scope: :user
     post "/api/jobs/#{@job.id}/variants", params: { variant: { title: "X", description: "D" } }
-    assert_response :forbidden
+    assert_response :created
   end
 end

@@ -12,6 +12,17 @@ module ActiveSupport
     fixtures :all
 
     # Ensure missing tables used in tests exist
+    unless ActiveRecord::Base.connection.data_source_exists?(:interview_templates)
+      ActiveRecord::Schema.define do
+        create_table :interview_templates do |t|
+          t.string :title, null: false
+          t.jsonb :questions, default: []
+          t.references :job, null: false, foreign_key: true
+          t.timestamps
+        end
+      end
+    end
+
     if ActiveRecord::Base.connection.data_source_exists?(:interviews)
       unless ActiveRecord::Base.connection.column_exists?(:interviews, :interview_template_id)
         ActiveRecord::Schema.define do
@@ -26,17 +37,6 @@ module ActiveSupport
           t.string :location, null: false
           t.text :notes
           t.references :interview_template, foreign_key: true
-          t.timestamps
-        end
-      end
-    end
-
-    unless ActiveRecord::Base.connection.data_source_exists?(:interview_templates)
-      ActiveRecord::Schema.define do
-        create_table :interview_templates do |t|
-          t.string :title, null: false
-          t.jsonb :questions, default: []
-          t.references :job, null: false, foreign_key: true
           t.timestamps
         end
       end
