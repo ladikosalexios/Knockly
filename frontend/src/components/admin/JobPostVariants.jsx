@@ -5,7 +5,8 @@ import api from '../../api';
 export default function JobPostVariants() {
   const { id: jobId } = useParams();
   const [variants, setVariants] = useState([]);
-  const [copy, setCopy] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [error, setError] = useState('');
 
   const fetchVariants = async () => {
@@ -25,8 +26,9 @@ export default function JobPostVariants() {
   const createVariant = async e => {
     e.preventDefault();
     try {
-      await api.post(`/api/jobs/${jobId}/variants`, { variant: { copy } });
-      setCopy('');
+      await api.post(`/api/jobs/${jobId}/variants`, { variant: { title, description } });
+      setTitle('');
+      setDescription('');
       fetchVariants();
     } catch (err) {
       console.error(err);
@@ -51,10 +53,16 @@ export default function JobPostVariants() {
       <h2>Job Post Variants</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={createVariant} style={{ marginBottom: 24 }}>
+        <input
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Variant title"
+          style={{ width: '100%', marginBottom: 8 }}
+        />
         <textarea
-          value={copy}
-          onChange={e => setCopy(e.target.value)}
-          placeholder="Variant copy"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="Variant description"
           rows={4}
           style={{ width: '100%', marginBottom: 8 }}
         />
@@ -63,7 +71,8 @@ export default function JobPostVariants() {
       <table style={{ width: '100%', textAlign: 'left' }}>
         <thead>
           <tr>
-            <th>Copy</th>
+            <th>Title</th>
+            <th>Description</th>
             <th>Views</th>
             <th>Clicks</th>
             <th>Applies</th>
@@ -74,7 +83,8 @@ export default function JobPostVariants() {
         <tbody>
           {variants.map(v => (
             <tr key={v.id} style={{ background: v.active ? '#333' : 'transparent' }}>
-              <td>{v.copy}</td>
+              <td>{v.title}</td>
+              <td>{v.description}</td>
               <td>{v.view_count}</td>
               <td>{v.click_count}</td>
               <td>{v.apply_count}</td>

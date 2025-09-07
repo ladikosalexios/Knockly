@@ -20,7 +20,7 @@ afterEach(() => {
 
 test('renders variants and activates one', async () => {
   api.get.mockResolvedValue({ data: [
-    { id: 1, copy: 'Variant A', view_count: 2, click_count: 1, apply_count: 0, active: false }
+    { id: 1, title: 'Variant A', description: 'Desc', view_count: 2, click_count: 1, apply_count: 0, active: false }
   ] });
   render(<JobPostVariants />);
   await screen.findByText('Variant A');

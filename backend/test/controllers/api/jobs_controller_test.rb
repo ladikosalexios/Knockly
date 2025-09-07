@@ -17,23 +17,23 @@ class Api::JobsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "lists variants" do
-    @job.job_post_variants.create!(copy: "A")
+    @job.job_post_variants.create!(title: "A", description: "Desc")
     get "/api/jobs/#{@job.id}/variants"
     assert_response :success
     body = JSON.parse(@response.body)
     assert_equal 1, body.length
-    assert_equal "A", body.first["copy"]
+    assert_equal "A", body.first["title"]
   end
 
   test "creates variant" do
-    post "/api/jobs/#{@job.id}/variants", params: { variant: { copy: "B" } }
+    post "/api/jobs/#{@job.id}/variants", params: { variant: { title: "B", description: "Desc" } }
     assert_response :created
     assert_equal 1, @job.job_post_variants.count
   end
 
   test "activates variant" do
-    v1 = @job.job_post_variants.create!(copy: "A")
-    v2 = @job.job_post_variants.create!(copy: "B")
+    v1 = @job.job_post_variants.create!(title: "A", description: "Desc")
+    v2 = @job.job_post_variants.create!(title: "B", description: "Desc")
     post "/api/jobs/#{@job.id}/variants/#{v2.id}/activate"
     assert_response :success
     assert v2.reload.active
@@ -41,7 +41,7 @@ class Api::JobsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "tracks view event" do
-    v = @job.job_post_variants.create!(copy: "A")
+    v = @job.job_post_variants.create!(title: "A", description: "Desc")
     post "/api/jobs/#{@job.id}/variants/#{v.id}/track", params: { event: "view" }
     assert_response :success
     assert_equal 1, v.reload.view_count

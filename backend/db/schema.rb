@@ -202,7 +202,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_08_130000) do
 
   create_table "job_post_variants", force: :cascade do |t|
     t.bigint "job_id", null: false
-    t.text "copy"
+    t.string "title"
+    t.text "description"
     t.boolean "active", default: false
     t.integer "view_count", default: 0, null: false
     t.integer "click_count", default: 0, null: false

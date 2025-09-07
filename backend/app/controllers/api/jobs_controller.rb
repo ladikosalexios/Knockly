@@ -116,6 +116,6 @@ class Api::JobsController < ApplicationController
   end
 
   def variant_params
-    params.require(:variant).permit(:copy)
+    params.require(:variant).permit(:title, :description)
   end
 end
