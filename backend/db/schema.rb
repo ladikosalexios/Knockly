@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_02_000002) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_08_131000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -142,6 +142,40 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_02_000002) do
     t.index ["skill_id"], name: "index_job_description_skills_on_skill_id"
   end
 
+  create_table "job_description_template_skills", force: :cascade do |t|
+    t.bigint "job_description_template_id", null: false
+    t.bigint "skill_id", null: false
+    t.string "importance"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_description_template_id"], name: "index_jdt_skills_on_template_id"
+    t.index ["skill_id"], name: "index_job_description_template_skills_on_skill_id"
+  end
+
+  create_table "job_description_templates", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "description", null: false
+    t.text "requirements"
+    t.string "company_name"
+    t.string "location"
+    t.boolean "is_remote", default: false
+    t.string "job_type"
+    t.integer "salary_min"
+    t.integer "salary_max"
+    t.string "salary_currency"
+    t.boolean "is_salary_visible", default: true
+    t.string "external_id"
+    t.string "source"
+    t.datetime "parsed_at"
+    t.integer "years_experience_min"
+    t.integer "years_experience_max"
+    t.jsonb "embedding"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_job_description_templates_on_external_id"
+    t.index ["title", "company_name", "location"], name: "index_jd_templates_on_title_company_location"
+  end
+
   create_table "job_descriptions", force: :cascade do |t|
     t.string "title"
     t.text "description"
@@ -166,38 +200,28 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_02_000002) do
     t.index ["job_id"], name: "index_job_descriptions_on_job_id"
   end
 
-  create_table "job_description_templates", force: :cascade do |t|
-    t.string "title", null: false
-    t.text "description", null: false
-    t.text "requirements"
-    t.string "company_name"
+  create_table "job_post_variants", force: :cascade do |t|
+    t.bigint "job_id", null: false
+    t.string "title"
+    t.text "description"
     t.string "location"
     t.boolean "is_remote", default: false
+    t.text "requirements"
+    t.text "skills"
     t.string "job_type"
+    t.integer "years_experience_min"
+    t.integer "years_experience_max"
     t.integer "salary_min"
     t.integer "salary_max"
     t.string "salary_currency"
-    t.boolean "is_salary_visible", default: true
-    t.string "external_id"
-    t.string "source"
-    t.datetime "parsed_at"
-    t.integer "years_experience_min"
-    t.integer "years_experience_max"
-    t.jsonb "embedding"
+    t.date "expires_at"
+    t.boolean "active", default: false
+    t.integer "view_count", default: 0, null: false
+    t.integer "click_count", default: 0, null: false
+    t.integer "apply_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["title", "company_name", "location"], name: "index_jd_templates_on_title_company_location"
-    t.index ["external_id"], name: "index_job_description_templates_on_external_id"
-  end
-
-  create_table "job_description_template_skills", force: :cascade do |t|
-    t.bigint "job_description_template_id", null: false
-    t.bigint "skill_id", null: false
-    t.string "importance"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["job_description_template_id"], name: "index_jdt_skills_on_template_id"
-    t.index ["skill_id"], name: "index_job_description_template_skills_on_skill_id"
+    t.index ["job_id"], name: "index_job_post_variants_on_job_id"
   end
 
   create_table "jobs", force: :cascade do |t|
@@ -249,6 +273,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_02_000002) do
   add_foreign_key "job_description_template_skills", "job_description_templates"
   add_foreign_key "job_description_template_skills", "skills"
   add_foreign_key "job_descriptions", "jobs"
+  add_foreign_key "job_post_variants", "jobs"
   add_foreign_key "jobs", "companies"
   add_foreign_key "jobs", "users", column: "posted_by_user_id"
   add_foreign_key "users", "companies"

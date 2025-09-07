@@ -1,5 +1,7 @@
 class Api::JobsController < ApplicationController
-  before_action :authenticate_user!, only: [ :create, :update ]
+  skip_before_action :authenticate_user!, only: [:track_variant]
+  before_action :authenticate_user!, only: [:create, :update, :variants, :create_variant, :activate_variant]
+  before_action :require_job_company!, only: [:variants, :create_variant, :activate_variant]
   # GET /api/jobs
   # Lists all active jobs. Can filter by company_id and search by query string.
   #
@@ -69,6 +71,41 @@ class Api::JobsController < ApplicationController
     end
   end
 
+  def variants
+    job = Job.find(params[:id])
+    render json: job.job_post_variants
+  end
+
+  def create_variant
+    job = Job.find(params[:id])
+    variant = job.job_post_variants.create!(variant_params)
+    render json: variant, status: :created
+  end
+
+  def activate_variant
+    job = Job.find(params[:id])
+    variant = job.job_post_variants.find(params[:variant_id])
+    job.job_post_variants.update_all(active: false)
+    variant.update!(active: true)
+    render json: variant
+  end
+
+  def track_variant
+    job = Job.find(params[:id])
+    variant = job.job_post_variants.find(params[:variant_id])
+    case params[:event]
+    when "view"
+      variant.increment!(:view_count)
+    when "click"
+      variant.increment!(:click_count)
+    when "apply"
+      variant.increment!(:apply_count)
+    else
+      render json: { error: "invalid event" }, status: :unprocessable_entity and return
+    end
+    head :ok
+  end
+
   private
 
   # Strong parameters for job creation.
@@ -78,5 +115,30 @@ class Api::JobsController < ApplicationController
       :is_remote, :job_type, :experience_level, :salary_min, :salary_max,
       :salary_currency, :is_salary_visible, :status, :expires_at
     )
+  end
+
+  def variant_params
+    params.require(:variant).permit(
+      :title,
+      :description,
+      :location,
+      :is_remote,
+      :requirements,
+      :skills,
+      :job_type,
+      :years_experience_min,
+      :years_experience_max,
+      :salary_min,
+      :salary_max,
+      :salary_currency,
+      :expires_at
+    )
+  end
+
+  def require_job_company!
+    job = Job.find(params[:id])
+    unless current_user&.is_looply_admin? || current_user&.company_id == job.company_id
+      render json: { error: "Forbidden" }, status: :forbidden
+    end
   end
 end

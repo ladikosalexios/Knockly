@@ -51,7 +51,7 @@ class Api::JobMatchesControllerTest < ActionDispatch::IntegrationTest
   test "requires company for matches" do
     sign_out @user
     user_without_company = User.create!(email: "no@company.com", password: "password")
-    sign_in user_without_company
+    sign_in user_without_company, scope: :user
 
     get "/api/jobs/#{@job.id}/matches"
     assert_response :unauthorized

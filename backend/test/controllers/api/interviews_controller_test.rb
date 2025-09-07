@@ -3,6 +3,7 @@ require "test_helper"
 class Api::InterviewsControllerTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
   include ActionMailer::TestHelper
+  include Devise::Test::IntegrationHelpers
 
   setup do
     @job_application = job_applications(:one)

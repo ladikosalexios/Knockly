@@ -4,4 +4,5 @@ class Job < ApplicationRecord
   has_one :job_description, dependent: :destroy
   has_many :job_applications
   has_many :interview_templates
+  has_many :job_post_variants, dependent: :destroy
 end

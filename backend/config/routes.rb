@@ -14,7 +14,14 @@ Rails.application.routes.draw do
     get "companies/slug/:slug", to: "companies#show_by_slug"
     get "companies/:slug/jobs", to: "companies#jobs_by_slug"
     get "matching", to: "matching#show"
-    resources :jobs
+    resources :jobs do
+      member do
+        get :variants
+        post :variants, action: :create_variant
+        post 'variants/:variant_id/activate', action: :activate_variant
+        post 'variants/:variant_id/track', action: :track_variant
+      end
+    end
     resources :job_descriptions, only: [:create, :update] do
       member do
         get :status
