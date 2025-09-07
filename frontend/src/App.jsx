@@ -7,6 +7,7 @@ import AdminJobForm from './pages/AdminJobForm';
 import DashboardLayout from './components/DashboardLayout';
 import JobApplicantsPage from './components/JobApplicantsPage';
 import JobMatches from './components/admin/JobMatches';
+import JobPostVariants from './components/admin/JobPostVariants';
 import JobApplicationPage from './components/JobApplicationPage';
 import CreateCompanyPage from './pages/CreateCompanyPage';
 import PublicJobBoard from './pages/PublicJobBoard';
@@ -63,6 +64,11 @@ function App() {
       <Route path="/admin/jobs/:id/matches" element={
         <PrivateRoute>
           <JobMatches />
+        </PrivateRoute>
+      } />
+      <Route path="/admin/jobs/:id/variants" element={
+        <PrivateRoute>
+          <JobPostVariants />
         </PrivateRoute>
       } />
       <Route path="/jobs/:id/apply" element={<JobApplicationPage />} />
