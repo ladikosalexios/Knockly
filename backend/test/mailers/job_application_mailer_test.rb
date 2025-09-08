@@ -21,5 +21,19 @@ class JobApplicationMailerTest < ActionMailer::TestCase
     assert_equal [job_application.email], email.to
     assert_equal "Your application status has been updated", email.subject
     assert_includes email.body.to_s, job_application.status
+    assert_includes email.body.to_s, job_application.applicant_profile.portal_token
+  end
+
+  test "application_received" do
+    job_application = build_job_application
+
+    email = nil
+    assert_emails 1 do
+      email = JobApplicationMailer.application_received(job_application).deliver_now
+    end
+
+    assert_equal [job_application.email], email.to
+    assert_equal "We've received your application", email.subject
+    assert_includes email.body.to_s, job_application.applicant_profile.portal_token
   end
 end

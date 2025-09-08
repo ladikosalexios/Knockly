@@ -21,5 +21,6 @@ class InterviewMailerTest < ActionMailer::TestCase
     assert_includes email.to, interview.job_application.job.posted_by_user.email
     assert_equal "Interview Scheduled", email.subject
     assert email.attachments['interview.ics']
+    assert_includes email.body.to_s, interview.job_application.applicant_profile.portal_token
   end
 end

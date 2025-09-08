@@ -3,6 +3,8 @@ class InterviewMailer < ApplicationMailer
     @interview = interview
     recruiter_email = interview.job_application.job.posted_by_user.email
     applicant_email = interview.job_application.email
+    token = interview.job_application.applicant_profile.portal_token
+    @portal_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:5173')}/candidate-portal?token=#{token}"
 
     attachments['interview.ics'] = {
       mime_type: 'text/calendar; charset=UTF-8; method=REQUEST',
@@ -10,7 +12,7 @@ class InterviewMailer < ApplicationMailer
     }
 
     mail(to: [applicant_email, recruiter_email], subject: 'Interview Scheduled') do |format|
-      format.text { render plain: 'Interview details attached.' }
+      format.text { render plain: "Interview details attached.\nAccess your portal: #{@portal_url}" }
     end
   end
 

@@ -2,5 +2,7 @@ Hello <%= @job_application.name %>,
 
 The status of your application for <%= @job_application.job.job_description.title rescue 'the position' %> has been updated to <%= @job_application.status %>.
 
+You can view your application and interview details at <%= @portal_url %>.
+
 Thanks,
 The Team

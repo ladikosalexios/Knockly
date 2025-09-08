@@ -14,6 +14,11 @@ Rails.application.routes.draw do
     get "companies/slug/:slug", to: "companies#show_by_slug"
     get "companies/:slug/jobs", to: "companies#jobs_by_slug"
     get "matching", to: "matching#show"
+    resource :candidate_session, only: [:create, :destroy]
+    namespace :candidates do
+      resources :applications, only: [:index]
+      resources :interviews, only: [:index]
+    end
     resources :jobs do
       member do
         get :variants

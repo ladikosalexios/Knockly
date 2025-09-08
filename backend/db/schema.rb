@@ -96,7 +96,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_08_131000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "embedding"
+    t.string "portal_token"
     t.index ["email"], name: "index_applicant_profiles_on_email", unique: true
+    t.index ["portal_token"], name: "index_applicant_profiles_on_portal_token", unique: true
   end
 
   create_table "companies", force: :cascade do |t|

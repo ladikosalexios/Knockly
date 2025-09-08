@@ -1,0 +1,7 @@
+Hello <%= @job_application.name %>,
+
+Thank you for applying to <%= @job_application.job.job_description.title rescue 'the position' %>.
+You can track your application and manage your profile at <%= @portal_url %>.
+
+Thanks,
+The Team

@@ -12,6 +12,7 @@ class ApplicantProfile < ApplicationRecord
   validates :name, presence: true
 
   before_validation :normalize_email
+  before_save :ensure_portal_token
 
   after_commit :enqueue_embedding_generation, if: -> { resume_text.present? }
   after_commit :enqueue_match_recomputation, if: -> { saved_change_to_embedding? }
@@ -31,5 +32,9 @@ class ApplicantProfile < ApplicationRecord
       jd_id = application.job.job_description&.id
       RecomputeMatchesJob.perform_later(jd_id) if jd_id
     end
+  end
+
+  def ensure_portal_token
+    self.portal_token ||= SecureRandom.hex(20)
   end
 end

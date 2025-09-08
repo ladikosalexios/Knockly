@@ -106,6 +106,7 @@ class Api::JobApplicationsController < ApplicationController
       @job_application.applicant_profile = profile
       if @job_application.save
         Rails.logger.info "JobApplication saved successfully: #{@job_application.id}"
+        JobApplicationMailer.application_received(@job_application).deliver_later
       else
         Rails.logger.error "JobApplication failed to save: #{@job_application.errors.full_messages}"
       end
@@ -182,6 +183,7 @@ class Api::JobApplicationsController < ApplicationController
       puts "PROFILE STATE:"
       pp application.applicant_profile
       application.save!
+      JobApplicationMailer.application_received(application).deliver_later
 
       render json: { status: "ok", application: application }, status: :created
     end
