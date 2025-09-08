@@ -10,18 +10,26 @@ import {
   Pie,
   Cell,
   Legend,
+  LineChart,
+  Line,
+  CartesianGrid,
 } from 'recharts';
 import api from '../../api';
 
 export default function AnalyticsDashboard() {
   const [data, setData] = useState(null);
+  const [history, setHistory] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get('/api/analytics');
-        setData(res.data);
+        const [summaryRes, historyRes] = await Promise.all([
+          api.get('/api/analytics'),
+          api.get('/api/analytics/history'),
+        ]);
+        setData(summaryRes.data);
+        setHistory(historyRes.data);
       } catch (err) {
         console.error(err);
         setError('Failed to load analytics');
@@ -43,6 +51,20 @@ export default function AnalyticsDashboard() {
     stage,
     hours: (secs / 3600).toFixed(2),
   }));
+
+  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300'];
+
+  const stageHistoryData = history.map((h) => ({ date: h.date, ...h.stage_counts }));
+  const stageKeys = history[0] ? Object.keys(history[0].stage_counts) : [];
+
+  const conversionHistoryData = history.map((h) => {
+    const rates = {};
+    Object.entries(h.conversion_rates || {}).forEach(([k, v]) => {
+      rates[k] = (v * 100).toFixed(2);
+    });
+    return { date: h.date, ...rates };
+  });
+  const conversionKeys = history[0] ? Object.keys(history[0].conversion_rates) : [];
 
   return (
     <div style={{ padding: 32, color: '#fff', backgroundColor: '#1e1e1e' }}>
@@ -111,6 +133,40 @@ export default function AnalyticsDashboard() {
           </ResponsiveContainer>
         </div>
       </div>
+      {history.length > 0 && (
+        <div style={{ marginTop: 32 }}>
+          <div style={{ width: 800, height: 300 }}>
+            <h4>Stage Counts Over Time</h4>
+            <ResponsiveContainer>
+              <LineChart data={stageHistoryData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {stageKeys.map((key, idx) => (
+                  <Line key={key} type="monotone" dataKey={key} stroke={colors[idx % colors.length]} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={{ width: 800, height: 300, marginTop: 32 }}>
+            <h4>Conversion Rates Over Time (%)</h4>
+            <ResponsiveContainer>
+              <LineChart data={conversionHistoryData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {conversionKeys.map((key, idx) => (
+                  <Line key={key} type="monotone" dataKey={key} stroke={colors[idx % colors.length]} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
