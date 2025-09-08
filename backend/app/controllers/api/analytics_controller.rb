@@ -35,6 +35,14 @@ class Api::AnalyticsController < ApplicationController
     render json: data
   end
 
+  # GET /api/analytics/history
+  def history
+    limit = params[:limit].to_i
+    limit = 30 if limit <= 0
+    snapshots = AnalyticsSnapshot.order(date: :desc).limit(limit)
+    render json: snapshots.as_json(only: [:date, :stage_counts, :conversion_rates, :median_stage_times])
+  end
+
   private
 
   def average_job_lifespan
